@@ -1,103 +1,179 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import Header from "@/components/ui/header"
+import Footer from "@/components/ui/footer"
+
+
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Shield,
+  BookOpen,
+  FlaskConical,
+  Trophy,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isOpen, setIsOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="min-h-screen bg-white">
+
+      {/* inporting header drom component */}
+      <Header />
+
+      {/*My Hero Section */}
+      <div className="container mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="text-center mb-20">
+          
+          <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
+           Master <span className="text-[#72a210]">Cybersecurity</span>
+           <br />
+           Through Hands-On Learning
+         </h1>
+
+          <p className="text-lg text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            Learn cybersecurity concepts, practice with real-world scenarios,
+            and build your skills in a safe, controlled environment designed
+            exclusively for education.
+          </p>
+          <div className="flex flex-col-reverse sm:flex-row gap-4 justify-center w-full">
+            <Link href="/auth/register" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-[#72a210] hover:bg-[#507800] text-white px-8 py-6 text-lg font-medium cursor-pointer"
+              >
+                Start Learning
+              </Button>
+            </Link>
+            <Link href="/auth/login" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto border-[#72a210] text-black hover:bg-[#72a210]/10 px-8 py-6 text-lg font-medium cursor-pointer"
+              >
+                Sign In
+              </Button>
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/*My Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Interactive Lessons
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-gray-600 leading-relaxed">
+                Structured learning paths covering cybersecurity fundamentals to
+                advanced topics
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
+                  <FlaskConical className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Hands-On Labs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-gray-600 leading-relaxed">
+                Practice with real tools and techniques in your own secure
+                virtual environment
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <Trophy className="h-8 w-8 text-yellow-600" />
+                </div>
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Gamified Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-gray-600 leading-relaxed">
+                Earn XP, unlock achievements, and maintain learning streaks as
+                you progress
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Expert Community
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-gray-600 leading-relaxed">
+                Learn from industry experts and connect with fellow
+                cybersecurity enthusiasts
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/*My Educational Disclaimer */}
+        <div className="w-full bg-yellow-50 border-[#e2de5a] mt-16 rounded-2xl">
+          <Card className="w-full border-0 bg-transparent shadow-none">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-yellow-800 text-lg font-semibold">
+                <div className="w-6 h-6 bg-yellow-200 rounded flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-yellow-700" />
+                </div>
+                Educational Use Only
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-yellow-700 leading-relaxed max-w-5xl">
+                CyberLearn is designed exclusively for educational purposes. All
+                content, tools, and exercises are provided in a controlled
+                environment to help learners understand cybersecurity concepts
+                safely and responsibly. Any misuse of the knowledge gained here
+                is strictly prohibited.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+
+      {/* inporting footer drom component */}
+            <Footer /> 
     </div>
   );
 }
