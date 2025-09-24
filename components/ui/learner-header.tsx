@@ -55,22 +55,33 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
           {/* Dropdown Menu */}
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-30">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <p className="text-sm font-medium text-gray-800">Alex Chen</p>
-                <p className="text-xs text-gray-500">alex.chen@email.com</p>
-              </div>
-              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <User className="h-4 w-4 mr-2" /> Profile
-              </button>
-              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                <Settings className="h-4 w-4 mr-2" /> Account Settings
-              </button>
-              <Link href="/auth/login">
-                <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
-                  <LogOut className="h-4 w-4 mr-2" /> Logout
-                </button>
-              </Link>
-            </div>
+  <div className="px-4 py-3 border-b border-gray-100">
+    <p className="text-sm font-medium text-gray-800">Alex Chen</p>
+    <p className="text-xs text-gray-500">alex.chen@email.com</p>
+  </div>
+
+  {/* Profile link */}
+  <Link href="/learner-dashboard/profile">
+    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+      <User className="h-4 w-4 mr-2" /> Profile
+    </button>
+  </Link>
+
+  {/* Settings (still placeholder for now) */}
+  <Link href="/learner-dashboard/account-setting">
+  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+    <Settings className="h-4 w-4 mr-2" /> Account Settings
+  </button>
+  </Link>
+
+
+  {/* Logout */}
+  <Link href="/auth/login">
+    <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
+      <LogOut className="h-4 w-4 mr-2" /> Logout
+    </button>
+  </Link>
+</div>
           )}
         </div>
       </div>

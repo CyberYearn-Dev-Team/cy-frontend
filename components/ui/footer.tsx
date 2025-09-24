@@ -1,6 +1,8 @@
 // components/ui/footer.tsx
 "use client";
 
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-10">
@@ -41,8 +43,16 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-white transition">Help Center</a></li>
               <li><a href="#" className="hover:text-white transition">Contact Support</a></li>
-              <li><a href="/terms" className="hover:text-white transition">Terms & Conditions</a></li>
-              <li><a href="/terms" className="hover:text-white transition">Privacy Policy</a></li>
+              <li>
+                <Link href="/landing/terms" className="hover:text-white transition">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/landing/privacy" className="hover:text-white transition">
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
