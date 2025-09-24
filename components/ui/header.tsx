@@ -2,11 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname(); // get current path
+
+  const links = [
+    { name: "Home", href: "/" },
+    { name: "Contact Us", href: "/landing/contact" },
+    { name: "Privacy Policy", href: "/landing/privacy" },
+    { name: "Terms & Conditions", href: "/landing/terms" },
+  ];
+
+  const isActive = (href: string) => pathname === href;
 
   return (
     <>
@@ -25,24 +36,17 @@ export default function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden md:flex gap-8 font-medium text-black">
-          <Link
-            href="/"
-            className="hover:text-[#72a210] hover:underline underline-offset-4 transition-colors"
-          >
-            Home
-          </Link>
-          <Link
-            href="/landing/contact"
-            className="hover:text-[#72a210] hover:underline underline-offset-4 transition-colors"
-          >
-            Contact Us
-          </Link>
-          <Link
-            href="/landing/terms"
-            className="hover:text-[#72a210] hover:underline underline-offset-4 transition-colors"
-          >
-            Terms & Conditions
-          </Link>
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`hover:text-[#72a210] hover:underline underline-offset-4 transition-colors ${
+                isActive(link.href) ? "text-[#72a210] underline" : ""
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
         </div>
 
         {/* Desktop Buttons */}
@@ -77,56 +81,71 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Sliding Menu */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full bg-white text-black p-6 z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {/* Close Button inside */}
-        <button
-          className="absolute top-6 right-6 text-black"
+<div
+  className={`fixed top-0 right-0 h-full w-full z-50 transform transition-transform duration-300 ease-in-out ${
+    isOpen ? "translate-x-0" : "translate-x-full"
+  }`}
+>
+  {/* Backdrop */}
+  <div
+    className="absolute inset-0 bg-black/30"
+    onClick={() => setIsOpen(false)}
+  ></div>
+
+  {/* Sliding Menu */}
+  <div className="relative bg-white h-full w-full shadow-xl p-6 flex flex-col">
+    {/* Close Button */}
+    <button
+      className="absolute top-6 right-6 text-black hover:text-[#72a210] transition"
+      onClick={() => setIsOpen(false)}
+    >
+      <X className="h-6 w-6" />
+    </button>
+
+    {/* Links */}
+    <div className="flex flex-col gap-5 mt-16">
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className={`text-lg font-medium transition-colors duration-200 ${
+            isActive(link.href)
+              ? "text-[#72a210] underline"
+              : "text-gray-700 hover:text-[#507800]"
+          }`}
           onClick={() => setIsOpen(false)}
         >
-          <X className="h-6 w-6" />
-        </button>
+          {link.name}
+        </Link>
+      ))}
 
-        {/* Links */}
-        <div className="flex flex-col gap-6 mt-12">
-          <Link href="/" className="hover:text-[#72a210]" onClick={() => setIsOpen(false)}>
-            Home
-          </Link>
-          <Link href="/contact" className="hover:text-[#72a210]" onClick={() => setIsOpen(false)}>
-            Contact Us
-          </Link>
-          <Link href="/terms" className="hover:text-[#72a210]" onClick={() => setIsOpen(false)}>
-            Terms & Conditions
-          </Link>
+      {/* Auth Buttons */}
+      <div className="flex flex-col gap-3 mt-8">
+        <Link href="/auth/login" onClick={() => setIsOpen(false)}>
+          <Button className="bg-[#507800] text-white hover:bg-[#3f5b00] w-full py-3 rounded-md text-base">
+            Login
+          </Button>
+        </Link>
 
-          <div className="flex flex-col gap-4 mt-6">
-  <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-    <Button className="bg-[#507800] !text-white hover:bg-[#3f5b00] hover:!text-white w-full px-8 py-6 text-base">
-      Login
-    </Button>
-  </Link>
+        <Link href="/auth/register" onClick={() => setIsOpen(false)}>
+          <Button
+            variant="outline"
+            className="border border-[#507800] text-[#507800] hover:bg-[#507800]/10 w-full py-3 rounded-md text-base"
+          >
+            Register
+          </Button>
+        </Link>
 
-  <Link href="/auth/register" onClick={() => setIsOpen(false)}>
-    <Button
-      variant="outline"
-      className="bg-transparent border border-[#507800] text-black hover:bg-gray-100 w-full px-8 py-6 text-base"
-    >
-      Register
-    </Button>
-  </Link>
-
-  <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
-    <Button className="bg-[#507800] !text-white hover:bg-[#3f5b00] hover:!text-white w-full px-8 py-6 text-base">
-      Forgotten Password
-    </Button>
-  </Link>
+        <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
+          <Button className="bg-[#507800] text-white hover:bg-[#3f5b00] w-full py-3 rounded-md text-base">
+            Forgotten Password
+          </Button>
+        </Link>
+      </div>
+    </div>
+  </div>
 </div>
 
-        </div>
-      </div>
     </>
   );
 }

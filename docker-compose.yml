@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  directus:
+    image: directus/directus:latest
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: "mysecretkey"
+      SECRET: "myothersecretkey"
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "password123"
+      DB_CLIENT: "pg"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_DATABASE: "directus"
+      DB_USER: "directus"
+      DB_PASSWORD: "directus"
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/directus/uploads
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: "directus"
+      POSTGRES_USER: "directus"
+      POSTGRES_PASSWORD: "directus"
+    volumes:
+      - ./data:/var/lib/postgresql/data
