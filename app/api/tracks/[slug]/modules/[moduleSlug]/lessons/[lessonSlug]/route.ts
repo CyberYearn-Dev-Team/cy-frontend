@@ -12,11 +12,13 @@ export async function GET(
     const base = process.env.DIRECTUS_URL || "http://localhost:8055";
     const encoded = encodeURIComponent(lessonSlug);
 
+    // ✅ only fetch lesson + its linked lab_guides
     const directusRes = await fetch(
-      `${base}/items/Lessons?filter[slug][_eq]=${encoded}&fields=*,quizzes.Quizzes_id.*`,
+      `${base}/items/lessons?filter[slug][_eq]=${encoded}&fields=*,lab_guides.lab_guides_id.*`,
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.DIRECTUS_TOKEN ?? ""}`,
         },
         cache: "no-store",
       }
@@ -37,15 +39,15 @@ export async function GET(
 
     const lesson = json.data[0];
 
-    // Flatten quizzes (so you get clean array of quiz objects)
-    const flatQuizzes = (lesson.quizzes || [])
-      .map((q: any) => q.Quizzes_id)
-      .filter((q: any) => q !== null);
+    // ✅ flatten lab_guides into labs array
+    const flatLabs = (lesson.lab_guides || [])
+      .map((l: any) => l.lab_guides_id)
+      .filter((l: any) => l !== null);
 
     return NextResponse.json({
       lesson: {
         ...lesson,
-        quizzes: flatQuizzes,
+        labs: flatLabs, // expose labs cleanly
       },
     });
   } catch (err) {

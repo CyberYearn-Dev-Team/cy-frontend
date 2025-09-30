@@ -8,18 +8,26 @@ export default function Breadcrumb() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
-  // always start breadcrumb from "tracks"
+  // Always start breadcrumb from "tracks"
   const startIndex = segments.indexOf("tracks");
   const slicedSegments =
     startIndex !== -1 ? segments.slice(startIndex) : segments;
 
-  // keep track of full path including learner-dashboard
-  const prefix = "/learner-dashboard";
-
-  // hide these segments from breadcrumb labels
-  const ignored = ["modules", "lessons"];
-
+  // Path builder
   let pathSoFar: string[] = ["learner-dashboard"];
+
+  // Map fixed segments to display labels
+  const labelMap: Record<string, string> = {
+    tracks: "Tracks",
+    modules: "Modules",
+    lessons: "Lessons",
+    labs: "Labs",
+    quizzes: "Quizzes",
+    result: "Result",
+  };
+
+  // Dynamic segments we want to skip from breadcrumb
+  const dynamicSegments = ["slug", "moduleslug", "lessonslug", "labslug"];
 
   return (
     <nav aria-label="Breadcrumb">
@@ -28,12 +36,17 @@ export default function Breadcrumb() {
           pathSoFar.push(segment);
           const href = "/" + pathSoFar.join("/");
 
-          // skip ignored segments in display, but still advance pathSoFar
-          if (ignored.includes(segment.toLowerCase())) {
+          // Skip if it’s a dynamic slug
+          if (dynamicSegments.includes(segment.toLowerCase())) {
             return null;
           }
 
           const isLast = idx === slicedSegments.length - 1;
+
+          // Use labelMap if available, otherwise fallback to slug text
+          const label =
+            labelMap[segment.toLowerCase()] ??
+            decodeURIComponent(segment.replace(/-/g, " "));
 
           return (
             <li key={href} className="flex items-center">
@@ -45,11 +58,11 @@ export default function Breadcrumb() {
                     "capitalize"
                   )}
                 >
-                  {decodeURIComponent(segment.replace(/-/g, " "))}
+                  {label}
                 </Link>
               ) : (
                 <span className="px-2 py-1 rounded-md bg-gray-200 font-semibold text-gray-800 capitalize">
-                  {decodeURIComponent(segment.replace(/-/g, " "))}
+                  {label}
                 </span>
               )}
               {!isLast && <span className="mx-2">/</span>}

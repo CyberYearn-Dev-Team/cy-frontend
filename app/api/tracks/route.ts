@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 export async function GET() {
   try {
     const url = process.env.DIRECTUS_URL || "http://localhost:8055"
-    const res = await fetch(`${url}/items/Tracks`, {
+    const res = await fetch(`${url}/items/tracks`, {
       headers: {
         Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN || ""}`,
       },

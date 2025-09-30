@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock, Filter } from "lucide-react";
-
+import {
+  Clock,
+  Filter,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
-
 
 // Types
 type TrackLevel =
@@ -73,6 +77,7 @@ const Button = ({
     </button>
   );
 };
+
 const Badge = ({
   children,
   variant = "default",
@@ -101,7 +106,7 @@ const Badge = ({
   );
 };
 
-//  Track Card
+// Track Card
 const TrackCard = ({
   title,
   slug,
@@ -113,45 +118,94 @@ const TrackCard = ({
   progress,
   buttonText = "Continue Track",
   buttonVariant = "primary",
-}: Track) => (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <div className="flex justify-between items-start mb-4">
-      <div className="flex gap-2">
-        <Badge variant={level}>
-          {level.charAt(0).toUpperCase() + level.slice(1)}
-        </Badge>
-        <Badge variant={topic.toLowerCase().replace(" ", "") as TrackLevel}>
-          {topic}
-        </Badge>
+}: Track) => {
+  const [showMore, setShowMore] = useState(false);
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex gap-5">
+          <Badge variant={level}>
+            {level.charAt(0).toUpperCase() + level.slice(1)}
+          </Badge>
+          <Badge variant={topic.toLowerCase().replace(" ", "") as TrackLevel}>
+            {topic}
+          </Badge>
+        </div>
       </div>
-    </div>
 
-    <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-    <p className="text-sm text-gray-600 mb-4">{description}</p>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
 
-    <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-      <span>{modules} modules</span>
-      <div className="flex items-center gap-1">
-        <Clock className="h-4 w-4" />
-        <span>{duration}</span>
+      {/* Description with line clamp */}
+      <p
+        className={`text-sm text-gray-600 mb-2 ${
+          showMore ? "" : "line-clamp-5"
+        }`}
+      >
+        {description}
+      </p>
+
+      {/* Toggle button */}
+      {description.length > 150 && (
+        <button
+          onClick={() => setShowMore(!showMore)}
+          className="text-xs font-semibold text-[#72a210] hover:underline mb-4 cursor-pointer"
+        >
+          {showMore ? "Show less" : "Read more"}
+        </button>
+      )}
+
+      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+        <span>{modules} modules</span>
+        <div className="flex items-center gap-1">
+          <Clock className="h-4 w-4" />
+          <span>{duration}</span>
+        </div>
       </div>
-    </div>
 
-    <div className="space-y-2 mb-4">
-      <div className="flex justify-between text-sm">
-        <span>Progress</span>
-        <span>{progress}%</span>
+      <div className="space-y-2 mb-4">
+        <div className="flex justify-between text-sm">
+          <span>Progress</span>
+          <span>{progress}%</span>
+        </div>
+        <Progress value={progress} />
       </div>
-      <Progress value={progress} />
-    </div>
 
-    <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
-      <Button variant="primary" className="w-full cursor-pointer">
-        {buttonText}
-      </Button>
-    </Link>
-  </div>
-);
+      <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
+        <Button variant="primary" className="w-full cursor-pointer">
+          {buttonText}
+        </Button>
+      </Link>
+    </div>
+  );
+};
+
+// Collapsible Section Component
+const CollapsibleSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => {
+  const [open, setOpen] = useState(false); // collapsed by default
+  return (
+    <div className="border rounded-md bg-white">
+      <button
+        className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50"
+        onClick={() => setOpen(!open)}
+      >
+        <span>{title}</span>
+        {open ? (
+          <ChevronDown className="h-4 w-4 text-gray-500" />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-gray-500" />
+        )}
+      </button>
+      {open && <div className="p-3">{children}</div>}
+    </div>
+  );
+};
 
 // Page
 export default function TracksPage() {
@@ -168,7 +222,6 @@ export default function TracksPage() {
         const res = await fetch("/api/tracks");
         const data = await res.json();
 
-        // Safely map unknown Directus items to Track by narrowing properties
         const safe = (v: unknown): Track => {
           const obj =
             v && typeof v === "object" ? (v as Record<string, unknown>) : {};
@@ -227,7 +280,7 @@ export default function TracksPage() {
     "OSINT",
   ];
 
-  //Render
+  // Render
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {/* Sidebar */}
@@ -258,37 +311,34 @@ export default function TracksPage() {
 
           {/* Filters */}
           <div className="mb-6 space-y-4">
-            {/* Level Filter */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-              <div className="flex items-center gap-2 mb-2 sm:mb-0">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  Filters:
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-gray-600">Level:</span>
-                <div className="flex flex-wrap gap-2">
-                  {levels.map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => setSelectedLevel(level)}
-                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                        selectedLevel === level
-                          ? "bg-[#72a210] text-white"
-                          : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 cursor-pointer"
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">
+                Filters:
+              </span>
             </div>
 
-            {/* Topic Filter */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-              <span className="text-sm text-gray-600 mb-2 sm:mb-0">Topic:</span>
+            {/* Difficulty Filter */}
+            <CollapsibleSection title="Difficulty">
+              <div className="flex flex-wrap gap-2">
+                {levels.map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setSelectedLevel(level)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      selectedLevel === level
+                        ? "bg-[#72a210] text-white"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 cursor-pointer"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </CollapsibleSection>
+
+            {/* Track Filter */}
+            <CollapsibleSection title="Track">
               <div className="flex flex-wrap gap-2">
                 {topics.map((topic) => (
                   <button
@@ -304,7 +354,7 @@ export default function TracksPage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </CollapsibleSection>
           </div>
 
           {/* Tracks Grid / Empty State */}
@@ -312,10 +362,11 @@ export default function TracksPage() {
             <p className="text-gray-500">Loading tracks...</p>
           ) : filteredTracks.length === 0 ? (
             <div className="text-center py-20 bg-white border rounded-lg shadow-sm">
+              <FileText className="mx-auto h-20 w-20 text-[#72a210] mb-4" />
               <h2 className="text-lg font-semibold text-gray-800">
                 No Learning Tracks Yet
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 mt-2 px-4">
                 Your instructors haven’t published any tracks. Please check back
                 later.
               </p>

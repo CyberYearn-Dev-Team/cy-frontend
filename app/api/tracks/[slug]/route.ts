@@ -10,7 +10,7 @@ export async function GET(
     const base = process.env.DIRECTUS_URL || 'http://localhost:8055'
     const encoded = encodeURIComponent(slug)
     const directusRes = await fetch(
-      `${base}/items/Tracks?filter[slug][_eq]=${encoded}&fields=*,modules.Modules_id.*`,
+      `${base}/items/tracks?filter[slug][_eq]=${encoded}&fields=*,modules.modules_id.*`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export async function GET(
 
     // Flatten modules (from { Modules_id: {...} } to just {...}) and filter out nulls
     const flatModules = (track.modules || [])
-      .map((m: any) => m.Modules_id)
+      .map((m: any) => m.modules_id)
       .filter((m: any) => m !== null);
 
     return NextResponse.json({

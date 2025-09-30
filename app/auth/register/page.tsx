@@ -11,6 +11,7 @@ import { Eye, EyeOff, AlertTriangle } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import axios from "axios"
+import { toast } from "sonner"  
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -18,7 +19,7 @@ export default function RegisterPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [understoodPurpose, setUnderstoodPurpose] = useState(false)
   const [form, setForm] = useState({
-    username: "",   // ✅ Added username
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -36,7 +37,7 @@ export default function RegisterPage() {
 
     try {
       if (form.password !== form.confirmPassword) {
-        alert("Passwords do not match!")
+        toast.error("Passwords do not match!")
         return
       }
 
@@ -44,19 +45,20 @@ export default function RegisterPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000)) // fake delay
 
       // const res = await axios.post("http://backend-url.com/api/register", {
-      //   username: form.username,  // ✅ send username too
+      //   username: form.username,
       //   email: form.email,
       //   password: form.password,
       // })
 
       if (form.username && form.email && form.password) {
+        toast.success("Account created successfully")
         router.push("/learner-dashboard/dashboard")
       } else {
-        alert("Registration failed (mocked)")
+        toast.error("Registration failed (mocked)")
       }
     } catch (error) {
       console.error(error)
-      alert("Something went wrong")
+      toast.error("Something went wrong. Please try again later.")
     } finally {
       setLoading(false)
     }
@@ -89,7 +91,7 @@ export default function RegisterPage() {
             <CardContent className="space-y-5">
               <form className="space-y-5" onSubmit={handleSubmit}>
 
-                {/* ✅ Username Field */}
+                {/* Username Field */}
                 <div>
                   <Label htmlFor="username" className="text-sm font-medium text-gray-700">
                     Username
@@ -204,11 +206,11 @@ export default function RegisterPage() {
                     />
                     <label htmlFor="terms" className="text-sm text-gray-700 leading-5">
                       I agree to the{" "}
-                      <Link href="/landing/terms" className="text-blue-600 hover:underline">
+                      <Link href="/landing/legalpages/terms" className="text-blue-600 hover:underline">
                         Terms of Service
                       </Link>{" "}
                       and{" "}
-                      <Link href="/landing/privacy" className="text-blue-600 hover:underline">
+                      <Link href="/landing/legalpages/privacy" className="text-blue-600 hover:underline">
                         Privacy Policy
                       </Link>
                     </label>
@@ -231,7 +233,7 @@ export default function RegisterPage() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium"
+                  className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium cursor-pointer"
                   disabled={!agreedToTerms || !understoodPurpose || loading}
                 >
                   {loading ? "Creating..." : "Create Account"}

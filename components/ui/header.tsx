@@ -13,8 +13,8 @@ export default function Navbar() {
   const links = [
     { name: "Home", href: "/" },
     { name: "Contact Us", href: "/landing/contact" },
-    { name: "Privacy Policy", href: "/landing/privacy" },
-    { name: "Terms & Conditions", href: "/landing/terms" },
+    { name: "Privacy Policy", href: "/landing/legalpages/privacy" },
+    { name: "Terms & Conditions", href: "/landing/legalpages/terms" },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -29,7 +29,7 @@ export default function Navbar() {
             <img
               src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_OctaTech_Logo_Black.png"
               alt="Logo"
-              className="h-12 sm:h-16 md:h-20 w-auto"
+              className="h-12 sm:h-17 md:h-17 w-auto"
             />
           </div>
         </Link>
@@ -55,7 +55,7 @@ export default function Navbar() {
             <Button
               variant="outline"
               size="lg"
-              className="border-[#72a210] text-[#72a210] hover:bg-[#72a210]/10 px-8 py-3 text-lg font-medium cursor-pointer"
+              className="border-[#72a210] text-[#72a210] hover:text-[#72a210] hover:bg-[#72a210]/10 px-8 py-3 text-sm font-medium cursor-pointer"
             >
               Login
             </Button>
@@ -64,7 +64,7 @@ export default function Navbar() {
           <Link href="/auth/register" className="w-full sm:w-auto">
             <Button
               size="lg"
-              className="bg-[#72a210] hover:bg-[#507800] text-white px-8 py-3 text-lg font-medium cursor-pointer"
+              className="bg-[#72a210] hover:bg-[#507800] text-white px-8 py-3 text-sm font-medium cursor-pointer"
             >
               Register
             </Button>
@@ -81,71 +81,72 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Sliding Menu */}
-<div
-  className={`fixed top-0 right-0 h-full w-full z-50 transform transition-transform duration-300 ease-in-out ${
-    isOpen ? "translate-x-0" : "translate-x-full"
-  }`}
->
-  {/* Backdrop */}
-  <div
-    className="absolute inset-0 bg-black/30"
-    onClick={() => setIsOpen(false)}
-  ></div>
-
-  {/* Sliding Menu */}
-  <div className="relative bg-white h-full w-full shadow-xl p-6 flex flex-col">
-    {/* Close Button */}
-    <button
-      className="absolute top-6 right-6 text-black hover:text-[#72a210] transition"
-      onClick={() => setIsOpen(false)}
-    >
-      <X className="h-6 w-6" />
-    </button>
-
-    {/* Links */}
-    <div className="flex flex-col gap-5 mt-16">
-      {links.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className={`text-lg font-medium transition-colors duration-200 ${
-            isActive(link.href)
-              ? "text-[#72a210] underline"
-              : "text-gray-700 hover:text-[#507800]"
-          }`}
+      <div
+        className={`fixed top-0 right-0 h-full w-full z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/30"
           onClick={() => setIsOpen(false)}
+        ></div>
+
+        {/* Sliding Menu */}
+<div className="relative bg-white h-full w-full shadow-xl p-6 flex flex-col">
+  {/* Close Button */}
+  <button
+    className="absolute top-6 right-6 text-black hover:text-[#72a210] transition"
+    onClick={() => setIsOpen(false)}
+  >
+    <X className="h-6 w-6" />
+  </button>
+
+  {/* Links */}
+  <div className="flex flex-col gap-5 mt-16">
+    {links.map((link) => (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={`transition-colors duration-200 ${
+          isActive(link.href)
+            ? "text-[#72a210] underline"
+            : "text-[15px] hover:text-[#507800]"
+        }`}
+        onClick={() => setIsOpen(false)}
+      >
+        {link.name}
+      </Link>
+    ))}
+
+    {/* Auth Buttons */}
+    <div className="flex flex-col gap-3 mt-8">
+      <Link href="/auth/login" onClick={() => setIsOpen(false)}>
+        <Button className="bg-[#72a210] text-white hover:bg-[#507800] w-full py-5 rounded-md text-[15px]">
+          Login Your Account
+        </Button>
+      </Link>
+
+      <Link href="/auth/register" onClick={() => setIsOpen(false)}>
+        <Button
+          variant="outline"
+          className="border border-[#507800] text-[#507800] hover:bg-[#507800]/10 w-full py-5 rounded-md text-[15px]"
         >
-          {link.name}
-        </Link>
-      ))}
+          Register an Account
+        </Button>
+      </Link>
 
-      {/* Auth Buttons */}
-      <div className="flex flex-col gap-3 mt-8">
-        <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-          <Button className="bg-[#507800] text-white hover:bg-[#3f5b00] w-full py-3 rounded-md text-base">
-            Login
-          </Button>
-        </Link>
-
-        <Link href="/auth/register" onClick={() => setIsOpen(false)}>
-          <Button
-            variant="outline"
-            className="border border-[#507800] text-[#507800] hover:bg-[#507800]/10 w-full py-3 rounded-md text-base"
-          >
-            Register
-          </Button>
-        </Link>
-
-        <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
-          <Button className="bg-[#507800] text-white hover:bg-[#3f5b00] w-full py-3 rounded-md text-base">
-            Forgotten Password
-          </Button>
-        </Link>
-      </div>
+      <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
+        <Button className="bg-[#72a210] text-white hover:bg-[#507800] w-full py-5 rounded-md text-[15px]">
+          Forgotten Password
+        </Button>
+      </Link>
     </div>
   </div>
-</div>
+{/* </div> */}
 
+        </div>
+      </div>
     </>
   );
 }

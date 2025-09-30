@@ -91,29 +91,29 @@ export default function ProgressPage() {
 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
   <div className="bg-white shadow rounded-xl p-4 flex flex-col items-center">
     <BarChart3 className="h-6 w-6 text-[#72a210]" />
-    <p className="mt-2 text-2xl font-bold text-gray-800">44%</p>
+    <p className="mt-2 text-2xl font-bold text-gray-800">0</p>
     <p className="text-sm text-gray-500">Overall Progress</p>
   </div>
   <div className="bg-white shadow rounded-xl p-4 flex flex-col items-center">
     <BookOpen className="h-6 w-6 text-[#72a210]" />
-    <p className="mt-2 text-2xl font-bold text-gray-800">4/9</p>
-    <p className="text-sm text-gray-500">Modules Completed</p>
+    <p className="mt-2 text-2xl font-bold text-gray-800">0</p>
+    <p className="text-sm text-gray-500">Modules Tracks</p>
   </div>
   <div className="bg-white shadow rounded-xl p-4 flex flex-col items-center">
     <Award className="h-6 w-6 text-[#72a210]" />
-    <p className="mt-2 text-2xl font-bold text-gray-800">2</p>
+    <p className="mt-2 text-2xl font-bold text-gray-800">0</p>
     <p className="text-sm text-gray-500">Tracks Completed</p>
   </div>
   <div className="bg-white shadow rounded-xl p-4 flex flex-col items-center">
     <BarChart3 className="h-6 w-6 text-[#72a210]" />
-    <p className="mt-2 text-2xl font-bold text-gray-800">2</p>
+    <p className="mt-2 text-2xl font-bold text-gray-800">0</p>
     <p className="text-sm text-gray-500">Active Tracks</p>
   </div>
 </div>
 
 
       {/* Search + Filter Bar */}
-<div className="bg-white shadow rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+<div className="rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full p-0 bg-transparent shadow-none">
   {/* Search */}
   <div className="relative w-full sm:max-w-md">
     <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -159,13 +159,13 @@ export default function ProgressPage() {
         )}
       </div>
 
-      {/* Sort Dropdown */}
+{/* Sort Dropdown */}
 <div className="relative">
   <button
     onClick={() => setSortDropdown((prev) => !prev)}
     className="flex items-center justify-between w-32 sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#72a210]"
   >
-    Sort: {sort}
+    {sort} {/* Only show the selected option */}
     <ChevronDown className="h-4 w-4 ml-2 text-gray-500" />
   </button>
 
@@ -189,6 +189,7 @@ export default function ProgressPage() {
   )}
 </div>
 
+
     </div>
 </div>
 
@@ -198,7 +199,7 @@ export default function ProgressPage() {
           <div className="space-y-6">
             {sortedTracks.length > 0 ? (
               sortedTracks.map((track) => (
-                <div key={track.id} className="bg-white shadow rounded-xl p-6">
+                <div key={track.id} className="bg-white shadow rounded-xl p-3 sm:p-5">
                   {/* Track Header */}
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-800">

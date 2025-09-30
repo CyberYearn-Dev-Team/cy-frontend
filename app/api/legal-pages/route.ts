@@ -7,7 +7,7 @@ const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_STATIC
 export async function GET(request: NextRequest) {
   try {
     // Build URL safely and encode query param
-    const url = new URL(`${DIRECTUS_URL.replace(/\/$/, "")}/items/Legal_Pages`);
+    const url = new URL(`${DIRECTUS_URL.replace(/\/$/, "")}/items/legal_pages`);
     const type = request.nextUrl.searchParams.get("type"); // ?type=terms
 
     // If a type is specified, filter by type

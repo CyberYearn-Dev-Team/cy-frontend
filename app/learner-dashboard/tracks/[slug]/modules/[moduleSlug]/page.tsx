@@ -7,7 +7,6 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
-
 interface Lesson {
   id: number;
   title: string;
@@ -37,7 +36,9 @@ export default function ModuleDetailPage() {
   useEffect(() => {
     async function fetchModule() {
       try {
-        const res = await fetch(`/api/tracks/${slug}/modules/${moduleSlug}/lessons`);
+        const res = await fetch(
+          `/api/tracks/${slug}/modules/${moduleSlug}/lessons`
+        );
         const data = await res.json();
         setModule(data.module);
       } catch (err) {
@@ -57,9 +58,8 @@ export default function ModuleDetailPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-{/* Breadcrumb */}
+          {/* Breadcrumb */}
           <Breadcrumb /> <br />
-
           {loading ? (
             <p className="text-gray-500">Loading module...</p>
           ) : !module ? (
@@ -73,7 +73,8 @@ export default function ModuleDetailPage() {
               </div>
 
               {/* Lessons List */}
-              <div className="bg-white shadow rounded-lg p-6">
+<div className="lg:bg-white lg:shadow lg:rounded-lg lg:p-6">
+
                 <h2 className="text-xl font-semibold mb-2">Lessons</h2>
                 {module.lessons.length === 0 ? (
                   <p className="text-gray-500">No lessons yet.</p>
@@ -82,10 +83,12 @@ export default function ModuleDetailPage() {
                     {module.lessons.map((lesson, index) => (
                       <div
                         key={lesson.id}
-                        className="flex items-center gap-4 p-4 border rounded-lg"
+                        className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg"
                       >
                         <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
-                          <span className="text-sm font-medium">{index + 1}</span>
+                          <span className="text-sm font-medium">
+                            {index + 1}
+                          </span>
                         </div>
 
                         <div className="flex-1">
@@ -100,7 +103,7 @@ export default function ModuleDetailPage() {
 
                         <Link
                           href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.slug}`}
-                          className="text-sm px-3 py-1 rounded bg-[#72a210] text-white hover:bg-[#5c880d]">
+                          className="w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5c880d] text-center">
                           Start Lesson
                         </Link>
                       </div>

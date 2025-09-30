@@ -8,15 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Info } from "lucide-react";
+import { toast } from "sonner"; // ✅ Import Sonner
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<"email" | "code">("email");
   const [form, setForm] = useState({ email: "", code: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Allow only numbers for code and max length 5
@@ -32,15 +30,14 @@ export default function ForgotPasswordPage() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    try {
-      // ✅ Mock API: simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setSuccessMessage("Check your email for the 5-digit code.");
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // fake delay
+
+      toast.success("Check your email for the 5-digit code");
       setStep("code");
     } catch {
-      setError("Failed to send code. Try again.");
+      toast.error("Failed to send code. Try again.");
     } finally {
       setLoading(false);
     }
@@ -50,17 +47,14 @@ export default function ForgotPasswordPage() {
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    try {
-      // ✅ Mock API: simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Auto navigate to reset-password page (for testing)
-      router.push(
-        `/auth/reset-password?email=${encodeURIComponent(form.email)}`
-      );
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // fake delay
+
+      toast.success("Code verified! Redirecting...");
+      router.push(`/auth/reset-password?email=${encodeURIComponent(form.email)}`);
     } catch {
-      setError("Something went wrong. Try again.");
+      toast.error("Invalid code. Try again.");
     } finally {
       setLoading(false);
     }
@@ -94,11 +88,6 @@ export default function ForgotPasswordPage() {
             </CardHeader>
 
             <CardContent className="space-y-5">
-              {error && <p className="text-red-600 text-sm">{error}</p>}
-              {successMessage && (
-                <p className="text-green-600 text-sm">{successMessage}</p>
-              )}
-
               {step === "email" ? (
                 <form className="space-y-5" onSubmit={handleEmailSubmit}>
                   <div>
@@ -121,7 +110,7 @@ export default function ForgotPasswordPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium"
+                    className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium cursor-pointer"
                     disabled={loading}
                   >
                     {loading ? "Sending code..." : "Send Code"}
@@ -152,7 +141,7 @@ export default function ForgotPasswordPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium"
+                    className="w-full h-11 bg-[#72a210] hover:bg-[#507800] text-white font-medium cursor-pointer"
                     disabled={loading}
                   >
                     {loading ? "Verifying..." : "Verify Code"}
@@ -184,7 +173,7 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
-      {/* inporting footer drom component */}
+      {/* importing footer from component */}
       <Footer />
     </div>
   );

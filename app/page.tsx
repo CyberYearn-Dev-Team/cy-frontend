@@ -4,7 +4,6 @@ import Link from "next/link";
 import Header from "@/components/ui/header"
 import Footer from "@/components/ui/footer"
 
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -51,8 +50,7 @@ export default function Home() {
             <Link href="/auth/register" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-[#72a210] hover:bg-[#507800] text-white px-8 py-6 text-lg font-medium cursor-pointer"
-              >
+                className="w-full sm:w-auto bg-[#72a210] hover:bg-[#507800] text-white px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer">
                 Start Learning
               </Button>
             </Link>
@@ -60,19 +58,20 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto border-[#72a210] text-black hover:bg-[#72a210]/10 px-8 py-6 text-lg font-medium cursor-pointer"
-              >
+className="w-full sm:w-auto border-[#72a210] text-black hover:bg-[#72a210]/10 px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer">
                 Sign In
               </Button>
             </Link>
           </div>
         </div>
 
+
+
         {/*My Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
             <CardHeader className="pb-4">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-start sm:justify-center mb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
                   <BookOpen className="h-8 w-8 text-blue-600" />
                 </div>
@@ -82,35 +81,36 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-gray-600 leading-relaxed">
+              <CardDescription className="text-gray-600 leading-relaxed text-base sm:text-lg lg:text-[1.1rem]">
                 Structured learning paths covering cybersecurity fundamentals to
                 advanced topics
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
             <CardHeader className="pb-4">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
-                  <FlaskConical className="h-8 w-8 text-green-600" />
-                </div>
-              </div>
+              <div className="flex justify-start sm:justify-center mb-4">
+  <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
+    <FlaskConical className="h-8 w-8 text-green-600" />
+  </div>
+</div>
+
               <CardTitle className="text-xl font-semibold text-gray-900">
                 Hands-On Labs
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-gray-600 leading-relaxed">
+              <CardDescription className="text-gray-600 leading-relaxed text-base sm:text-lg lg:text-[1.1rem]">
                 Practice with real tools and techniques in your own secure
                 virtual environment
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200 col-span-1 lg:col-span-1 cursor-pointer">
             <CardHeader className="pb-4">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-start sm:justify-center mb-4">
                 <div className="w-16 h-16 bg-yellow-100 rounded-lg flex items-center justify-center">
                   <Trophy className="h-8 w-8 text-yellow-600" />
                 </div>
@@ -120,16 +120,16 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-gray-600 leading-relaxed">
+              <CardDescription className="text-gray-600 leading-relaxed text-base sm:text-lg lg:text-[1.1rem]">
                 Earn XP, unlock achievements, and maintain learning streaks as
                 you progress
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200">
+          <Card className="text-center border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
             <CardHeader className="pb-4">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-start sm:justify-center mb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
                   <Users className="h-8 w-8 text-blue-600" />
                 </div>
@@ -139,7 +139,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-gray-600 leading-relaxed">
+              <CardDescription className="text-gray-600 leading-relaxed text-base sm:text-lg lg:text-[1.1rem]">
                 Learn from industry experts and connect with fellow
                 cybersecurity enthusiasts
               </CardDescription>
@@ -147,14 +147,13 @@ export default function Home() {
           </Card>
         </div>
 
+
+
         {/*My Educational Disclaimer */}
         <div className="w-full bg-yellow-50 border-[#e2de5a] mt-16 rounded-2xl">
           <Card className="w-full border-0 bg-transparent shadow-none">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-0">
               <CardTitle className="flex items-center gap-3 text-yellow-800 text-lg font-semibold">
-                <div className="w-6 h-6 bg-yellow-200 rounded flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-yellow-700" />
-                </div>
                 Educational Use Only
               </CardTitle>
             </CardHeader>

@@ -42,6 +42,18 @@ export default function TrackDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Derived safe module list and progress values (handles null entries)
+  const validModules = (track?.modules || []).filter(
+    (m) => m != null
+  ) as Module[];
+  const moduleCount = validModules.length;
+  const totalProgressSum = validModules.reduce(
+    (sum, m) => sum + (m?.progress ?? 0),
+    0
+  );
+  const overallPercent =
+    moduleCount > 0 ? Math.round(totalProgressSum / moduleCount) : 0;
+
   useEffect(() => {
     async function fetchTrack() {
       try {
@@ -70,7 +82,6 @@ export default function TrackDetailPage() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Breadcrumb */}
           <Breadcrumb /> <br />
-
           {loading ? (
             <p className="text-gray-500">Loading track...</p>
           ) : !track ? (
@@ -84,7 +95,11 @@ export default function TrackDetailPage() {
                   <div className="flex items-start gap-6">
                     {track.thumbnail && (
                       <img
-                        src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL || process.env.DIRECTUS_URL || 'http://localhost:8055'}/assets/${track.thumbnail}`}
+                        src={`${
+                          process.env.NEXT_PUBLIC_DIRECTUS_URL ||
+                          process.env.DIRECTUS_URL ||
+                          "http://localhost:8055"
+                        }/assets/${track.thumbnail}`}
                         alt={track.title}
                         className="w-24 h-24 rounded-lg object-cover"
                       />
@@ -99,36 +114,25 @@ export default function TrackDetailPage() {
                         </span>
                         <div className="flex items-center gap-1 text-sm text-gray-500">
                           <BookOpen className="h-4 w-4" />
-                          <span>{track.modules.length} modules</span>
+                          <span>{moduleCount} modules</span>
                         </div>
-                        <span className="text-sm text-gray-500">{track.duration}</span>
+                        <span className="text-sm text-gray-500">
+                          {track.duration}
+                        </span>
                       </div>
 
                       {/* Progress */}
-                      {track.modules.length > 0 && (
+                      {moduleCount > 0 && (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>Overall Progress</span>
-                            <span>
-                              {Math.round(
-                                track.modules.reduce(
-                                  (sum, m) => sum + (m.progress || 0),
-                                  0
-                                ) / track.modules.length
-                              )}
-                              %
-                            </span>
+                            <span>{overallPercent}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
                               className="bg-green-500 h-2 rounded-full"
                               style={{
-                                width: `${Math.round(
-                                  track.modules.reduce(
-                                    (sum, m) => sum + (m.progress || 0),
-                                    0
-                                  ) / track.modules.length
-                                )}%`,
+                                width: `${overallPercent}%`,
                               }}
                             />
                           </div>
@@ -138,26 +142,27 @@ export default function TrackDetailPage() {
                   </div>
                 </div>
 
-
-
                 {/* Modules */}
-                <div className="bg-white shadow rounded-lg p-6">
+<div className="lg:bg-white lg:shadow lg:rounded-lg lg:p-6">
                   <h2 className="text-xl font-semibold mb-2">Modules</h2>
                   <p className="text-gray-500 mb-4">
                     Complete each module to master the essential skills.
                   </p>
-                  {track.modules.length === 0 ? (
+                  {moduleCount === 0 ? (
                     <p className="text-gray-500">
                       No modules published yet for this track.
                     </p>
                   ) : (
                     <div className="space-y-4">
-                      {track.modules.map((module, index) => (
+                      {validModules.map((module, index) => (
                         <div
                           key={module.id}
-                          className="flex items-center gap-4 p-4 border rounded-lg">
+                          className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg"
+                        >
                           <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
-                            <span className="text-sm font-medium">{index + 1}</span>
+                            <span className="text-sm font-medium">
+                              {index + 1}
+                            </span>
                           </div>
 
                           <div className="flex-1">
@@ -169,12 +174,20 @@ export default function TrackDetailPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{module.description}</p>
+                            {/* <p className="text-sm text-gray-600 mb-2">{module.description}</p> */}
+                            <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+                              {module.description}
+                            </p>
 
                             <div className="flex items-center gap-4 text-xs text-gray-500">
-                              {module.lessons && <span>{module.lessons} lessons</span>}
+                             {Array.isArray(module.lessons) && (
+  <span>{module.lessons.length} lessons</span>
+)}
+
                               <span>{module.estimated_time}</span>
-                              {module.xpReward && <span>{module.xpReward} XP</span>}
+                              {module.xpReward && (
+                                <span>{module.xpReward} XP</span>
+                              )}
                             </div>
 
                             {module.progress && module.progress > 0 && (
@@ -189,12 +202,12 @@ export default function TrackDetailPage() {
 
                           <Link
                             href={`/learner-dashboard/tracks/${track.slug}/modules/${module.slug}`}
-                            className="text-sm px-3 py-1 rounded bg-[#72a210] text-white hover:bg-[#5c880d]">
+                            className="w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5c880d] text-center">
                             {module.status === "Completed"
                               ? "Review"
                               : module.status === "In Progress"
                               ? "Continue"
-                              : "Start"}
+                              : "Start Module"}
                           </Link>
                         </div>
                       ))}
@@ -202,8 +215,6 @@ export default function TrackDetailPage() {
                   )}
                 </div>
               </div>
-
-
 
               {/* Right: Progress & extras */}
               <div className="space-y-6">
@@ -215,15 +226,7 @@ export default function TrackDetailPage() {
 
                   <div className="text-center mb-4">
                     <div className="text-2xl font-bold text-[#72a210]">
-                      {track.modules.length > 0
-                        ? Math.round(
-                            track.modules.reduce(
-                              (sum, m) => sum + (m.progress || 0),
-                              0
-                            ) / track.modules.length
-                          )
-                        : 0}
-                      %
+                      {moduleCount > 0 ? overallPercent : 0}%
                     </div>
                     <div className="text-sm text-gray-500">Complete</div>
                   </div>
@@ -233,12 +236,8 @@ export default function TrackDetailPage() {
                       <span>XP Earned</span>
                       <span className="font-medium">
                         {Math.round(
-                          (track.totalXp *
-                            (track.modules.reduce(
-                              (sum, m) => sum + (m.progress || 0),
-                              0
-                            ) /
-                              (100 * (track.modules.length || 1)))) || 0
+                          track.totalXp *
+                            (totalProgressSum / (100 * (moduleCount || 1))) || 0
                         )}
                         /{track.totalXp}
                       </span>
@@ -264,7 +263,9 @@ export default function TrackDetailPage() {
 
                 {track.prerequisites && track.prerequisites.length > 0 && (
                   <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold mb-2">Prerequisites</h2>
+                    <h2 className="text-lg font-semibold mb-2">
+                      Prerequisites
+                    </h2>
                     <ul className="list-disc list-inside text-sm text-gray-600">
                       {track.prerequisites.map((p) => (
                         <li key={p}>{p}</li>

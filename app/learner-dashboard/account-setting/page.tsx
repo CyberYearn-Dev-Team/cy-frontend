@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Mail, Lock, Save } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, LogOut } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // Reusable Card components
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -17,47 +19,287 @@ const CardHeader = ({ children }: { children: React.ReactNode }) => (
   <div className="px-6 py-4 border-b border-gray-200">{children}</div>
 );
 
-const CardTitle = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-lg font-semibold text-gray-900">{children}</h3>
+const CardTitle = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>{children}</h3>
 );
 
 const CardContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`px-6 py-4 ${className}`}>{children}</div>
 );
 
-const Button = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button
-    className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors 
-      bg-[#72a210] hover:bg-[#507800] text-white focus:outline-none focus:ring-2 focus:ring-[#72a210] focus:ring-offset-2 ${className}`}
-    {...props}
-  >
-    {children}
-  </button>
-);
+const Button = ({
+  children,
+  className = "",
+  variant = "primary",
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" }) => {
+  const baseClasses =
+    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ icon: Icon, ...props }: { icon: any } & React.InputHTMLAttributes<HTMLInputElement>) => (
+  const variants = {
+    primary: "bg-[#72a210] hover:bg-[#507800] text-white focus:ring-[#72a210]",
+    secondary: "bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 focus:ring-gray-300",
+  };
+
+  return (
+    <button className={`${baseClasses} ${variants[variant]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const Input = ({ icon: Icon, ...props }: { icon?: any } & React.InputHTMLAttributes<HTMLInputElement>) => (
   <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
-    <Icon className="h-4 w-4 text-gray-500 mr-2" />
-    <input
-      className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
-      {...props}
-    />
+    {Icon && <Icon className="h-4 w-4 text-gray-500 mr-2" />}
+    <input className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400" {...props} />
   </div>
 );
 
+const RadioGroup = ({
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  name: string;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}) => (
+  <div className="flex gap-4">
+    {options.map((option) => (
+      <label key={option.value} className="flex items-center cursor-pointer">
+        <input
+          type="radio"
+          name={name}
+          value={option.value}
+          checked={value === option.value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-4 w-4 text-[#72a210] focus:ring-[#72a210] border-gray-300"
+        />
+        <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+      </label>
+    ))}
+  </div>
+);
+
+const MenuItem = ({
+  icon: Icon,
+  label,
+  isActive = false,
+  onClick,
+}: {
+  icon: any;
+  label: string;
+  isActive?: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center px-4 py-3 text-left text-sm transition-colors ${
+      isActive
+        ? "bg-[#72a210] text-white border-r-2 border-[#72a210]"
+        : "text-gray-700 hover:bg-gray-50"
+    }`}>
+    <Icon className="h-4 w-4 mr-3" />
+    {label}
+  </button>
+);
+
 export default function AccountSettingsPage() {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("personal");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
-  // Example local state (replace later with Directus data)
-  const [username, setUsername] = useState("alexchen");
-  const [email, setEmail] = useState("alex.chen@email.com");
-  const [password, setPassword] = useState("");
+  // Personal Information State
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: "Roland",
+    lastName: "Donald",
+    email: "rolanddonald@gmail.com",
+    username: "roland_d",
+  });
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: hook up to Directus or your API
-    alert("Changes saved ✅");
+  // Password State
+  const [passwordInfo, setPasswordInfo] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handlePersonalInfoSave = () => {
+    toast.success("Personal information saved");
   };
+
+  const handlePasswordReset = () => {
+    if (passwordInfo.newPassword !== passwordInfo.confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    toast.success("Password updated successfully");
+    setPasswordInfo({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  };
+
+ const handleLogout = () => {
+  toast("You have been logged out", { description: "See you soon!" });
+
+  // Clear auth state here if needed (e.g., remove token from localStorage or cookies)
+
+  // Redirect to login page after short delay (so toast is visible)
+  setTimeout(() => {
+    router.push("/auth/login");
+  }, 1000);
+};
+
+  const renderPersonalInformation = () => (
+    <div className="space-y-6">
+      {/* Profile Image */}
+      <div className="flex items-center space-x-4">
+        <div className="h-25 w-25 rounded-full bg-[#72a210] flex items-center justify-center overflow-hidden cursor-pointer">
+          <img
+            src="/api/placeholder/120/120"
+            alt="Profile"
+            className="w-15 h-15 object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+              target.nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+          <User className="h-14 w-14 text-white hidden" />
+        </div>
+        <div className="text-xl font-semibold text-gray-900">
+          {personalInfo.firstName} {personalInfo.lastName}
+        </div>
+      </div>
+
+      {/* Name Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+          <Input
+            type="text"
+            value={personalInfo.firstName}
+            onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
+            placeholder="Enter first name"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+          <Input
+            type="text"
+            value={personalInfo.lastName}
+            onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
+            placeholder="Enter last name"
+          />
+        </div>
+      </div>
+
+      {/* Username */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        <Input
+          type="text"
+          value={personalInfo.username}
+          onChange={(e) => setPersonalInfo({ ...personalInfo, username: e.target.value })}
+          placeholder="Enter username"
+        />
+      </div>
+
+      {/* Email */}
+      <div className="relative">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
+          <Mail className="h-4 w-4 text-gray-500 mr-2" />
+          <input
+            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            type="email"
+            value={personalInfo.email}
+            onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
+            placeholder="Enter email"
+          />
+          <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+            Verified
+          </span>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex pt-4">
+        <Button onClick={handlePersonalInfoSave} className="flex-1 cursor-pointer">
+          Save Changes
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderLoginPassword = () => (
+    <div className="space-y-6">
+      {/* Current Password */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
+          <Lock className="h-4 w-4 text-gray-500 mr-2" />
+          <input
+            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            type={showCurrentPassword ? "text" : "password"}
+            value={passwordInfo.currentPassword}
+            onChange={(e) => setPasswordInfo({ ...passwordInfo, currentPassword: e.target.value })}
+            placeholder="Enter current password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+            className="ml-2 text-gray-400 hover:text-gray-600"
+          >
+            {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* New Password */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
+          <Lock className="h-4 w-4 text-gray-500 mr-2" />
+          <input
+            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            type={showNewPassword ? "text" : "password"}
+            value={passwordInfo.newPassword}
+            onChange={(e) => setPasswordInfo({ ...passwordInfo, newPassword: e.target.value })}
+            placeholder="Enter new password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowNewPassword(!showNewPassword)}
+            className="ml-2 text-gray-400 hover:text-gray-600"
+          >
+            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Confirm Password */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+        <Input
+          icon={Lock}
+          type="password"
+          value={passwordInfo.confirmPassword}
+          onChange={(e) => setPasswordInfo({ ...passwordInfo, confirmPassword: e.target.value })}
+          placeholder="Confirm new password"
+        />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <Button onClick={handlePasswordReset} className="flex-1 cursor-pointer">
+          Reset Password
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -77,57 +319,56 @@ export default function AccountSettingsPage() {
         )}
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSave} className="space-y-6">
-                {/* Username */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                  <Input
-                    icon={User}
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter username"
-                  />
-                </div>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Settings Menu */}
+              <div className="lg:col-span-1">
+                <Card>
+                  <div className="p-0 cursor-pointer">
+                    <MenuItem
+                      icon={User}
+                      label="Personal Information"
+                      isActive={activeSection === "personal"}
+                      onClick={() => setActiveSection("personal")}
+                    />
+                    <MenuItem
+                      icon={Lock}
+                      label="Login & Password"
+                      isActive={activeSection === "password"}
+                      onClick={() => setActiveSection("password")}
+                    />
+                    <MenuItem
+                      icon={LogOut}
+                      label="Logout"
+                      onClick={handleLogout}
+                    />
+                  </div>
+                </Card>
+              </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <Input
-                    icon={Mail}
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter email"
-                  />
-                </div>
-
-                {/* Password */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <Input
-                    icon={Lock}
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter new password"
-                  />
-                </div>
-
-                {/* Save button */}
-                <div className="flex justify-end">
-                  <Button type="submit" className="flex items-center gap-2">
-                    <Save className="h-4 w-4" /> Save Changes
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+              {/* Settings Content */}
+              <div className="lg:col-span-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {activeSection === "personal"
+                        ? "Personal Information"
+                        : activeSection === "password"
+                        ? "Login & Password"
+                        : ""}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {activeSection === "personal"
+                      ? renderPersonalInformation()
+                      : activeSection === "password"
+                      ? renderLoginPassword()
+                      : null}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     </div>

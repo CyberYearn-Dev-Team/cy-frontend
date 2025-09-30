@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Header from "@/components/ui/header";
 import Footer from "@/components/ui/footer";
-import { Phone, Mail, Clock, Send } from "lucide-react";
+import { Phone, Mail, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner"; // ✅ import Sonner toast
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState({
@@ -42,18 +43,47 @@ export default function ContactUsPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    // ✅ Basic validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
+      toast.error("Please fill out all required fields");
+      return;
+    }
+
+    if (!formData.contactReason) {
+      toast.warning("Please select a contact reason");
+      return;
+    }
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success("Your message has been sent successfully!");
+
+      // Reset form after submission
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        contactReason: "",
+        message: "",
+      });
+    } catch (err) {
+      toast.error("Failed to send message. Please try again.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* inporting header drom component */}
+      {/* Header */}
       <Header />
+
       <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
+          {/* Page Title */}
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               Contact Us
@@ -69,9 +99,7 @@ export default function ContactUsPage() {
                     Send us a message
                   </CardTitle>
                   <p className="text-gray-600 mt-2 text-sm sm:text-base">
-                    Do you have a question? Let us know and we&apos;ll do our
-                    best to answer your question. Please feel free to contact
-                    us.
+                    Do you have a question? Let us know and we&apos;ll do our best to answer it.
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -108,7 +136,7 @@ export default function ContactUsPage() {
                       </div>
                     </div>
 
-                    {/* Email and Contact Reason */}
+                    {/* Email & Contact Reason */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="email" className="py-3">
@@ -126,64 +154,23 @@ export default function ContactUsPage() {
                         />
                       </div>
 
-                      {/* Tailwind + shadcn Dropdown */}
                       <div>
                         <Label htmlFor="contactReason" className="py-3">
                           Contact Reason
                         </Label>
-                        <Select onValueChange={handleSelectChange}>
+                        <Select onValueChange={handleSelectChange} value={formData.contactReason}>
                           <SelectTrigger className="w-full h-11 rounded-md border border-gray-300 px-3 py-6 text-sm focus:outline-none focus:ring-2 focus:ring-[#72a210] cursor-pointer">
                             <SelectValue placeholder="Select a reason" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem
-                              value="general"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              General Inquiry
-                            </SelectItem>
-                            <SelectItem
-                              value="course-info"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Course Information
-                            </SelectItem>
-                            <SelectItem
-                              value="tech-support"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Technical Support
-                            </SelectItem>
-                            <SelectItem
-                              value="certification"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Certification & Exams
-                            </SelectItem>
-                            <SelectItem
-                              value="billing"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Billing & Payments
-                            </SelectItem>
-                            <SelectItem
-                              value="security-report"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Report a Security Issue
-                            </SelectItem>
-                            <SelectItem
-                              value="career"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Career / Internship
-                            </SelectItem>
-                            <SelectItem
-                              value="other"
-                              className="hover:bg-[#72a210] focus:bg-[#72a210] hover:text-white focus:text-white cursor-pointer"
-                            >
-                              Other
-                            </SelectItem>
+                            <SelectItem value="general">General Inquiry</SelectItem>
+                            <SelectItem value="course-info">Course Information</SelectItem>
+                            <SelectItem value="tech-support">Technical Support</SelectItem>
+                            <SelectItem value="certification">Certification & Exams</SelectItem>
+                            <SelectItem value="billing">Billing & Payments</SelectItem>
+                            <SelectItem value="security-report">Report a Security Issue</SelectItem>
+                            <SelectItem value="career">Career / Internship</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -209,8 +196,7 @@ export default function ContactUsPage() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="inline-flex items-center gap-2 bg-[#72a210] hover:bg-[#507800] text-white font-medium py-6"
-                    >
+                      className="inline-flex items-center gap-2 bg-[#72a210] hover:bg-[#507800] text-white font-medium py-6 cursor-pointer">
                       <Send className="h-4 w-4" />
                       Send Message
                     </Button>
@@ -219,9 +205,9 @@ export default function ContactUsPage() {
               </Card>
             </div>
 
-            {/* Contact Information Sidebar */}
+            {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="rounded-3xl p-6 sm:p-8 text-white bg-[#72a210]">
+              <div className="rounded-3xl p-6 sm:p-8 text-white bg-[#507800]">
                 <h3 className="text-lg sm:text-xl font-semibold mb-2">
                   We are always here to help you.
                 </h3>
@@ -230,42 +216,33 @@ export default function ContactUsPage() {
                 </p>
 
                 <div className="space-y-6">
-                  {/* Hotline */}
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-[#507800] rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 bg-[#72a210] rounded-full flex items-center justify-center">
                       <Phone className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm sm:text-base">
-                        Hotline
-                      </p>
+                      <p className="font-medium text-sm sm:text-base">Hotline</p>
                       <p className="text-green-50 text-sm">+84 906 088 009</p>
                     </div>
                   </div>
 
-                  {/* WhatsApp */}
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-[#507800] rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 bg-[#72a210] rounded-full flex items-center justify-center">
                       <Phone className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm sm:text-base">
-                        WhatsApp
-                      </p>
+                      <p className="font-medium text-sm sm:text-base">WhatsApp</p>
                       <p className="text-green-50 text-sm">+84 374 559 209</p>
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-[#507800] rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 bg-[#72a210] rounded-full flex items-center justify-center">
                       <Mail className="h-4 w-4" />
                     </div>
                     <div>
                       <p className="font-medium text-sm sm:text-base">Email</p>
-                      <p className="text-green-50 text-sm">
-                        info@cyberlearn.com
-                      </p>
+                      <p className="text-green-50 text-sm">info@cyberlearn.com</p>
                     </div>
                   </div>
                 </div>
@@ -275,7 +252,7 @@ export default function ContactUsPage() {
         </div>
       </div>
 
-      {/* inporting footer drom component */}
+      {/* Footer */}
       <Footer />
     </div>
   );

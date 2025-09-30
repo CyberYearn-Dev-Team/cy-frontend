@@ -11,7 +11,7 @@ export async function GET(
     const encoded = encodeURIComponent(moduleSlug);
 
     const directusRes = await fetch(
-      `${base}/items/Modules?filter[slug][_eq]=${encoded}&fields=*,lessons.Lessons_id.*`,
+      `${base}/items/modules?filter[slug][_eq]=${encoded}&fields=*,lessons.lessons_id.*`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -37,7 +37,7 @@ export async function GET(
 
     // Flatten lessons
     const flatLessons = (module.lessons || [])
-      .map((l: any) => l.Lessons_id)
+      .map((l: any) => l.lessons_id)
       .filter((l: any) => l !== null);
 
     return NextResponse.json({

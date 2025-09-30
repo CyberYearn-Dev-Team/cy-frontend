@@ -170,7 +170,7 @@ export async function fetchLabGuides(): Promise<LabGuide[]> {
   if (!client) return []
 
   const { readItems } = await import("@directus/sdk")
-  const response = await client.request(readItems("Lab_Guides", {
+  const response = await client.request(readItems("lab_guides", {
     fields: ["id", "title", "description", "difficulty", "time", "xp", { resources: ["id", "file", "alt"] }],
     sort: ["id"],
   }))

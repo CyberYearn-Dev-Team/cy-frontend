@@ -7,7 +7,16 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
-
+// Interfaces
+interface Lab {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  difficulty: string;
+  xp: number;
+  time: string;
+}
 
 interface Lesson {
   id: number;
@@ -16,6 +25,7 @@ interface Lesson {
   content: string;
   estimated_time: string;
   order?: number;
+  labs?: Lab[];
 }
 
 export default function LessonDetailPage() {
@@ -24,6 +34,7 @@ export default function LessonDetailPage() {
     moduleSlug: string;
     lessonSlug: string;
   }>();
+
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -55,7 +66,6 @@ export default function LessonDetailPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-
           {/* Breadcrumb */}
           <Breadcrumb /> <br />
 
@@ -79,18 +89,37 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
-              {/* Quizzes Button */}
-              <div className="bg-white shadow rounded-lg p-6 flex justify-between items-center">
-                <p className="text-gray-600">
-                  Test your knowledge from this lesson.
-                </p>
-                <Link
-                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`}
-                  className="px-4 py-2 rounded bg-[#72a210] text-white hover:bg-[#5c880d] text-sm font-medium"
-                >
-                  Take Quiz
-                </Link>
-              </div>
+              {/* Labs Section */}
+              {lesson.labs && lesson.labs.length > 0 && (
+<div className="lg:bg-white lg:shadow lg:rounded-lg lg:p-6">
+                  <h2 className="text-xl font-semibold mb-2">Labs</h2>
+                  <div className="space-y-4">
+                    {lesson.labs.map((lab) => (
+                      <div
+                        key={lab.id}
+                        className="flex flex-col sm:flex-row items-start gap-4 p-4 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{lab.title}</h3>
+                          <p className="text-sm text-gray-600">
+                            {lab.description}
+                          </p>
+                          <span className="text-xs text-gray-500 block mt-1">
+                            {lab.difficulty} • {lab.time} • {lab.xp} XP
+                          </span>
+                        </div>
+
+                        <Link
+                          href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${lab.slug}`}
+                          className="w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5c880d] text-center"
+                        >
+                          Start Lab
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
