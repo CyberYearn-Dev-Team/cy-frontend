@@ -9,6 +9,7 @@ import {
   BarChart3,
   Award,
   LogOut,
+  Briefcase,
   X,
   Trophy,
 } from "lucide-react";
@@ -29,6 +30,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
+    { name: "Switch to Admin", icon: Briefcase, href: `/admin-dashboard/overview` },
   ];
 
   const isActive = (href: string) =>
@@ -47,7 +49,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           <img
             src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/logo.png"
             alt="Logo"
-            className="h-8 sm:h-10 md:h-12 w-auto" // 🔹 smaller on mobile
+            className="h-8 sm:h-10 md:h-12 w-auto" // smaller on mobile
           />
         </div>
         <button

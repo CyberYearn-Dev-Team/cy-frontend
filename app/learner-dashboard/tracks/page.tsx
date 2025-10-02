@@ -318,8 +318,8 @@ export default function TracksPage() {
               </span>
             </div>
 
-            {/* Difficulty Filter */}
-            <CollapsibleSection title="Difficulty">
+            {/* Level Filter */}
+            <CollapsibleSection title="Level">
               <div className="flex flex-wrap gap-2">
                 {levels.map((level) => (
                   <button
@@ -337,8 +337,8 @@ export default function TracksPage() {
               </div>
             </CollapsibleSection>
 
-            {/* Track Filter */}
-            <CollapsibleSection title="Track">
+            {/* Topic Filter */}
+            <CollapsibleSection title="Topic">
               <div className="flex flex-wrap gap-2">
                 {topics.map((topic) => (
                   <button
