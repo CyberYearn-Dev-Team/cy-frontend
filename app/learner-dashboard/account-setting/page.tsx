@@ -8,19 +8,36 @@ import Header from "@/components/ui/learner-header";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#507800";
+const bgLight = "bg-gray-50 dark:bg-gray-950"; // Main page background
+const cardBg = "bg-white dark:bg-gray-900"; // Card background
+const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
+const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
+const textLabel = "text-gray-700 dark:text-gray-200"; // Label text
+const textLight = "text-gray-500 dark:text-gray-400"; // Subtle/Icon text
+const borderLight = "border-gray-200 dark:border-gray-700"; // Light border
+const inputBg = "bg-white dark:bg-gray-800";
+const inputBorder = "border-gray-300 dark:border-gray-600";
+const focusRing = `focus-within:ring-2 focus-within:ring-[${primary}] dark:focus-within:ring-blue-400`;
+
 // Reusable Card components
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white rounded-xl shadow-md border border-gray-200 ${className}`}>
+  // Applied dark mode background and border
+  <div className={`${cardBg} rounded-xl shadow-md border ${borderLight} ${className}`}>
     {children}
   </div>
 );
 
 const CardHeader = ({ children }: { children: React.ReactNode }) => (
-  <div className="px-6 py-4 border-b border-gray-200">{children}</div>
+  // Applied dark mode border
+  <div className={`px-6 py-4 border-b ${borderLight}`}>{children}</div>
 );
 
 const CardTitle = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>{children}</h3>
+  // Applied dark mode text color
+  <h3 className={`text-lg font-semibold ${textDark} ${className}`}>{children}</h3>
 );
 
 const CardContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -34,11 +51,13 @@ const Button = ({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" }) => {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
 
   const variants = {
-    primary: "bg-[#72a210] hover:bg-[#507800] text-white focus:ring-[#72a210]",
-    secondary: "bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 focus:ring-gray-300",
+    // Applied theme colors
+    primary: `bg-[${primary}] hover:bg-[${primaryDarker}] text-white focus:ring-[${primary}]`,
+    // Applied dark mode colors for secondary button
+    secondary: `${cardBg} hover:bg-gray-50 dark:hover:bg-gray-800 ${textLabel} border ${inputBorder} focus:ring-gray-300 dark:focus:ring-gray-600`,
   };
 
   return (
@@ -49,9 +68,12 @@ const Button = ({
 };
 
 const Input = ({ icon: Icon, ...props }: { icon?: any } & React.InputHTMLAttributes<HTMLInputElement>) => (
-  <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
-    {Icon && <Icon className="h-4 w-4 text-gray-500 mr-2" />}
-    <input className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400" {...props} />
+  // Applied dark mode styles and focus ring
+  <div className={`flex items-center border ${inputBorder} rounded-md px-3 py-2 ${focusRing} ${inputBg}`}>
+    {/* Applied dark mode icon color */}
+    {Icon && <Icon className={`h-4 w-4 ${textLight} mr-2`} />}
+    {/* Applied dark mode text and placeholder color */}
+    <input className={`flex-1 outline-none text-sm ${textDark} placeholder-gray-400 dark:placeholder-gray-500 ${inputBg}`} {...props} />
   </div>
 );
 
@@ -75,9 +97,11 @@ const RadioGroup = ({
           value={option.value}
           checked={value === option.value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-4 w-4 text-[#72a210] focus:ring-[#72a210] border-gray-300"
+          // Applied theme color to radio button
+          className={`h-4 w-4 text-[${primary}] focus:ring-[${primary}] border-gray-300 dark:border-gray-600 dark:bg-gray-800`}
         />
-        <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+        {/* Applied dark mode text color */}
+        <span className={`ml-2 text-sm ${textLabel}`}>{option.label}</span>
       </label>
     ))}
   </div>
@@ -98,8 +122,10 @@ const MenuItem = ({
     onClick={onClick}
     className={`w-full flex items-center px-4 py-3 text-left text-sm transition-colors ${
       isActive
-        ? "bg-[#72a210] text-white border-r-2 border-[#72a210]"
-        : "text-gray-700 hover:bg-gray-50"
+        // Applied theme colors for active state
+        ? `bg-[${primary}] text-white border-r-2 border-[${primary}]`
+        // Applied dark mode colors for inactive state
+        : `${textLabel} hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300`
     }`}>
     <Icon className="h-4 w-4 mr-3" />
     {label}
@@ -141,22 +167,23 @@ export default function AccountSettingsPage() {
     setPasswordInfo({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
- const handleLogout = () => {
-  toast("You have been logged out", { description: "See you soon!" });
+  const handleLogout = () => {
+    toast("You have been logged out", { description: "See you soon!" });
 
-  // Clear auth state here if needed (e.g., remove token from localStorage or cookies)
+    // Clear auth state here if needed (e.g., remove token from localStorage or cookies)
 
-  // Redirect to login page after short delay (so toast is visible)
-  setTimeout(() => {
-    router.push("/auth/login");
-  }, 1000);
-};
+    // Redirect to login page after short delay (so toast is visible)
+    setTimeout(() => {
+      router.push("/auth/login");
+    }, 1000);
+  };
 
   const renderPersonalInformation = () => (
     <div className="space-y-6">
       {/* Profile Image */}
       <div className="flex items-center space-x-4">
-        <div className="h-25 w-25 rounded-full bg-[#72a210] flex items-center justify-center overflow-hidden cursor-pointer">
+        {/* Applied theme color to avatar background */}
+        <div className={`h-25 w-25 rounded-full bg-[${primary}] flex items-center justify-center overflow-hidden cursor-pointer`}>
           <img
             src="/api/placeholder/120/120"
             alt="Profile"
@@ -169,7 +196,8 @@ export default function AccountSettingsPage() {
           />
           <User className="h-14 w-14 text-white hidden" />
         </div>
-        <div className="text-xl font-semibold text-gray-900">
+        {/* Applied dark mode text color */}
+        <div className={`text-xl font-semibold ${textDark}`}>
           {personalInfo.firstName} {personalInfo.lastName}
         </div>
       </div>
@@ -177,7 +205,8 @@ export default function AccountSettingsPage() {
       {/* Name Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+          {/* Applied dark mode label text color */}
+          <label className={`block text-sm font-medium ${textLabel} mb-1`}>First Name</label>
           <Input
             type="text"
             value={personalInfo.firstName}
@@ -186,7 +215,8 @@ export default function AccountSettingsPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+          {/* Applied dark mode label text color */}
+          <label className={`block text-sm font-medium ${textLabel} mb-1`}>Last Name</label>
           <Input
             type="text"
             value={personalInfo.lastName}
@@ -198,7 +228,8 @@ export default function AccountSettingsPage() {
 
       {/* Username */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        {/* Applied dark mode label text color */}
+        <label className={`block text-sm font-medium ${textLabel} mb-1`}>Username</label>
         <Input
           type="text"
           value={personalInfo.username}
@@ -209,17 +240,22 @@ export default function AccountSettingsPage() {
 
       {/* Email */}
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
-          <Mail className="h-4 w-4 text-gray-500 mr-2" />
+        {/* Applied dark mode label text color */}
+        <label className={`block text-sm font-medium ${textLabel} mb-1`}>Email</label>
+        {/* Applied dark mode styles and focus ring */}
+        <div className={`flex items-center border ${inputBorder} rounded-md px-3 py-2 ${focusRing} ${inputBg}`}>
+          {/* Applied dark mode icon color */}
+          <Mail className={`h-4 w-4 ${textLight} mr-2`} />
           <input
-            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            // Applied dark mode text and placeholder color
+            className={`flex-1 outline-none text-sm ${textDark} placeholder-gray-400 dark:placeholder-gray-500 ${inputBg}`}
             type="email"
             value={personalInfo.email}
             onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
             placeholder="Enter email"
           />
-          <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+          {/* Ensure Verified badge contrasts in dark mode */}
+          <span className="ml-2 text-xs text-green-600 bg-green-50 dark:bg-green-900/50 dark:text-green-400 px-2 py-1 rounded">
             Verified
           </span>
         </div>
@@ -238,11 +274,15 @@ export default function AccountSettingsPage() {
     <div className="space-y-6">
       {/* Current Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
-          <Lock className="h-4 w-4 text-gray-500 mr-2" />
+        {/* Applied dark mode label text color */}
+        <label className={`block text-sm font-medium ${textLabel} mb-1`}>Current Password</label>
+        {/* Applied dark mode styles and focus ring */}
+        <div className={`flex items-center border ${inputBorder} rounded-md px-3 py-2 ${focusRing} ${inputBg}`}>
+          {/* Applied dark mode icon color */}
+          <Lock className={`h-4 w-4 ${textLight} mr-2`} />
           <input
-            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            // Applied dark mode text and placeholder color
+            className={`flex-1 outline-none text-sm ${textDark} placeholder-gray-400 dark:placeholder-gray-500 ${inputBg}`}
             type={showCurrentPassword ? "text" : "password"}
             value={passwordInfo.currentPassword}
             onChange={(e) => setPasswordInfo({ ...passwordInfo, currentPassword: e.target.value })}
@@ -251,7 +291,8 @@ export default function AccountSettingsPage() {
           <button
             type="button"
             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-            className="ml-2 text-gray-400 hover:text-gray-600"
+            // Applied dark mode button/icon colors
+            className={`ml-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400`}
           >
             {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -260,11 +301,15 @@ export default function AccountSettingsPage() {
 
       {/* New Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-[#72a210]">
-          <Lock className="h-4 w-4 text-gray-500 mr-2" />
+        {/* Applied dark mode label text color */}
+        <label className={`block text-sm font-medium ${textLabel} mb-1`}>New Password</label>
+        {/* Applied dark mode styles and focus ring */}
+        <div className={`flex items-center border ${inputBorder} rounded-md px-3 py-2 ${focusRing} ${inputBg}`}>
+          {/* Applied dark mode icon color */}
+          <Lock className={`h-4 w-4 ${textLight} mr-2`} />
           <input
-            className="flex-1 outline-none text-sm text-gray-900 placeholder-gray-400"
+            // Applied dark mode text and placeholder color
+            className={`flex-1 outline-none text-sm ${textDark} placeholder-gray-400 dark:placeholder-gray-500 ${inputBg}`}
             type={showNewPassword ? "text" : "password"}
             value={passwordInfo.newPassword}
             onChange={(e) => setPasswordInfo({ ...passwordInfo, newPassword: e.target.value })}
@@ -273,7 +318,8 @@ export default function AccountSettingsPage() {
           <button
             type="button"
             onClick={() => setShowNewPassword(!showNewPassword)}
-            className="ml-2 text-gray-400 hover:text-gray-600"
+            // Applied dark mode button/icon colors
+            className={`ml-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400`}
           >
             {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -282,7 +328,8 @@ export default function AccountSettingsPage() {
 
       {/* Confirm Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+        {/* Applied dark mode label text color */}
+        <label className={`block text-sm font-medium ${textLabel} mb-1`}>Confirm New Password</label>
         <Input
           icon={Lock}
           type="password"
@@ -302,7 +349,8 @@ export default function AccountSettingsPage() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    // Applied dark mode background to main container
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -337,6 +385,7 @@ export default function AccountSettingsPage() {
                       isActive={activeSection === "password"}
                       onClick={() => setActiveSection("password")}
                     />
+                    {/* Applied dark mode text color to Logout button for consistency */}
                     <MenuItem
                       icon={LogOut}
                       label="Logout"

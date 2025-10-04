@@ -12,8 +12,20 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+// Assuming Sidebar and Header components handle their own dark mode styling internally
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#507800";
+const bgLight = "bg-gray-50 dark:bg-gray-950"; // Main page background
+const cardBg = "bg-white dark:bg-gray-900"; // Card background
+const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
+const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
+const textLabel = "text-gray-700 dark:text-gray-200"; // Label text
+const textLight = "text-gray-500 dark:text-gray-400"; // Subtle/Icon text
+const borderLight = "border-gray-200 dark:border-gray-700"; // Light border
 
 // Reusable components
 const Card = ({
@@ -24,7 +36,8 @@ const Card = ({
   className?: string;
 }) => (
   <div
-    className={`bg-white rounded-xl shadow-md border border-gray-200 ${className}`}
+    // Applied dark mode background and border
+    className={`${cardBg} rounded-xl shadow-md border ${borderLight} ${className}`}
   >
     {children}
   </div>
@@ -47,12 +60,14 @@ const Button = ({
   variant?: "primary" | "success" | "outline";
 }) => {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
   const variants = {
-    primary: "bg-[#72a210] hover:bg-[#507800] text-white focus:ring-[#72a210]",
+    // Applied theme colors
+    primary: `bg-[${primary}] hover:bg-[${primaryDarker}] text-white focus:ring-[${primary}]`,
     success: "bg-green-500 hover:bg-green-600 text-white focus:ring-green-500",
+    // Applied dark mode colors for outline
     outline:
-      "border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-[#72a210]",
+      `border ${borderLight} ${cardBg} hover:bg-gray-50 dark:hover:bg-gray-800 ${textMedium} focus:ring-[${primary}]`,
   };
 
   return (
@@ -69,7 +84,8 @@ export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    // Applied dark mode background to main container
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -93,52 +109,58 @@ export default function ProfilePage() {
               <Card>
                 <CardContent className="p-8">
                   <div className="flex justify-between items-start mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">
+                    {/* Applied dark mode text color */}
+                    <h2 className={`text-xl font-bold ${textDark}`}>
                       Shillmonger
                     </h2>
 
                     <Link href="/learner-dashboard/account-setting" passHref>
-                      <Button variant="outline" className="p-2">
+                      <Button variant="outline" className={`p-2 ${textMedium} dark:text-gray-300`}>
                         <Edit3 className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
 
-<div className="flex flex-col sm:flex-row items-start sm:space-x-6 space-y-6 sm:space-y-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:space-x-6 space-y-6 sm:space-y-0">
                     {/* Avatar */}
                     <div className="relative flex justify-center sm:justify-start">
-  <div className="h-30 w-30 rounded-full bg-[#72a210] flex items-center justify-center overflow-hidden">
-    <img
-      src="/api/placeholder/120/120"
-      alt="Profile"
-      className="w-full h-full object-cover"
-      onError={(e) => {
-        const target = e.target as HTMLImageElement;
-        target.style.display = "none";
-        target.nextElementSibling?.classList.remove("hidden");
-      }}
-    />
-    <User className="h-14 w-14 text-white hidden" />
-  </div>
-</div>
+                      {/* Applied theme color to avatar background */}
+                      <div className={`h-30 w-30 rounded-full bg-[${primary}] flex items-center justify-center overflow-hidden`}>
+                        <img
+                          src="/api/placeholder/120/120"
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            target.nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                        <User className="h-14 w-14 text-white hidden" />
+                      </div>
+                    </div>
 
 
                     {/* Info */}
                     <div className="flex-1">
                       <div className="flex flex-col gap-3">
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">
+                          {/* Applied dark mode text color */}
+                          <p className={`text-sm ${textLight} mb-1`}>
                             Fullname:
                           </p>
-                          <p className="font-medium text-gray-900">
+                          {/* Applied dark mode text color */}
+                          <p className={`font-medium ${textDark}`}>
                             Shillmonger Agu
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">
+                          {/* Applied dark mode text color */}
+                          <p className={`text-sm ${textLight} mb-1`}>
                             Email:
                           </p>
-                          <p className="font-medium text-gray-900">
+                          {/* Applied dark mode text color */}
+                          <p className={`font-medium ${textDark}`}>
                             shillmonger0@gmail.com
                           </p>
                         </div>
@@ -151,23 +173,27 @@ export default function ProfilePage() {
               {/* My Courses */}
               <Card className="mt-6">
                 <CardContent className="p-8">
-                  <h3 className="text-lg font-bold text-gray-900 mb-6">
+                  {/* Applied dark mode text color */}
+                  <h3 className={`text-lg font-bold ${textDark} mb-6`}>
                     My Cybersecurity Tracks
                   </h3>
 
                   <div className="space-y-4">
                     {/* Beginner */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    {/* Applied dark mode border */}
+                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
                       <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-green-100 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-green-600"></div>
+                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/50 items-center justify-center">
+                          <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400"></div>
                         </div>
 
                         <div>
-                          <h4 className="font-medium text-gray-900">
+                          {/* Applied dark mode text color */}
+                          <h4 className={`font-medium ${textDark}`}>
                             Cybersecurity Fundamentals
                           </h4>
-                          <p className="text-sm text-gray-600">0 lessons</p>
+                          {/* Applied dark mode text color */}
+                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
                         </div>
                       </div>
                       {/* Level Badge */}
@@ -177,16 +203,19 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Intermediate */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    {/* Applied dark mode border */}
+                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
                       <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-yellow-100 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/50 items-center justify-center">
+                          <div className="w-3 h-3 rounded-full bg-yellow-500 dark:bg-yellow-400"></div>
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">
+                          {/* Applied dark mode text color */}
+                          <h4 className={`font-medium ${textDark}`}>
                             Network Security & Ethical Hacking
                           </h4>
-                          <p className="text-sm text-gray-600">0 lessons</p>
+                          {/* Applied dark mode text color */}
+                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
                         </div>
                       </div>
                       {/* Level Badge */}
@@ -196,16 +225,19 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Advanced */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    {/* Applied dark mode border */}
+                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
                       <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-red-100 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 items-center justify-center">
+                          <div className="w-3 h-3 rounded-full bg-red-500 dark:bg-red-400"></div>
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">
+                          {/* Applied dark mode text color */}
+                          <h4 className={`font-medium ${textDark}`}>
                             Advanced Penetration Testing
                           </h4>
-                          <p className="text-sm text-gray-600">0 lessons</p>
+                          {/* Applied dark mode text color */}
+                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
                         </div>
                       </div>
                       {/* Level Badge */}
@@ -220,25 +252,29 @@ export default function ProfilePage() {
 
             {/* Right side (Learning Progress) */}
             <div className="space-y-6">
-              <Card className="bg-gradient-to-br from-[#72a210] to-[#507800] text-white">
+              {/* Applied theme gradient to progress card */}
+              <Card className={`bg-gradient-to-br from-[${primary}] to-[${primaryDarker}] text-white`}>
                 <CardContent className="p-6 text-center">
                   <h3 className="text-lg font-bold mb-4">Your Learning Path</h3>
                   <ul className="text-sm space-y-4 mb-6">
                     <li className="flex items-center justify-between">
                       <span>Beginner</span>
-                      <span className="text-xs bg-white text-[#507800] px-2 py-1 rounded-full">
+                      {/* Applied theme color to percentage badge text */}
+                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
                         0%
                       </span>
                     </li>
                     <li className="flex items-center justify-between">
                       <span>Intermediate</span>
-                      <span className="text-xs bg-white text-[#507800] px-2 py-1 rounded-full">
+                      {/* Applied theme color to percentage badge text */}
+                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
                         0%
                       </span>
                     </li>
                     <li className="flex items-center justify-between">
                       <span>Advanced</span>
-                      <span className="text-xs bg-white text-[#507800] px-2 py-1 rounded-full">
+                      {/* Applied theme color to percentage badge text */}
+                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
                         0%
                       </span>
                     </li>
@@ -247,7 +283,8 @@ export default function ProfilePage() {
                   <Link href="/learner-dashboard/tracks" passHref>
                     <Button
                       variant="outline"
-                      className="w-full bg-white text-[#507800] border-white hover:bg-gray-50 cursor-pointer"
+                      // Applied theme color to outline button inside the gradient card
+                      className={`w-full bg-white text-[${primaryDarker}] border-white hover:bg-gray-50 dark:hover:bg-gray-100 cursor-pointer`}
                     >
                       Continue Learning
                     </Button>

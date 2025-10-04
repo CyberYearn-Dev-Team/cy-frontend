@@ -11,6 +11,21 @@ import {
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import LearnerFooter from "@/components/ui/learner-footer";
+
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#5a850d";
+const primarySecondary = "#507800";
+
+// SWAPPED COLORS
+const bgLight = "bg-white dark:bg-gray-950";       // Main page background (now uses original card color)
+const cardBg = "bg-gray-50 dark:bg-gray-900";     // Card/component background (now uses original page color)
+
+const borderPrimary = `border-[${primary}]`;
+const textDark = "text-gray-900 dark:text-gray-100"; // Headings
+const textMedium = "text-gray-700 dark:text-gray-300"; // Body text
+const textLight = "text-gray-500 dark:text-gray-400"; // Loading/placeholder text
 
 // Types
 type TrackLevel =
@@ -26,33 +41,28 @@ type TrackLevel =
 
 interface Track {
   slug: string;
-  title: string; // Directus
-  description: string; // Directus
-  level: TrackLevel; // Directus
-  topic: string; // Directus
-  modules: number; // Directus (relation count)
-  duration: string; // Directus (estimated time)
-  progress: number; // SQL (user-specific)
+  title: string;
+  description: string;
+  level: TrackLevel;
+  topic: string;
+  modules: number;
+  duration: string;
+  progress: number;
   buttonText?: string;
   buttonVariant?: "primary" | "secondary";
 }
 
-// UI Helpers
-const Progress = ({
-  value,
-  className = "",
-}: {
-  value: number;
-  className?: string;
-}) => (
-  <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
+// Progress bar
+const Progress = ({ value }: { value: number }) => (
+  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
     <div
-      className="bg-[#72a210] h-2 rounded-full transition-all duration-300"
+      className={`bg-[${primary}] h-2 rounded-full transition-all duration-300`}
       style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
     />
   </div>
 );
 
+// Button
 const Button = ({
   children,
   variant = "primary",
@@ -61,50 +71,27 @@ const Button = ({
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary";
 }) => {
-  const baseClasses =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const base =
+    "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950";
   const variants = {
-    primary: "bg-[#72a210] hover:bg-[#5c880d] text-white focus:ring-[#72a210]",
+    primary:
+      `bg-[${primary}] text-white hover:bg-[${primaryDarker}] focus:ring-[${primary}]`,
     secondary:
-      "bg-gray-100 hover:bg-gray-200 text-gray-700 focus:ring-gray-300",
+      `bg-[${primarySecondary}] text-white hover:bg-[${primaryDarker}] focus:ring-[${primarySecondary}]`,
   };
   return (
-    <button
-      className={`${baseClasses} ${variants[variant]} ${className}`}
-      {...props}
-    >
+    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
       {children}
     </button>
   );
 };
 
-const Badge = ({
-  children,
-  variant = "default",
-}: {
-  children: React.ReactNode;
-  variant?: TrackLevel | "default";
-}) => {
-  const variants: Record<string, string> = {
-    default: "bg-gray-100 text-gray-700",
-    beginner: "bg-green-100 text-green-700",
-    fundamentals: "bg-blue-100 text-blue-700",
-    intermediate: "bg-orange-100 text-orange-700",
-    network: "bg-purple-100 text-purple-700",
-    advanced: "bg-red-100 text-red-700",
-    penetration: "bg-gray-100 text-gray-700",
-    phishing: "bg-yellow-100 text-yellow-700",
-    web: "bg-indigo-100 text-indigo-700",
-    osint: "bg-teal-100 text-teal-700",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]}`}
-    >
-      {children}
-    </span>
-  );
-};
+// Badge
+const Badge = ({ children }: { children: React.ReactNode }) => (
+  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[${primary}]/10 text-[${primarySecondary}] dark:bg-[${primary}]/20 dark:text-white`}>
+    {children}
+  </span>
+);
 
 // Track Card
 const TrackCard = ({
@@ -122,87 +109,60 @@ const TrackCard = ({
   const [showMore, setShowMore] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex gap-5">
-          <Badge variant={level}>
-            {level.charAt(0).toUpperCase() + level.slice(1)}
-          </Badge>
-          <Badge variant={topic.toLowerCase().replace(" ", "") as TrackLevel}>
-            {topic}
-          </Badge>
-        </div>
+    // Card background is now the former page background (lighter)
+    <div className={`${cardBg} rounded-2xl shadow-md ${borderPrimary} hover:shadow-lg transition-all p-6 flex flex-col`}>
+      {/* Badges */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        <Badge>{level}</Badge>
+        <Badge>{topic}</Badge>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+      {/* Title */}
+      <h3 className={`text-lg font-semibold ${textDark} mb-2`}>{title}</h3>
 
-      {/* Description with line clamp */}
+      {/* Description */}
       <p
-        className={`text-sm text-gray-600 mb-2 ${
-          showMore ? "" : "line-clamp-5"
+        className={`text-sm ${textMedium} mb-2 ${
+          showMore ? "" : "line-clamp-4"
         }`}
       >
         {description}
       </p>
 
-      {/* Toggle button */}
+      {/* Toggle */}
       {description.length > 150 && (
         <button
           onClick={() => setShowMore(!showMore)}
-          className="text-xs font-semibold text-[#72a210] hover:underline mb-4 cursor-pointer"
+          className={`text-xs font-semibold text-[${primary}] hover:text-[${primaryDarker}] hover:underline mb-3`}
         >
           {showMore ? "Show less" : "Read more"}
         </button>
       )}
 
-      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+      {/* Meta */}
+      <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm ${textLight} mb-4 gap-2`}>
         <span>{modules} modules</span>
         <div className="flex items-center gap-1">
-          <Clock className="h-4 w-4" />
+          <Clock className={`h-4 w-4 text-[${primary}]`} />
           <span>{duration}</span>
         </div>
       </div>
 
+      {/* Progress */}
       <div className="space-y-2 mb-4">
-        <div className="flex justify-between text-sm">
+        <div className={`flex justify-between text-sm ${textMedium}`}>
           <span>Progress</span>
           <span>{progress}%</span>
         </div>
         <Progress value={progress} />
       </div>
 
+      {/* Button */}
       <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
-        <Button variant="primary" className="w-full cursor-pointer">
+        <Button variant={buttonVariant} className="w-full">
           {buttonText}
         </Button>
       </Link>
-    </div>
-  );
-};
-
-// Collapsible Section Component
-const CollapsibleSection = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => {
-  const [open, setOpen] = useState(false); // collapsed by default
-  return (
-    <div className="border rounded-md bg-white">
-      <button
-        className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50"
-        onClick={() => setOpen(!open)}
-      >
-        <span>{title}</span>
-        {open ? (
-          <ChevronDown className="h-4 w-4 text-gray-500" />
-        ) : (
-          <ChevronRight className="h-4 w-4 text-gray-500" />
-        )}
-      </button>
-      {open && <div className="p-3">{children}</div>}
     </div>
   );
 };
@@ -214,41 +174,38 @@ export default function TracksPage() {
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
   const [loading, setLoading] = useState(true);
   const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
+  const [showLevelDropdown, setShowLevelDropdown] = useState(false);
+  const [showTopicDropdown, setShowTopicDropdown] = useState(false);
 
-  // Fetch tracks from Directus API
   useEffect(() => {
     (async () => {
+      // Logic for fetching tracks remains the same
       try {
         const res = await fetch("/api/tracks");
         const data = await res.json();
-
         const safe = (v: unknown): Track => {
-          const obj =
-            v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+          const obj = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
           const modulesVal = obj.modules;
           return {
             title: (obj.title as string) ?? "Untitled",
             slug: (obj.slug as string) ?? "",
             description: (obj.description as string) ?? "",
             level: ((obj.level as TrackLevel) ?? "beginner") as TrackLevel,
-            topic: (obj.topic as string) ?? "Fundamentals",
+            topic: (obj.topic as string) ?? "General",
             modules: Array.isArray(modulesVal)
               ? modulesVal.length
               : typeof modulesVal === "number"
               ? modulesVal
               : 0,
             duration: (obj.duration as string) ?? "",
-            progress:
-              typeof obj.progress === "number" ? (obj.progress as number) : 0,
+            progress: typeof obj.progress === "number" ? (obj.progress as number) : 0,
             buttonText: "View Track",
             buttonVariant: "secondary",
           };
         };
-
         const cmsTracks: Track[] = Array.isArray(data?.data)
           ? data.data.map((t: unknown) => safe(t))
           : [];
-
         setTracksFromCMS(cmsTracks);
       } catch {
         setTracksFromCMS([]);
@@ -258,7 +215,21 @@ export default function TracksPage() {
     })();
   }, []);
 
-  // Apply Filters
+  function capitalizeFirstLetter(str: string) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  const levels = React.useMemo(() => {
+    const unique = Array.from(new Set(tracksFromCMS.map((t) => t.level)));
+    return ["All Levels", ...unique.map((l) => capitalizeFirstLetter(l))];
+  }, [tracksFromCMS]);
+
+  const topics = React.useMemo(() => {
+    const unique = Array.from(new Set(tracksFromCMS.map((t) => t.topic)));
+    return ["All Topics", ...unique.map((t) => capitalizeFirstLetter(t))];
+  }, [tracksFromCMS]);
+
   const filteredTracks = tracksFromCMS.filter((track) => {
     const levelMatch =
       selectedLevel === "All Levels" ||
@@ -269,24 +240,11 @@ export default function TracksPage() {
     return levelMatch && topicMatch;
   });
 
-  const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
-  const topics = [
-    "All Topics",
-    "Fundamentals",
-    "Network Security",
-    "Penetration Testing",
-    "Phishing",
-    "Web Security",
-    "OSINT",
-  ];
-
-  // Render
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Sidebar */}
+    // Main container background is now the former card background (white/dark-950)
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
@@ -294,91 +252,124 @@ export default function TracksPage() {
         />
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Learning Tracks
-            </h1>
-            <p className="text-gray-600">
-              Choose your cybersecurity learning path and master essential
-              skills through structured courses.
-            </p>
-          </div>
-
-          {/* Filters */}
-          <div className="mb-6 space-y-4">
-            <div className="flex items-center gap-2 mb-2 sm:mb-0">
-              <Filter className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
-                Filters:
-              </span>
-            </div>
-
-            {/* Level Filter */}
-            <CollapsibleSection title="Level">
-              <div className="flex flex-wrap gap-2">
-                {levels.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => setSelectedLevel(level)}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                      selectedLevel === level
-                        ? "bg-[#72a210] text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 cursor-pointer"
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-            </CollapsibleSection>
-
-            {/* Topic Filter */}
-            <CollapsibleSection title="Topic">
-              <div className="flex flex-wrap gap-2">
-                {topics.map((topic) => (
-                  <button
-                    key={topic}
-                    onClick={() => setSelectedTopic(topic)}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                      selectedTopic === topic
-                        ? "bg-[#72a210] text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 cursor-pointer"
-                    }`}
-                  >
-                    {topic}
-                  </button>
-                ))}
-              </div>
-            </CollapsibleSection>
-          </div>
-
-          {/* Tracks Grid / Empty State */}
-          {loading ? (
-            <p className="text-gray-500">Loading tracks...</p>
-          ) : filteredTracks.length === 0 ? (
-            <div className="text-center py-20 bg-white border rounded-lg shadow-sm">
-              <FileText className="mx-auto h-20 w-20 text-[#72a210] mb-4" />
-              <h2 className="text-lg font-semibold text-gray-800">
-                No Learning Tracks Yet
-              </h2>
-              <p className="text-gray-600 mt-2 px-4">
-                Your instructors haven’t published any tracks. Please check back
-                later.
+        <div className="flex-1 flex flex-col justify-between overflow-y-auto">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className={`text-2xl font-bold ${textDark} mb-2`}>
+                Learning Tracks
+              </h1>
+              <p className={textMedium}>
+                Choose your cybersecurity learning path and master essential
+                skills through structured courses.
               </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTracks.map((track, index) => (
-                <TrackCard key={index} {...track} />
-              ))}
+
+            {/* Filters */}
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <Filter className={`h-4 w-4 text-[${primary}]`} />
+                <span className={`text-sm font-medium ${textMedium}`}>
+                  Filters:
+                </span>
+              </div>
+
+              <div className="flex sm:flex-row gap-2">
+                {/* Level Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLevelDropdown((prev) => !prev)}
+                    // Dropdown button uses the lighter card background
+                    className={`flex items-center justify-between w-40 border ${borderPrimary} dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+                  >
+                    {selectedLevel}
+                    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
+                  </button>
+                  {showLevelDropdown && (
+                    <div className={`absolute mt-1 w-40 ${cardBg} border ${borderPrimary} dark:border-gray-700 rounded-lg shadow-lg z-10`}>
+                      {levels.map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => {
+                            setSelectedLevel(level);
+                            setShowLevelDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 dark:hover:bg-gray-700 ${
+                            selectedLevel === level
+                              ? `bg-[${primary}]/20 text-[${primarySecondary}] dark:bg-[${primary}]/40 dark:text-white`
+                              : textMedium
+                          }`}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Topic Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowTopicDropdown((prev) => !prev)}
+                    // Dropdown button uses the lighter card background
+                    className={`flex items-center justify-between w-40 border ${borderPrimary} dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+                  >
+                    {selectedTopic}
+                    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
+                  </button>
+                  {showTopicDropdown && (
+                    <div className={`absolute mt-1 w-40 ${cardBg} border ${borderPrimary} dark:border-gray-700 rounded-lg shadow-lg z-10`}>
+                      {topics.map((topic) => (
+                        <button
+                          key={topic}
+                          onClick={() => {
+                            setSelectedTopic(topic);
+                            setShowTopicDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 dark:hover:bg-gray-700 ${
+                            selectedTopic === topic
+                              ? `bg-[${primary}]/20 text-[${primarySecondary}] dark:bg-[${primary}]/40 dark:text-white`
+                              : textMedium
+                          }`}
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-        </main>
+
+            {/* Tracks Grid */}
+            {loading ? (
+              <p className={textLight}>Loading tracks...</p>
+            ) : filteredTracks.length === 0 ? (
+              // Empty State Updated for dark mode and theme
+              <div className={`${cardBg} text-center py-20 border dark:border-gray-700 rounded-lg shadow-md`}>
+                <FileText className={`mx-auto h-20 w-20 text-[${primary}] mb-4`} />
+                <h2 className={`text-lg font-semibold ${textDark}`}>
+                  No Learning Tracks Yet
+                </h2>
+                <p className={`${textMedium} mt-2 px-4`}>
+                  Your instructors haven’t published any tracks. Please check
+                  back later.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredTracks.map((track, index) => (
+                  <TrackCard key={index} {...track} />
+                ))}
+              </div>
+            )}
+          </main>
+
+          <LearnerFooter />
+        </div>
       </div>
     </div>
   );

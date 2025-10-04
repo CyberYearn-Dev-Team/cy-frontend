@@ -6,9 +6,15 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#507800";
+const textDark = "text-gray-900 dark:text-gray-100";
+const bgDark = "bg-white dark:bg-gray-950"; // Navbar background
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname(); // get current path
+  const pathname = usePathname();
 
   const links = [
     { name: "Home", href: "/" },
@@ -22,26 +28,33 @@ export default function Navbar() {
   return (
     <>
       {/* Navbar */}
-      <nav className="px-4 sm:px-8 md:px-20 py-4 flex items-center justify-between">
+      <nav className={`px-4 sm:px-8 md:px-20 py-4 flex items-center justify-between ${bgDark}`}>
         {/* Logo */}
         <Link href="/">
           <div className="flex items-center gap-2">
+            {/* Light mode logo */}
             <img
-              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_OctaTech_Logo_Black.png"
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
               alt="Logo"
-              className="h-12 sm:h-17 md:h-17 w-auto"
+              className="h-10 sm:h-10 md:h-12 w-auto block dark:hidden"
+            />
+            {/* Dark mode logo */}
+            <img
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
+              alt="Logo"
+              className="h-10 sm:h-10 md:h-12 w-auto hidden dark:block"
             />
           </div>
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex gap-8 font-medium text-black">
+        <div className={`hidden md:flex gap-8 font-medium ${textDark}`}>
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`hover:text-[#72a210] hover:underline underline-offset-4 transition-colors ${
-                isActive(link.href) ? "text-[#72a210] underline" : ""
+              className={`hover:text-[${primary}] hover:underline underline-offset-4 transition-colors ${
+                isActive(link.href) ? `text-[${primary}] underline` : ""
               }`}
             >
               {link.name}
@@ -55,7 +68,7 @@ export default function Navbar() {
             <Button
               variant="outline"
               size="lg"
-              className="border-[#72a210] text-[#72a210] hover:text-[#72a210] hover:bg-[#72a210]/10 px-8 py-3 text-sm font-medium cursor-pointer"
+              className={`border-[${primary}] text-[${primary}] hover:text-[${primary}] hover:bg-[${primary}]/10 dark:hover:bg-[${primary}]/[0.05] px-8 py-3 text-sm font-medium cursor-pointer`}
             >
               Login
             </Button>
@@ -64,7 +77,7 @@ export default function Navbar() {
           <Link href="/auth/register" className="w-full sm:w-auto">
             <Button
               size="lg"
-              className="bg-[#72a210] hover:bg-[#507800] text-white px-8 py-3 text-sm font-medium cursor-pointer"
+              className={`bg-[${primary}] hover:bg-[${primaryDarker}] text-white px-8 py-3 text-sm font-medium cursor-pointer`}
             >
               Register
             </Button>
@@ -73,12 +86,17 @@ export default function Navbar() {
 
         {/* Mobile Hamburger */}
         <button
-          className="md:hidden text-black cursor-pointer"
+          className={`md:hidden ${textDark} cursor-pointer`}
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
+
+      {/* Gradient Divider */}
+<div className="max-w-7xl mx-auto">
+  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+</div>
 
       {/* Mobile Sliding Menu */}
       <div
@@ -93,58 +111,60 @@ export default function Navbar() {
         ></div>
 
         {/* Sliding Menu */}
-<div className="relative bg-white h-full w-full shadow-xl p-6 flex flex-col">
-  {/* Close Button */}
-  <button
-    className="absolute top-6 right-6 text-black hover:text-[#72a210] transition"
-    onClick={() => setIsOpen(false)}
-  >
-    <X className="h-6 w-6" />
-  </button>
+        <div className={`${bgDark} h-full w-full shadow-xl p-6 flex flex-col relative`}>
+          {/* Close Button */}
+          <button
+            className={`absolute top-6 right-6 ${textDark} hover:text-[${primary}] transition`}
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-  {/* Links */}
-  <div className="flex flex-col gap-5 mt-16">
-    {links.map((link) => (
-      <Link
-        key={link.href}
-        href={link.href}
-        className={`transition-colors duration-200 ${
-          isActive(link.href)
-            ? "text-[#72a210] underline"
-            : "text-[15px] hover:text-[#507800]"
-        }`}
-        onClick={() => setIsOpen(false)}
-      >
-        {link.name}
-      </Link>
-    ))}
+          {/* Links */}
+          <div className="flex flex-col gap-5 mt-16">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`transition-colors duration-200 ${textDark} ${
+                  isActive(link.href)
+                    ? `text-[${primary}] underline`
+                    : `text-[15px] hover:text-[${primaryDarker}]`
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
 
-    {/* Auth Buttons */}
-    <div className="flex flex-col gap-3 mt-8">
-      <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-        <Button className="bg-[#72a210] text-white hover:bg-[#507800] w-full py-5 rounded-md text-[15px]">
-          Login Your Account
-        </Button>
-      </Link>
+            {/* Auth Buttons */}
+            <div className="flex flex-col gap-3 mt-8">
+              <Link href="/auth/login" onClick={() => setIsOpen(false)}>
+                <Button
+                  className={`bg-[${primary}] text-white hover:bg-[${primaryDarker}] w-full py-5 rounded-md text-[15px]`}
+                >
+                  Login Your Account
+                </Button>
+              </Link>
 
-      <Link href="/auth/register" onClick={() => setIsOpen(false)}>
-        <Button
-          variant="outline"
-          className="border border-[#507800] text-[#507800] hover:bg-[#507800]/10 w-full py-5 rounded-md text-[15px]"
-        >
-          Register an Account
-        </Button>
-      </Link>
+              <Link href="/auth/register" onClick={() => setIsOpen(false)}>
+                <Button
+                  variant="outline"
+                  className={`border border-[${primaryDarker}] text-[${primaryDarker}] hover:bg-[${primaryDarker}]/10 dark:hover:bg-[${primaryDarker}]/[0.05] w-full py-5 rounded-md text-[15px]`}
+                >
+                  Register an Account
+                </Button>
+              </Link>
 
-      <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
-        <Button className="bg-[#72a210] text-white hover:bg-[#507800] w-full py-5 rounded-md text-[15px]">
-          Forgotten Password
-        </Button>
-      </Link>
-    </div>
-  </div>
-{/* </div> */}
-
+              <Link href="/auth/forgot-password" onClick={() => setIsOpen(false)}>
+                <Button
+                  className={`bg-[${primary}] text-white hover:bg-[${primaryDarker}] w-full py-5 rounded-md text-[15px]`}
+                >
+                  Forgotten Password
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </>

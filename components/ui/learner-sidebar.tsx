@@ -9,7 +9,7 @@ import {
   BarChart3,
   Award,
   LogOut,
-  Briefcase,
+  Lock,
   X,
   Trophy,
 } from "lucide-react";
@@ -30,7 +30,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
-    { name: "Switch to Admin", icon: Briefcase, href: `/admin-dashboard/overview` },
+    { name: "Switch to Admin", icon: Lock, href: `/admin-dashboard/overview` },
   ];
 
   const isActive = (href: string) =>
@@ -40,25 +40,34 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     <aside
       className={`${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } fixed inset-y-0 left-0 z-30 w-full lg:w-64 transform bg-white border-r border-gray-200 
-      transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 bg-gray-50`}
+      } fixed inset-y-0 left-0 z-30 w-full lg:w-64 transform 
+      bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
+      transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
     >
       {/* Logo and Close */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <img
-            src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/logo.png"
-            alt="Logo"
-            className="h-8 sm:h-10 md:h-12 w-auto" // smaller on mobile
-          />
-        </div>
-        <button
-          className="lg:hidden p-2 rounded-md hover:bg-gray-100 cursor-pointer"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <X className="h-5 w-5 text-gray-600" />
-        </button>
-      </div>
+<div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+  <div className="flex items-center gap-2">
+    {/* Light mode logo */}
+    <img
+      src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
+      alt="Logo"
+      className="h-10 sm:h-10 md:h-10 w-auto block dark:hidden"
+    />
+    {/* Dark mode logo */}
+    <img
+      src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
+      alt="Logo"
+      className="h-10 sm:h-10 md:h-10 w-auto hidden dark:block"
+    />
+  </div>
+  <button
+    className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+    onClick={() => setSidebarOpen(false)}
+  >
+    <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+  </button>
+</div>
+
 
       {/* Nav bar */}
       <nav className="px-4 py-10 space-y-2 overflow-y-auto h-[calc(100%-4rem)]">
@@ -66,10 +75,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           <Link
             key={name}
             href={href}
-            className={`flex items-center px-3 py-2 transition-colors duration-200 ${
+            className={`flex items-center px-3 py-2 rounded-md transition-colors duration-200 ${
               isActive(href)
-                ? "text-[#507800] border-r-4 border-[#72a210] font-medium"
-                : "text-gray-700 hover:bg-[#72a210] hover:text-white"
+                ? "text-[#72a210] dark:text-[#a3e635] font-medium bg-gray-100 dark:bg-gray-800"
+                : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
             }`}
             onClick={() => setSidebarOpen(false)}
           >
@@ -80,7 +89,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
         {/* Logout */}
         <Link
           href="/auth/login"
-          className="flex items-center px-3 py-2 text-gray-700 hover:bg-[#72a210] hover:text-white transition-colors duration-200"
+          className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white transition-colors duration-200 rounded-md"
           onClick={() => setSidebarOpen(false)}
         >
           <LogOut className="w-5 h-5 mr-2" /> Logout

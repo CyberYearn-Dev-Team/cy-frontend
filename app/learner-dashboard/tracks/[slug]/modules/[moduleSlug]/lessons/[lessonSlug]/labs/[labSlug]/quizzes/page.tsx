@@ -6,11 +6,29 @@ import { FileText } from "lucide-react";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import { useRouter } from "next/navigation";
-import Breadcrumb from "@/components/ui/breadcrumb";
+// import Breadcrumb from "@/components/ui/breadcrumb";
+// import { Breadcrumb } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
 import { toast } from "sonner";
 
-
-
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#5c880d";
+const primaryLighter = "#e6f2d4"; // Lightened version of primary for selected state
+const bgLight = "bg-gray-100 dark:bg-gray-950"; // Main page background
+const cardBg = "bg-white dark:bg-gray-900"; // Card background
+const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
+const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
+const textLight = "text-gray-500 dark:text-gray-400"; // Placeholder/Subtle text
+const borderLight = "border dark:border-gray-700"; // Card border
 
 interface Question {
   question_text: string;
@@ -27,12 +45,12 @@ interface Quiz {
 }
 
 export default function QuizzesPage() {
-const router = useRouter(); 
+  const router = useRouter();
   const { slug, moduleSlug, lessonSlug, labSlug } = useParams<{
     slug: string;
     moduleSlug: string;
     lessonSlug: string;
-    labSlug: string;   // ✅ add this
+    labSlug: string;
   }>();
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -96,25 +114,24 @@ const router = useRouter();
         };
 
         const mapped: Quiz[] = (data.quizzes || []).map(
-  (q: any, idx: number) => ({
-    id: idx + 1,
-    title: q.title ?? "Untitled Quiz",
-    description: q.description ?? "",
-    questions: [
-      {
-        question_text: q.question_text ?? "",
-        options: Array.isArray(q.options)
-          ? q.options
-          : typeof q.options === "string"
-          ? JSON.parse(q.options)
-          : [],
-        answer: q.answer ?? "",
-      },
-    ],
-    passing_score: q.passing_score ?? 0,
-  })
-);
-
+          (q: any, idx: number) => ({
+            id: idx + 1,
+            title: q.title ?? "Untitled Quiz",
+            description: q.description ?? "",
+            questions: [
+              {
+                question_text: q.question_text ?? "",
+                options: Array.isArray(q.options)
+                  ? q.options
+                  : typeof q.options === "string"
+                  ? JSON.parse(q.options)
+                  : [],
+                answer: q.answer ?? "",
+              },
+            ],
+            passing_score: q.passing_score ?? 0,
+          })
+        );
 
         setQuizzes(mapped);
       } catch (err) {
@@ -124,7 +141,7 @@ const router = useRouter();
       }
     }
     fetchQuizzes();
-  }, [slug, moduleSlug, lessonSlug]);
+  }, [slug, moduleSlug, lessonSlug, labSlug]);
 
   const currentQuiz = quizzes[currentQuizIndex];
   const currentQuestion = currentQuiz?.questions[currentQuestionIndex];
@@ -138,60 +155,56 @@ const router = useRouter();
     setAnswers((prev) => ({ ...prev, [key]: option }));
   };
 
-const handleSubmit = () => {
-  setSubmitted(true);
+  const handleSubmit = () => {
+    setSubmitted(true);
 
-  // Flatten all questions across quizzes
-  const allQuestions = quizzes.flatMap((quiz) =>
-    quiz.questions.map((q, idx) => ({
-      quizId: quiz.id,
-      question: q.question_text,
-      options: q.options,
-      answer: q.answer,
-      selected: answers[`${quiz.id}-${idx}`] || "",
-    }))
-  );
+    // Flatten all questions across quizzes
+    const allQuestions = quizzes.flatMap((quiz) =>
+      quiz.questions.map((q, idx) => ({
+        quizId: quiz.id,
+        question: q.question_text,
+        options: q.options,
+        answer: q.answer,
+        selected: answers[`${quiz.id}-${idx}`] || "",
+      }))
+    );
 
-  // Count correct answers
-  const correctCount = allQuestions.filter(
-    (q) => q.selected === q.answer
-  ).length;
+    // Count correct answers
+    const correctCount = allQuestions.filter(
+      (q) => q.selected === q.answer
+    ).length;
 
-  const totalQuestions = allQuestions.length;
-  const score =
-    totalQuestions > 0
-      ? Math.round((correctCount / totalQuestions) * 100)
-      : 0;
+    const totalQuestions = allQuestions.length;
+    const score =
+      totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
+        : 0;
 
-  // Passing score
-  const passingScore = currentQuiz?.passing_score ?? 0;
-  const passed = score >= passingScore;
+    // Passing score
+    const passingScore = currentQuiz?.passing_score ?? 0;
+    const passed = score >= passingScore;
 
-  // Example XP calculation
-  const xp = correctCount * 10;
+    // Example XP calculation
+    const xp = correctCount * 10;
 
-  // ✅ Show toast with green (success) or red (error)
-  if (passed) {
-    toast.success("Congratulations, you passed the quiz!", {
-      // description: `Score: ${score}% | Passing Score: ${passingScore}% | XP: ${xp}`,
-    });
-  } else {
-    toast.error("Quiz attempt failed, try again", {
-      // description: `Score: ${score}% | Passing Score: ${passingScore}%`,
-    });
-  }
+    // ✅ Show toast with green (success) or red (error)
+    if (passed) {
+      toast.success("Congratulations, you passed the quiz!", {
+        // description: `Score: ${score}% | Passing Score: ${passingScore}% | XP: ${xp}`,
+      });
+    } else {
+      toast.error("Quiz attempt failed, try again", {
+        // description: `Score: ${score}% | Passing Score: ${passingScore}%`,
+      });
+    }
 
-  // Redirect with results
-  router.push(
-    `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
-      JSON.stringify(allQuestions)
-    )}`
-  );
-};
-
-
-
-
+    // Redirect with results
+    router.push(
+      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
+        JSON.stringify(allQuestions)
+      )}`
+    );
+  };
 
   const nextQuestion = () => {
     if (
@@ -229,11 +242,9 @@ const handleSubmit = () => {
   const progressPercent =
     totalQuestions > 0 ? (currentFlatIndex / totalQuestions) * 100 : 0;
 
-
-
-
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    // Applied dark mode background
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -242,47 +253,56 @@ const handleSubmit = () => {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-6">
-
-            {/* Breadcrumb */}      
-            <Breadcrumb /> <br />
-
+          {/* Breadcrumb */}
+          <Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/learner-dashboard/tracks">Tracks</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Result</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+ <br />
 
           {loading ? (
-            <p className="text-gray-500">Loading quizzes...</p>
+            <p className={textLight}>Loading quizzes...</p>
           ) : quizzes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center mt-20 text-gray-500 space-y-4 px-4 sm:px-0">
-              <FileText className="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-[#72a210]" />
-              <p className="text-xl sm:text-2xl font-semibold">
+            <div className="flex flex-col items-center justify-center text-center mt-20 space-y-4 px-4 sm:px-0">
+              <FileText className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto text-[${primary}]`} />
+              <p className={`text-xl sm:text-2xl font-semibold ${textDark}`}>
                 Oops! No content available.
               </p>
               <p className="max-w-sm sm:max-w-md text-gray-400">
-                It looks like the Quizze hasn’t been added yet. Please
-                check back later.
+                It looks like the Quizze hasn’t been added yet. Please check back later.
               </p>
             </div>
           ) : (
             <div className="max-w-3xl mx-auto space-y-6">
               {/* Quiz Header */}
-              <div className="border rounded-lg bg-white shadow p-6">
+              {/* Applied card background and border */}
+              <div className={`${borderLight} rounded-lg ${cardBg} shadow p-6`}>
                 <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-xl font-bold text-gray-800">
+                  <h1 className={`text-xl font-bold ${textDark}`}>
                     {currentQuiz?.title}
                   </h1>
-                  <span className="text-sm text-gray-500">
+                  <span className={`text-sm ${textLight}`}>
                     {currentFlatIndex} of {totalQuestions}
                   </span>
                 </div>
 
                 {currentQuiz?.description && (
-                  <p className="text-gray-600 mb-4">
+                  <p className={`${textMedium} mb-4`}>
                     {currentQuiz.description}
                   </p>
                 )}
 
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6">
                   <div
-                    className="bg-[#72a210] h-2 rounded-full"
+                    className={`bg-[${primary}] h-2 rounded-full`}
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -290,7 +310,7 @@ const handleSubmit = () => {
                 {/* Current Question */}
                 {currentQuestion && (
                   <div className="mb-6">
-                    <p className="font-medium text-gray-800 mb-4">
+                    <p className={`font-medium ${textDark} mb-4`}>
                       {currentQuestion.question_text}
                     </p>
                     <div className="space-y-3">
@@ -309,14 +329,16 @@ const handleSubmit = () => {
                                 option
                               )
                             }
-                            className={`w-full text-left px-4 py-3 rounded-lg border transition cursor-pointer ${
+                            className={`w-full text-left px-4 py-3 rounded-lg border transition cursor-pointer 
+                            ${textDark} ${borderLight}
+                            ${
                               selected
                                 ? submitted
                                   ? isCorrect
-                                    ? "bg-green-100 border-green-500"
-                                    : "bg-red-100 border-red-500"
-                                  : "bg-[#e6f2d4] border-[#72a210]"
-                                : "bg-gray-50 hover:bg-gray-100 border-gray-300"
+                                    ? "bg-green-600 dark:bg-green-700 border-green-700 text-white"
+                                    : "bg-red-600 dark:bg-red-700 border-red-700 text-white"
+                                  : `bg-[${primaryLighter}] border-[${primary}] dark:bg-gray-700 dark:border-[${primary}]` // Selected but not submitted
+                                : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-700"
                             }`}
                             disabled={submitted}>
                             {option}
@@ -327,43 +349,40 @@ const handleSubmit = () => {
                   </div>
                 )}
 
-
-
                 {/* Navigation + Submit */}
-<div className="flex justify-between items-center">
-  <button
-  onClick={prevQuestion}
-  disabled={currentFlatIndex === 1}
-  className="text-base px-5 py-2 rounded-lg 
-             bg-[#72a210] text-white hover:bg-[#5c880d] cursor-pointer
-             disabled:bg-[#ccc] disabled:text-gray-600 disabled:cursor-not-allowed">
-  Previous
-</button>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={prevQuestion}
+                    disabled={currentFlatIndex === 1}
+                    // Applied theme colors for button (including disabled state)
+                    className={`text-base px-5 py-2 rounded-lg 
+                      bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer
+                      disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-600 dark:disabled:text-gray-400 disabled:cursor-not-allowed`}
+                  >
+                    Previous
+                  </button>
 
-
-  {currentFlatIndex === totalQuestions && !submitted ? (
-    <button
-      onClick={handleSubmit}
-      className="text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5c880d] cursor-pointer">
-      Submit Answers
-    </button>
-  ) : (
-    <button
-      onClick={nextQuestion}
-      disabled={currentFlatIndex === totalQuestions}
-       className="text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5c880d] cursor-pointer">
-      Next
-    </button>
-  )}
-</div>
-
-{/* 
-                {submitted && (
-                  <div className="mt-4 text-green-700 font-medium">
-                    🎉 Quiz submitted! Passing Score:{" "}
-                    {currentQuiz?.passing_score}%
-                  </div>
-                )} */}
+                  {currentFlatIndex === totalQuestions && !submitted ? (
+                    <button
+                      onClick={handleSubmit}
+                      // Applied theme colors for button
+                      className={`text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer`}
+                    >
+                      Submit Answers
+                    </button>
+                  ) : (
+                    <button
+                      onClick={nextQuestion}
+                      disabled={currentFlatIndex === totalQuestions}
+                      // Applied theme colors for button (including disabled state)
+                      className={`text-base px-5 py-2 rounded-lg 
+                        bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer
+                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-600 dark:disabled:text-gray-400 disabled:cursor-not-allowed`}
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
