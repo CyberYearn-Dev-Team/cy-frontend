@@ -61,6 +61,18 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
         {/* Right side controls */}
         <div className="flex items-center gap-4 ml-auto">
+
+           {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          >
+            {darkMode ? (
+              <Sun className="h-5 w-5 text-yellow-400 cursor-pointer" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
+            )}
+          </button>
         
           {/* User Profile aligned to end */}
           <div className="relative" ref={dropdownRef}>
@@ -109,17 +121,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             )}
           </div>
 
-           {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            {darkMode ? (
-              <Sun className="h-5 w-5 text-yellow-400 cursor-pointer" />
-            ) : (
-              <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
-            )}
-          </button>
+          
         </div>
       </div>
     </header>

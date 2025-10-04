@@ -26,8 +26,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const sidebarItems = [
     { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
     { name: "Learning Tracks", icon: BookOpen, href: `${basePath}/tracks` },
-    { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
+    { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
     { name: "Switch to Admin", icon: Lock, href: `/admin-dashboard/overview` },
