@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ✅ In Next.js 15+, params must be awaited
+    const { id } = await context.params;
+
     const res = await fetch(
-      `${process.env.DIRECTUS_URL}/items/lab_guides/${params.id}?fields=*,steps.text`,
+      `${process.env.DIRECTUS_URL}/items/lab_guides/${id}?fields=*,steps.text`,
       {
         headers: {
           Authorization: `Bearer ${process.env.DIRECTUS_TOKEN || ""}`,
