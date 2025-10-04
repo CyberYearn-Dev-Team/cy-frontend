@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: { params: { slug: string; moduleSlug: string; lessonSlug: string } }
-) {
-  const { lessonSlug } = params;
+  request: NextRequest,
+  context: {
+    params: Promise<{ slug: string; moduleSlug: string; lessonSlug: string }>;
+  }
+): Promise<NextResponse> {
+  const { lessonSlug } = await context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "http://localhost:8055";
@@ -47,7 +47,7 @@ export async function GET(
     return NextResponse.json({
       lesson: {
         ...lesson,
-        labs: flatLabs, // expose labs cleanly
+        labs: flatLabs,
       },
     });
   } catch (err) {

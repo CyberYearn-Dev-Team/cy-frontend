@@ -1,25 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: {
-    params: {
+  request: NextRequest,
+  context: {
+    params: Promise<{
       slug: string;
       moduleSlug: string;
       lessonSlug: string;
       labSlug: string;
-    };
+    }>;
   }
-) {
-  const { labSlug } = params;
+): Promise<NextResponse> {
+  const { labSlug } = await context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "http://localhost:8055";
     const encoded = encodeURIComponent(labSlug);
 
-    // ✅ fetch from lab_guides not lessons
+    // ✅ Fetch from lab_guides (not lessons)
     const directusRes = await fetch(
       `${base}/items/lab_guides?filter[slug][_eq]=${encoded}&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
       {
@@ -46,7 +44,7 @@ export async function GET(
 
     const lab = json.data[0];
 
-    // ✅ flatten quizzes with their questions
+    // ✅ Flatten quizzes with their questions
     const flatQuizzes = (lab.quizzes || [])
       .map((q: any) => {
         if (!q?.quizzes_id) return null;

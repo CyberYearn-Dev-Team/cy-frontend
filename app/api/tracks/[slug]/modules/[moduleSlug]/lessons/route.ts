@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string; moduleSlug: string } }
-) {
-  const { moduleSlug } = params;
+  request: NextRequest,
+  context: { params: Promise<{ slug: string; moduleSlug: string }> }
+): Promise<NextResponse> {
+  const { moduleSlug } = await context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "http://localhost:8055";
@@ -35,7 +35,7 @@ export async function GET(
 
     const module = json.data[0];
 
-    // Flatten lessons
+    // Flatten lessons (from { lessons_id: {...} } to {...})
     const flatLessons = (module.lessons || [])
       .map((l: any) => l.lessons_id)
       .filter((l: any) => l !== null);
@@ -46,8 +46,8 @@ export async function GET(
         lessons: flatLessons,
       },
     });
-  } catch (err) {
-    console.error("API error:", err);
+  } catch (error) {
+    console.error("API error:", error);
     return NextResponse.json(
       { module: null, error: "Server error" },
       { status: 500 }
