@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic"; // ensures this runs on the server at runtime
+export const dynamic = "force-dynamic"; // ensures this runs at runtime
 
-export async function GET() {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const url = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
 
@@ -17,8 +17,8 @@ export async function GET() {
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Error in /api/tracks:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
