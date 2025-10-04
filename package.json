@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start"
-  },
+  "dev": "next dev --turbopack",
+  "build": "next build --no-lint --turbopack",
+  "start": "next start",
+  "lint": "eslint"
+},
   "dependencies": {
     "@directus/sdk": "^18.0.3",
     "@radix-ui/react-checkbox": "^1.3.3",
