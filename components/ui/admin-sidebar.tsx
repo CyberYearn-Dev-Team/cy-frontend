@@ -53,7 +53,7 @@ export default function AdminSidebar({
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <img
-            src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/logo.png"
+            src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
             alt="Logo"
             className="h-8 sm:h-10 md:h-12 w-auto"
           />
