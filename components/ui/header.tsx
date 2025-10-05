@@ -48,55 +48,60 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Links */}
-        <div className={`hidden md:flex gap-8 font-medium ${textDark}`}>
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`hover:text-[${primary}] hover:underline underline-offset-4 transition-colors ${
-                isActive(link.href) ? `text-[${primary}] underline` : ""
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </div>
+<div className="hidden min-[950px]:flex gap-8 font-medium ${textDark}">
+  {links.map((link) => (
+    <Link
+      key={link.href}
+      href={link.href}
+      className={`hover:text-[${primary}] hover:underline underline-offset-4 transition-colors ${
+        isActive(link.href) ? `text-[${primary}] underline` : ""
+      }`}
+    >
+      {link.name}
+    </Link>
+  ))}
+</div>
 
-        {/* Desktop Buttons */}
-        <div className="hidden md:flex gap-4">
-          <Link href="/auth/login" className="w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="lg"
-              className={`border-[${primary}] text-[${primary}] hover:text-[${primary}] hover:bg-[${primary}]/10 dark:hover:bg-[${primary}]/[0.05] px-8 py-3 text-sm font-medium cursor-pointer`}
-            >
-              Login
-            </Button>
-          </Link>
+{/* Desktop Buttons */}
+<div className="hidden min-[950px]:flex [@media(max-width:1150px)]:hidden gap-4">
+  <Link href="/auth/login" className="w-full sm:w-auto">
+    <Button
+      variant="outline"
+      size="lg"
+      className={`border-[${primary}] text-[${primary}] hover:text-[${primary}] hover:bg-[${primary}]/10 dark:hover:bg-[${primary}]/[0.05] px-8 py-3 text-sm font-medium cursor-pointer`}
+    >
+      Login
+    </Button>
+  </Link>
 
-          <Link href="/auth/register" className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              className={`bg-[${primary}] hover:bg-[${primaryDarker}] text-white px-8 py-3 text-sm font-medium cursor-pointer`}
-            >
-              Register
-            </Button>
-          </Link>
-        </div>
+  <Link href="/auth/register" className="w-full sm:w-auto">
+    <Button
+      size="lg"
+      className={`bg-[${primary}] hover:bg-[${primaryDarker}] text-white px-8 py-3 text-sm font-medium cursor-pointer`}
+    >
+      Register
+    </Button>
+  </Link>
+</div>
+
 
         {/* Mobile Hamburger */}
-        <button
-          className={`md:hidden ${textDark} cursor-pointer`}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+<button
+  className={`min-[950px]:hidden ${textDark} cursor-pointer`}
+  onClick={() => setIsOpen(!isOpen)}
+>
+  {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+</button>
+
       </nav>
 
       {/* Gradient Divider */}
 <div className="max-w-7xl mx-auto">
   <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
 </div>
+
+
+
 
       {/* Mobile Sliding Menu */}
       <div

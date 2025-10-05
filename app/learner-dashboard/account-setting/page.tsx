@@ -358,13 +358,6 @@ export default function AccountSettingsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden cursor-pointer"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-4xl mx-auto">

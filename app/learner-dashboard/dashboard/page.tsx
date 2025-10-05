@@ -42,11 +42,11 @@ interface Track {
 }
 
 interface Mentor {
-    id: number;
-    name: string;
-    title: string;
-    avatar: string; // Kept avatar property, though currently using initials avatar
-    isFollowing: boolean;
+  id: number;
+  name: string;
+  title: string;
+  avatar: string; // Kept avatar property, though currently using initials avatar
+  isFollowing: boolean;
 }
 
 // UI Helpers (same as your original code)
@@ -88,7 +88,9 @@ const CardHeader = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}>
+  <div
+    className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}
+  >
     {children}
   </div>
 );
@@ -146,60 +148,93 @@ const Button = ({
 
 // Reusable Mentor Item Component (Refactored for requested layout)
 const MentorListItem = ({ mentor }: { mentor: Mentor }) => (
-    <div
-        key={mentor.id}
-        className="flex items-center justify-between group"
-    >
-        <div className="flex items-center space-x-3">
-            {/* Profile Avatar (using initials) */}
-            <div
-                className={`w-11 h-11 rounded-full bg-gradient-to-br from-[${primary}] to-[${secondary}] flex items-center justify-center text-white font-semibold text-sm shadow-md`}
-            >
-                {mentor.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-            </div>
-            {/* User Name and Title */}
-            <div>
-                <p
-                    className={`font-semibold text-sm ${textDark} group-hover:text-[${primary}] transition-colors`}
-                >
-                    {mentor.name}
-                </p>
-                <p className={`text-xs ${textLight}`}>
-                    {mentor.title}
-                </p>
-            </div>
-        </div>
-        {/* The follow/following button is now removed as requested */}
+  <div key={mentor.id} className="flex items-center justify-between group">
+    <div className="flex items-center space-x-3">
+      {/* Profile Avatar (using initials) */}
+      <div
+        className={`w-11 h-11 rounded-full bg-gradient-to-br from-[${primary}] to-[${secondary}] flex items-center justify-center text-white font-semibold text-sm shadow-md`}
+      >
+        {mentor.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")}
+      </div>
+      {/* User Name and Title */}
+      <div>
+        <p
+          className={`font-semibold text-sm ${textDark} group-hover:text-[${primary}] transition-colors`}
+        >
+          {mentor.name}
+        </p>
+        <p className={`text-xs ${textLight}`}>{mentor.title}</p>
+      </div>
     </div>
+    {/* The follow/following button is now removed as requested */}
+  </div>
 );
 
 // See All Mentors Modal Component
-const MentorModal = ({ mentors, isOpen, onClose }: { mentors: Mentor[], isOpen: boolean, onClose: () => void }) => {
-    if (!isOpen) return null;
+const MentorModal = ({
+  mentors,
+  isOpen,
+  onClose,
+}: {
+  mentors: Mentor[];
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  if (!isOpen) return null;
 
-    // Use the same MentorListItem component for consistency
-    return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex justify-center items-center p-4">
-            <div className={`relative ${bgCard} rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto`}>
-                <div className="sticky top-0 z-10 p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-900">
-                    <h2 className={`text-xl font-bold ${textDark}`}>All Mentors ({mentors.length})</h2>
-                    <button onClick={onClose} className={`p-1 rounded-full ${textMedium} hover:text-[${secondary}] hover:bg-gray-100 dark:hover:bg-gray-800`}>
-                        <X className="h-6 w-6" />
-                    </button>
-                </div>
-                <div className="p-6 space-y-4">
-                    {mentors.map((mentor) => (
-                        <MentorListItem key={mentor.id} mentor={mentor} />
-                    ))}
-                </div>
-            </div>
+  // Use the same MentorListItem component for consistency
+  return (
+    <div
+      className="
+        fixed inset-0 z-50 
+        flex justify-center items-center p-4
+        bg-black/40 backdrop-blur-md
+        transition-all duration-300
+      "
+    >
+      <div
+        className={`
+          relative ${bgCard}
+          rounded-xl shadow-2xl
+          w-full max-w-lg max-h-[90vh]
+          overflow-y-auto
+          border border-gray-200 dark:border-gray-700
+          animate-fadeIn
+        `}
+      >
+        {/* Modal Header */}
+        <div
+          className="
+            sticky top-0 z-10 p-6
+            border-b border-gray-200 dark:border-gray-700
+            flex justify-between items-center
+            bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm
+          "
+        >
+          <h2 className={`text-xl font-bold ${textDark}`}>
+            All Mentors ({mentors.length})
+          </h2>
+          <button
+            onClick={onClose}
+            className={`p-1 rounded-full ${textMedium} hover:text-[${secondary}] hover:bg-gray-100 dark:hover:bg-gray-800`}
+          >
+            <X className="h-6 w-6" />
+          </button>
         </div>
-    );
-};
 
+        {/* Mentor List */}
+        <div className="p-6 space-y-4">
+          {mentors.map((mentor) => (
+            <MentorListItem key={mentor.id} mentor={mentor} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Dashboard
 export default function LearnerDashboard() {
@@ -257,19 +292,19 @@ export default function LearnerDashboard() {
       isFollowing: true,
     },
     {
-        id: 2,
-        name: "Rebecca Kim",
-        title: "UX Designer",
-        avatar: "/api/placeholder/40/40",
-        isFollowing: true,
-      },
-      {
-        id: 3,
-        name: "David Chen",
-        title: "Branding Specialist",
-        avatar: "/api/placeholder/40/40",
-        isFollowing: false,
-      },
+      id: 2,
+      name: "Rebecca Kim",
+      title: "UX Designer",
+      avatar: "/api/placeholder/40/40",
+      isFollowing: true,
+    },
+    {
+      id: 3,
+      name: "David Chen",
+      title: "Branding Specialist",
+      avatar: "/api/placeholder/40/40",
+      isFollowing: false,
+    },
     {
       id: 4,
       name: "Carlos Reyes",
@@ -278,19 +313,19 @@ export default function LearnerDashboard() {
       isFollowing: false,
     },
     {
-        id: 5,
-        name: "Aisha Hassan",
-        title: "Data Scientist",
-        avatar: "/api/placeholder/40/40",
-        isFollowing: true,
-      },
-      {
-        id: 6,
-        name: "Gavin Smith",
-        title: "Cyber Security Pro",
-        avatar: "/api/placeholder/40/40",
-        isFollowing: false,
-      },
+      id: 5,
+      name: "Aisha Hassan",
+      title: "Data Scientist",
+      avatar: "/api/placeholder/40/40",
+      isFollowing: true,
+    },
+    {
+      id: 6,
+      name: "Gavin Smith",
+      title: "Cyber Security Pro",
+      avatar: "/api/placeholder/40/40",
+      isFollowing: false,
+    },
   ];
 
   // Limited list for display in the main card (limit to 4)
@@ -306,13 +341,6 @@ export default function LearnerDashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden cursor-pointer"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
@@ -334,26 +362,24 @@ export default function LearnerDashboard() {
                         Sharpen Your Skills with <br />
                         Professional Online Courses
                       </h1>
-                    <Button
-                      variant="secondary"
-                      className={`
+                      <Button
+                        variant="secondary"
+                        className={`
                         bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
                         dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black
                       `}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Learning Now
-                    </Button>
-
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Start Learning Now
+                      </Button>
                     </div>
                     <div className="absolute top-12 right-15 w-55 h-55 opacity-90 hidden sm:block">
-  <img
-    src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_favicon.png"
-    alt="Hero decoration"
-    className="w-full h-full object-contain transform translate-x-10 -translate-y-10"
-  />
-</div>
-
+                      <img
+                        src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_favicon.png"
+                        alt="Hero decoration"
+                        className="w-full h-full object-contain transform translate-x-10 -translate-y-10"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -416,92 +442,117 @@ export default function LearnerDashboard() {
               </div>
 
               {/* Continue Watching + Mentors Container */}
-              <div className="flex flex-col lg:flex-row gap-8">
+              <div className="flex flex-col lg:flex-row lg:items-start gap-8 w-full">
                 {/* Main Content - 60% */}
-                <div className="w-full lg:flex-[0.6] space-y-8">
+                <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
                   <Card>
                     {/* Header: titles align flex-start on mobile, justify-between on desktop */}
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
                         Continue Watching
                       </CardTitle>
+
                       <div className="flex items-center gap-2 mt-2 sm:mt-0">
                         <button onClick={scrollLeft}>
                           <ChevronLeft
-                            className={`${textLight} hover:text-[${secondary}]`}
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
                           />
                         </button>
                         <button onClick={scrollRight}>
                           <ChevronRight
-                            className={`${textLight} hover:text-[${secondary}]`}
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
                           />
                         </button>
                       </div>
                     </CardHeader>
 
                     <CardContent>
-                      <div
-                        ref={continueWatchingRef}
-                        className="flex gap-4 overflow-x-auto no-scrollbar py-2 px-1 sm:px-2"
-                      >
-                        {continueWatchingItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="group cursor-pointer min-w-[260px]"
-                          >
-                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-                              <div className="aspect-video w-full bg-gradient-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 flex items-center justify-center">
-                                <Play className={`${textLight} h-8 w-8`} />
+                      {/* Responsive scroll container */}
+                      <div className="w-full">
+                        <div
+                          ref={continueWatchingRef}
+                          className="
+                            flex gap-4 
+                            overflow-x-auto overflow-y-hidden 
+                            lg:overflow-x-hidden 
+                            no-scrollbar 
+                            py-2 px-1 sm:px-2 
+                            scroll-smooth snap-x snap-mandatory
+                          "
+                        >
+                          {continueWatchingItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="
+                                group cursor-pointer 
+                                min-w-[280px] max-w-[280px] 
+                                flex-shrink-0 snap-start
+                              "
+                            >
+                              {/* Video thumbnail */}
+                              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px] flex items-center justify-center">
+                                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 flex items-center justify-center">
+                                  <Play className={`${textLight} h-8 w-8`} />
+                                </div>
+
+                                {/* Hover overlay */}
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="bg-white/90 dark:bg-gray-800/90 rounded-full p-3">
+                                    <Play
+                                      className={`h-6 w-6 text-[${secondary}]`}
+                                    />
+                                  </div>
+                                </div>
                               </div>
-                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div className="bg-white/90 dark:bg-gray-800/90 rounded-full p-3">
-                                  <Play
-                                    className={`h-6 w-6 text-[${secondary}]`}
-                                  />
+
+                              {/* Text content */}
+                              <div className="space-y-2 h-[110px] flex flex-col justify-between">
+                                <div>
+                                  <h3
+                                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                  >
+                                    {item.title}
+                                  </h3>
+                                  <div
+                                    className={`flex items-center text-xs ${textLight}`}
+                                  >
+                                    <span>{item.instructor}</span>
+                                    <span className="mx-2">•</span>
+                                    <span>{item.instructorTitle}</span>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                  <Progress value={item.progress} />
+                                  <p className={`text-xs ${textLight}`}>
+                                    {item.progress}% complete
+                                  </p>
                                 </div>
                               </div>
                             </div>
-                            <div className="space-y-2">
-                              <h3
-                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors`}
-                              >
-                                {item.title}
-                              </h3>
-                              <div className={`flex items-center text-xs ${textLight}`}>
-                                <span>{item.instructor}</span>
-                                <span className="mx-2">•</span>
-                                <span>{item.instructorTitle}</span>
-                              </div>
-                              <div className="space-y-1">
-                                <Progress value={item.progress} />
-                                <p className={`text-xs ${textLight}`}>
-                                  {item.progress}% complete
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Mentors - 40% (Updated logic) */}
-                <div className="w-full lg:flex-[0.4]">
+                <div className="w-full lg:w-[40%] xl:w-[35%] min-w-0">
                   <Card>
-                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                    <CardHeader className="flex sm:flex-row items-center sm:items-center justify-between">
                       <CardTitle className={`text-[${primary}]`}>
                         Your Mentors
                       </CardTitle>
                       {/* See All Button that opens the modal */}
                       {allMentors.length > 4 && (
-                          <Button
-                            variant="secondary"
-                            onClick={() => setIsModalOpen(true)}
-                            className={`text-[${primary}] text-sm px-3 py-1.5 h-auto mt-2 sm:mt-0 cursor-pointer`}
-                          >
-                            See All
-                          </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setIsModalOpen(true)}
+                          className={`text-[${primary}] text-sm px-3 py-1.5 h-auto mt-2 sm:mt-0 cursor-pointer`}
+                        >
+                          See All
+                        </Button>
                       )}
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -513,6 +564,80 @@ export default function LearnerDashboard() {
                   </Card>
                 </div>
               </div>
+
+
+
+              {/* 📚 Suggested for You */}
+<section className="mt-12 space-y-6">
+  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+    Suggested for You
+  </h2>
+  <div className="flex gap-4 overflow-x-auto no-scrollbar">
+    {[1, 2, 3, 4].map((n) => (
+      <div
+        key={n}
+        className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+      >
+        <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+          Course Title {n}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Short description goes here.
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
+{/* 🎯 Because You Took */}
+<section className="mt-12 space-y-6">
+  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+    Because You Took “Frontend Basics”
+  </h2>
+  <div className="flex gap-4 overflow-x-auto no-scrollbar">
+    {[1, 2, 3].map((n) => (
+      <div
+        key={n}
+        className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+      >
+        <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+          Advanced Frontend {n}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Continue your journey with deeper concepts.
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
+{/* 🚀 Coming Soon */}
+<section className="mt-12 space-y-6 mb-16">
+  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+    Coming Soon
+  </h2>
+  <div className="flex gap-4 overflow-x-auto no-scrollbar">
+    {[1, 2].map((n) => (
+      <div
+        key={n}
+        className="min-w-[240px] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner border border-gray-300 dark:border-gray-700 p-4"
+      >
+        <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-500 dark:text-gray-400">
+          Coming Soon...
+        </div>
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+          Upcoming Course {n}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Stay tuned for release!
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
             </div>
           </main>
 
@@ -523,9 +648,9 @@ export default function LearnerDashboard() {
 
       {/* Mentor Modal Component */}
       <MentorModal
-          mentors={allMentors}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+        mentors={allMentors}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </div>
   );

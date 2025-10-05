@@ -63,24 +63,30 @@ const StatCard: React.FC<StatCardProps> = ({
   trend,
   trendUp,
 }) => (
-  <div className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+  // Updated StatCard: uses white/gray-800 for card background, and primary colors for icon/trend
+  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-md transition-shadow">
     <div className="flex items-center justify-between mb-4">
-      <div className="p-3 bg-blue-50 rounded-lg">
-        <Icon className="w-6 h-6 text-blue-600" />
+      {/* Icon */}
+      <div className="p-3 bg-green-50 dark:bg-green-900/50 rounded-lg">
+        {/* Primary Color for Icon */}
+        <Icon className="w-6 h-6 text-[#72a210] dark:text-[#507800]" />
       </div>
       {trend && (
         <span
           className={`text-sm font-medium ${
-            trendUp ? "text-green-600" : "text-red-600"
+            trendUp
+              ? "text-green-600 dark:text-green-400"
+              : "text-red-600 dark:text-red-400"
           }`}
         >
           {trendUp ? "↑" : "↓"} {trend}
         </span>
       )}
     </div>
-    <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-    <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-    {subtitle && <p className="mt-1 text-sm text-gray-600">{subtitle}</p>}
+    {/* Text colors adjusted for light/dark mode */}
+    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
+    <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+    {subtitle && <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>}
   </div>
 );
 
@@ -101,7 +107,7 @@ export default function AdminDashboardPage() {
     auditLogs: [],
   });
 
-  // ✅ Fetch mock data
+  // Fetch mock metrics (kept as is)
   useEffect(() => {
     const fetchMetrics = async () => {
       setTimeout(() => {
@@ -124,92 +130,69 @@ export default function AdminDashboardPage() {
             status: "healthy",
           },
           auditLogs: [
-            {
-              id: 1,
-              action: "User role updated",
-              user: "admin@example.com",
-              timestamp: "2 mins ago",
-            },
-            {
-              id: 2,
-              action: "Module published",
-              user: "content@example.com",
-              timestamp: "15 mins ago",
-            },
-            {
-              id: 3,
-              action: "Feature flag toggled",
-              user: "admin@example.com",
-              timestamp: "1 hour ago",
-            },
-            {
-              id: 4,
-              action: "Bulk user import",
-              user: "admin@example.com",
-              timestamp: "2 hours ago",
-            },
-            {
-              id: 5,
-              action: "Settings updated",
-              user: "superadmin@example.com",
-              timestamp: "3 hours ago",
-            },
+            { id: 1, action: "User role updated", user: "admin@example.com", timestamp: "2 mins ago" },
+            { id: 2, action: "Module published", user: "content@example.com", timestamp: "15 mins ago" },
+            { id: 3, action: "Feature flag toggled", user: "admin@example.com", timestamp: "1 hour ago" },
+            { id: 4, action: "Bulk user import", user: "admin@example.com", timestamp: "2 hours ago" },
+            { id: 5, action: "Settings updated", user: "superadmin@example.com", timestamp: "3 hours ago" },
           ],
         });
       }, 500);
     };
-
     fetchMetrics();
   }, []);
 
   const getStatusColor = (status: SystemHealth["status"]) => {
-    if (status === "healthy") return "text-green-600 bg-green-50";
-    if (status === "warning") return "text-yellow-600 bg-yellow-50";
-    if (status === "error") return "text-red-600 bg-red-50";
-    return "text-gray-600 bg-gray-50";
+    if (status === "healthy")
+      return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/50";
+    if (status === "warning")
+      return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/50";
+    if (status === "error")
+      return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/50";
+    return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700";
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    // 1. Updated main container background
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 p-6 overflow-y-auto">
+          {/* Header */}
           <div className="mb-6">
-            <h2 className="text-3xl font-bold text-gray-900">Platform Overview</h2>
-            <p className="text-gray-600 mt-1">Monitor key metrics and system health</p>
+            {/* 2. Updated text colors */}
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Platform Overview</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Monitor key metrics and system health</p>
           </div>
 
-          {/* Key Metrics Grid */}
+          {/* Metrics Grid (StatCard component already updated) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <StatCard
               icon={Users}
               title="Total Registrations"
               value={metrics.totalRegistrations.toLocaleString()}
               trend="12.5%"
-              trendUp={true}
+              trendUp
             />
-
             <StatCard
               icon={TrendingUp}
               title="Weekly Active Users"
               value={metrics.wau.toLocaleString()}
               subtitle={`MAU: ${metrics.mau.toLocaleString()}`}
               trend="8.3%"
-              trendUp={true}
+              trendUp
             />
-
             <StatCard
               icon={CheckCircle}
               title="First Lesson Completion"
               value={`${metrics.firstLessonCompletionRate}%`}
               subtitle="Of new users"
               trend="5.2%"
-              trendUp={true}
+              trendUp
             />
-
             <StatCard
               icon={Clock}
               title="Median Time to First Content"
@@ -220,24 +203,29 @@ export default function AdminDashboardPage() {
             />
           </div>
 
-          {/* Module Completion Rates & System Health */}
+          {/* Module Completion & System Health */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Module Completion Rates */}
-            <div className="bg-white shadow rounded-lg p-6">
+            {/* Module Completion */}
+            {/* 3. Updated block background and header text color */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Module Completion Rates</h3>
-                <Activity className="w-5 h-5 text-gray-400" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Module Completion Rates
+                </h3>
+                <Activity className="w-5 h-5 text-gray-400 dark:text-gray-500" />
               </div>
               <div className="space-y-4">
                 {metrics.moduleCompletionRates.map((module, index) => (
                   <div key={index}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">{module.module}</span>
-                      <span className="text-sm font-semibold text-gray-900">{module.rate}%</span>
+                      {/* Text colors updated */}
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{module.module}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{module.rate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      {/* Retained primary color for progress bar */}
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        className="bg-[#72a210] h-2 rounded-full transition-all"
                         style={{ width: `${module.rate}%` }}
                       />
                     </div>
@@ -247,78 +235,90 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* System Health */}
-            <div className="bg-white shadow rounded-lg p-6">
+            {/* 4. Updated block background and header text color */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">System Health</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">System Health</h3>
                 <div
                   className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                     metrics.systemHealth.status
                   )}`}
                 >
-                  {metrics.systemHealth.status === "healthy" ? "All Systems Operational" : "Issues Detected"}
+                  {metrics.systemHealth.status === "healthy"
+                    ? "All Systems Operational"
+                    : "Issues Detected"}
                 </div>
               </div>
-
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {/* Background color and text colors updated for health items */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center">
-                    <Zap className="w-5 h-5 text-green-600 mr-3" />
+                    <Zap className="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">API Uptime</p>
-                      <p className="text-xs text-gray-500">Last 30 days</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">API Uptime</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Last 30 days</p>
                     </div>
                   </div>
-                  <span className="text-2xl font-bold text-green-600">{metrics.systemHealth.apiUptime}%</span>
+                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">{metrics.systemHealth.apiUptime}%</span>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center">
-                    <AlertCircle className="w-5 h-5 text-yellow-600 mr-3" />
+                    <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Sentry Errors</p>
-                      <p className="text-xs text-gray-500">Last 24 hours</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Sentry Errors</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Last 24 hours</p>
                     </div>
                   </div>
-                  <span className="text-2xl font-bold text-gray-900">{metrics.systemHealth.errorCount}</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.systemHealth.errorCount}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center">
-                    <Database className="w-5 h-5 text-blue-600 mr-3" />
+                    <Database className="w-5 h-5 text-[#72a210] dark:text-[#507800] mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Database Status</p>
-                      <p className="text-xs text-gray-500">Primary & replicas</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Database Status</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Primary & replicas</p>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-green-600">Healthy</span>
+                  <span className="text-sm font-semibold text-green-600 dark:text-green-400">Healthy</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Recent Audit Logs */}
-          <div className="bg-white shadow rounded-lg p-6">
+          {/* 5. Updated block background and header text color */}
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Audit Logs</h3>
-              <a href="/admin-dashboard/audit" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Audit Logs</h3>
+              {/* Retained primary color for 'View all' link */}
+              <a
+                href="/admin-dashboard/audit"
+                className="text-sm text-[#72a210] hover:text-[#507800] font-medium"
+              >
                 View all
               </a>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
+                {/* Table border updated */}
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Action</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">User</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Timestamp</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    {/* Header text colors updated */}
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Action</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">User</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Timestamp</th>
                   </tr>
                 </thead>
                 <tbody>
                   {metrics.auditLogs.map((log) => (
-                    <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm text-gray-900">{log.action}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{log.user}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{log.timestamp}</td>
+                    // Row border and hover background updated
+                    <tr key={log.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      {/* Cell text colors updated */}
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-100">{log.action}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300">{log.user}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{log.timestamp}</td>
                     </tr>
                   ))}
                 </tbody>

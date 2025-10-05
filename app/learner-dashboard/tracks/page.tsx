@@ -245,12 +245,6 @@ export default function TracksPage() {
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
@@ -277,7 +271,7 @@ export default function TracksPage() {
                 </span>
               </div>
 
-              <div className="flex sm:flex-row gap-2">
+<div className="flex sm:flex-row sm:justify-between gap-2">
                 {/* Level Dropdown */}
                 <div className="relative">
                   <button

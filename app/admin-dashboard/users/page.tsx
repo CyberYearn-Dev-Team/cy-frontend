@@ -119,31 +119,33 @@ export default function UserManagement() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  // Updated to include dark mode colors
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-purple-100 text-purple-700 border-purple-200";
+        return "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-700";
       case "instructor":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700";
       case "learner":
-        return "bg-green-100 text-green-700 border-green-200";
+        return "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700";
       case "guest":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600";
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600";
     }
   };
 
+  // Updated to include dark mode colors
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-700";
+        return "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300";
       case "suspended":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300";
       case "deleted":
-        return "bg-red-100 text-red-700";
+        return "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
@@ -157,6 +159,7 @@ export default function UserManagement() {
     setShowActionMenu(null);
   };
 
+  // Kept color classes for the icons, as they are mostly fixed colors
   const stats = [
     {
       label: "Total Users",
@@ -185,19 +188,19 @@ export default function UserManagement() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* ✅ Shared Sidebar */}
+    // 1. Update main background
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* ✅ Shared Header */}
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
+            {/* 2. Update header text colors */}
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
                 Manage users, roles, and permissions
               </p>
             </div>
@@ -205,11 +208,12 @@ export default function UserManagement() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {stats.map((s, i) => (
-                <div key={i} className="bg-white rounded-lg shadow p-6">
+                // 3. Update stat card background and text colors
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">{s.label}</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{s.label}</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                         {s.value}
                       </p>
                     </div>
@@ -224,20 +228,22 @@ export default function UserManagement() {
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  {/* 4. Update search input for dark mode */}
                   <input
                     type="text"
                     placeholder="Search users by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                   />
                 </div>
 
                 <div className="flex gap-3">
+                  {/* 5. Update selects for dark mode */}
                   <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                   >
                     <option value="all">All Roles</option>
                     <option value="admin">Admin</option>
@@ -249,7 +255,7 @@ export default function UserManagement() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -261,36 +267,40 @@ export default function UserManagement() {
             </div>
 
             {/* Users Table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* 6. Update table container background and shadow */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  {/* 7. Update table header background, border, and text */}
+                  <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         User
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         Role
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         Activity
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         Progress
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  {/* 8. Update table body background, dividers, and hover state */}
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
+                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
+                            {/* Avatar colors kept as is since they are a gradient */}
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                               {user.name
                                 .split(" ")
@@ -299,10 +309,11 @@ export default function UserManagement() {
                                 .toUpperCase()}
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
+                              {/* 9. Update user info text colors */}
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {user.name}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {user.email}
                               </div>
                             </div>
@@ -311,6 +322,7 @@ export default function UserManagement() {
                         <td className="px-6 py-4">
                           <button
                             onClick={() => setShowRoleModal(user)}
+                            // Role badge colors are now handled by getRoleBadgeColor
                             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(
                               user.role
                             )}`}
@@ -320,6 +332,7 @@ export default function UserManagement() {
                           </button>
                         </td>
                         <td className="px-6 py-4">
+                          {/* Status badge colors are now handled by getStatusBadgeColor */}
                           <span
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
                               user.status
@@ -328,20 +341,22 @@ export default function UserManagement() {
                             {user.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        {/* 10. Update activity text colors */}
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           <div>
                             <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1 text-gray-400" />
+                              <Clock className="w-4 h-4 mr-1 text-gray-400 dark:text-gray-500" />
                               Joined:{" "}
                               {new Date(user.dateJoined).toLocaleDateString()}
                             </div>
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-400 dark:text-gray-500">
                               Last seen:{" "}
                               {new Date(user.lastSeen).toLocaleDateString()}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        {/* 11. Update progress text colors */}
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {user.role === "instructor" && (
                             <div>Courses Created: {user.coursesCreated || 0}</div>
                           )}
@@ -359,16 +374,18 @@ export default function UserManagement() {
                                   showActionMenu === user.id ? null : user.id
                                 )
                               }
-                              className="p-2 hover:bg-gray-100 rounded-lg"
+                              // 12. Update action button hover and icon color
+                              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                             >
-                              <MoreVertical className="w-5 h-5 text-gray-600" />
+                              <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                             </button>
 
                             {showActionMenu === user.id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                              // 13. Update action menu dropdown background, borders, and text
+                              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10">
                                 <button
                                   onClick={() => handleStatusChange(user.id, "active")}
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                                 >
                                   Activate
                                 </button>
@@ -376,7 +393,7 @@ export default function UserManagement() {
                                   onClick={() =>
                                     handleStatusChange(user.id, "suspended")
                                   }
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-yellow-50"
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-yellow-50 dark:hover:bg-gray-600"
                                 >
                                   Suspend
                                 </button>
@@ -384,7 +401,7 @@ export default function UserManagement() {
                                   onClick={() =>
                                     handleStatusChange(user.id, "deleted")
                                   }
-                                  className="w-full text-left px-4 py-2 text-sm hover:bg-red-50"
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-600"
                                 >
                                   Delete
                                 </button>
@@ -400,8 +417,8 @@ export default function UserManagement() {
 
               {filteredUsers.length === 0 && (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">No users found</p>
+                  <Users className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">No users found</p>
                 </div>
               )}
             </div>
@@ -412,9 +429,10 @@ export default function UserManagement() {
       {/* Role Modal */}
       {showRoleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Change User Role</h3>
-            <p className="text-sm text-gray-600 mb-4">
+          {/* 14. Update modal background and shadow */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Change User Role</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Select a new role for {showRoleModal.name}
             </p>
 
@@ -425,8 +443,8 @@ export default function UserManagement() {
                   onClick={() => handleRoleChange(showRoleModal.id, role)}
                   className={`w-full text-left px-4 py-3 rounded-lg border-2 ${
                     showRoleModal.role === role
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 dark:text-gray-200"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -442,7 +460,8 @@ export default function UserManagement() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowRoleModal(null)}
-                className="flex-1 px-4 py-2 border rounded-lg"
+                // 15. Update cancel button appearance
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
