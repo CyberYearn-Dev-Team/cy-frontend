@@ -10,8 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, AlertTriangle } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import axios from "axios"
-import { toast } from "sonner"  
+import { toast } from "sonner"  
+import { registerUser } from "@/lib/api/auth"
 
 // Theme Constants
 const primary = "#72a210";
@@ -48,38 +48,28 @@ export default function RegisterPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       if (form.password !== form.confirmPassword) {
-        toast.error("Passwords do not match!")
-        setLoading(false)
-        return
+        toast.error("Passwords do not match!");
+        setLoading(false);
+        return;
       }
 
-      // ✅ Mock API call (replace with backend URL later)
-      await new Promise((resolve) => setTimeout(resolve, 1000)) // fake delay
-
-      // const res = await axios.post("http://backend-url.com/api/register", {
-      //   username: form.username,
-      //   email: form.email,
-      //   password: form.password,
-      // })
-
-      if (form.username && form.email && form.password) {
-        toast.success("Account created successfully")
-        router.push("/learner-dashboard/dashboard")
-      } else {
-        toast.error("Registration failed (mocked)")
-      }
+      await registerUser(form.email, form.password);
+      toast.success("Account created successfully");
+      router.push("/learner-dashboard/dashboard");
     } catch (error) {
-      console.error(error)
-      toast.error("Something went wrong. Please try again later.")
+      console.error(error);
+      const message = error instanceof Error ? error.message : "Registration failed";
+      toast.error(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
 
   return (
     <div>

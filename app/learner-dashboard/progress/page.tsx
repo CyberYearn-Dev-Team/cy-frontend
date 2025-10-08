@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 
 import { Search, BarChart3, BookOpen, Award } from "lucide-react";
@@ -269,6 +270,10 @@ export default function ProgressPage() {
               )}
             </div>
           </main>
+
+          {/* Navigation */}
+          <Nav /> 
+
           {/* Footer */}
           <LearnerFooter />
         </div>

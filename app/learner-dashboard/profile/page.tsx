@@ -1,291 +1,266 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import Sidebar from "@/components/ui/learner-sidebar";
+import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+import { getCurrentUser } from "@/lib/api/auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   User,
   Mail,
-  Edit3,
-  Phone,
-  CheckCircle,
+  AtSign,
+  Camera,
+  Save,
+  Calendar,
   Clock,
-  Play,
+  CheckCircle,
+  Shield,
 } from "lucide-react";
 
-import Link from "next/link";
-// Assuming Sidebar and Header components handle their own dark mode styling internally
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-
-// Theme Constants
+// Theme Constants from stored code
 const primary = "#72a210";
 const primaryDarker = "#507800";
-const bgLight = "bg-gray-50 dark:bg-gray-950"; // Main page background
-const cardBg = "bg-white dark:bg-gray-900"; // Card background
-const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
-const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
-const textLabel = "text-gray-700 dark:text-gray-200"; // Label text
-const textLight = "text-gray-500 dark:text-gray-400"; // Subtle/Icon text
-const borderLight = "border-gray-200 dark:border-gray-700"; // Light border
 
-// Reusable components
-const Card = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <div
-    // Applied dark mode background and border
-    className={`${cardBg} rounded-xl shadow-md border ${borderLight} ${className}`}
-  >
-    {children}
-  </div>
-);
+export default function ProfilePage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [savingAvatar, setSavingAvatar] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-const CardContent = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => <div className={`px-4 py-4 ${className}`}>{children}</div>;
+  const [profile, setProfile] = useState({
+    fullName: "",
+    email: "",
+    username: "",
+    role: "Learner",
+    createdAt: "",
+    lastLogin: "",
+  });
 
-const Button = ({
-  children,
-  className = "",
-  variant = "primary",
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "success" | "outline";
-}) => {
-  const baseClasses =
-    "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
-  const variants = {
-    // Applied theme colors
-    primary: `bg-[${primary}] hover:bg-[${primaryDarker}] text-white focus:ring-[${primary}]`,
-    success: "bg-green-500 hover:bg-green-600 text-white focus:ring-green-500",
-    // Applied dark mode colors for outline
-    outline:
-      `border ${borderLight} ${cardBg} hover:bg-gray-50 dark:hover:bg-gray-800 ${textMedium} focus:ring-[${primary}]`,
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getCurrentUser();
+        const u = res?.data || res;
+        setProfile({
+          fullName: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
+          email: u?.email || "",
+          username: u?.username || "",
+          role: u?.role || "Learner",
+          createdAt: u?.createdAt || "",
+          lastLogin: u?.lastLogin || "",
+        });
+      } catch (err) {
+        console.error("Failed to load user:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      setProfileImage(dataUrl);
+      console.log("🖼️ Uploaded avatar (dummy):", dataUrl);
+      toast.success("Profile photo updated (mock)");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      console.log("Saving profile (dummy):", profile);
+      toast.success("Profile saved successfully (mock)");
+    } catch (err) {
+      toast.error("Failed to save profile");
+    }
   };
 
   return (
-    <button
-      className={`${baseClasses} ${variants[variant]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-export default function ProfilePage() {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
-
-  return (
-    // Applied dark mode background to main container
-    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left side (Profile + Courses) */}
-            <div className="lg:col-span-2">
-              {/* Profile Info */}
-              <Card>
-                <CardContent className="p-8">
-                  <div className="flex justify-between items-start mb-6">
-                    {/* Applied dark mode text color */}
-                    <h2 className={`text-xl font-bold ${textDark}`}>
-                      Shillmonger
-                    </h2>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pb-20 md:pb-8 mb-[50px] md:mb-0">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {loading
+                ? "Loading..."
+                : profile.username
+                ? `Welcome, ${profile.username}! 👋`
+                : "Your Profile"}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage your personal information and account details
+            </p>
+          </div>
 
-                    <Link href="/learner-dashboard/account-setting" passHref>
-                      <Button variant="outline" className={`p-2 ${textMedium} dark:text-gray-300`}>
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-start sm:space-x-6 space-y-6 sm:space-y-0">
-                    {/* Avatar */}
-                    <div className="relative flex justify-center sm:justify-start">
-                      {/* Applied theme color to avatar background */}
-                      <div className={`h-30 w-30 rounded-full bg-[${primary}] flex items-center justify-center overflow-hidden`}>
-                        <img
-                          src="/api/placeholder/120/120"
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove("hidden");
-                          }}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Profile Picture + Status */}
+            <div className="lg:col-span-1">
+              {/* Profile Picture Card */}
+              <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-gray-900 dark:text-gray-100">
+                    Profile Picture
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-400">
+                    Upload your profile photo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-4">
+                      <div className={`w-32 h-32 rounded-full bg-[${primary}] flex items-center justify-center text-white text-4xl font-bold overflow-hidden`}>
+                        {profileImage ? (
+                          <img
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>
+                            {profile.fullName
+                              ? profile.fullName
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                              : "U"}
+                          </span>
+                        )}
+                      </div>
+                      <label
+                        htmlFor="profile-upload"
+                        className={`absolute bottom-0 right-0 w-10 h-10 bg-[${primary}] hover:bg-[${primaryDarker}] rounded-full flex items-center justify-center cursor-pointer shadow-lg transition`}
+                      >
+                        <Camera className="w-5 h-5 text-white" />
+                        <input
+                          id="profile-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
                         />
-                        <User className="h-14 w-14 text-white hidden" />
-                      </div>
+                      </label>
                     </div>
-
-
-                    {/* Info */}
-                    <div className="flex-1">
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          {/* Applied dark mode text color */}
-                          <p className={`text-sm ${textLight} mb-1`}>
-                            Fullname:
-                          </p>
-                          {/* Applied dark mode text color */}
-                          <p className={`font-medium ${textDark}`}>
-                            Shillmonger Agu
-                          </p>
-                        </div>
-                        <div>
-                          {/* Applied dark mode text color */}
-                          <p className={`text-sm ${textLight} mb-1`}>
-                            Email:
-                          </p>
-                          {/* Applied dark mode text color */}
-                          <p className={`font-medium ${textDark}`}>
-                            shillmonger0@gmail.com
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                      Click the camera icon to upload a new photo
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* My Courses */}
-              <Card className="mt-6">
-                <CardContent className="p-8">
-                  {/* Applied dark mode text color */}
-                  <h3 className={`text-lg font-bold ${textDark} mb-6`}>
-                    My Cybersecurity Tracks
-                  </h3>
-
-                  <div className="space-y-4">
-                    {/* Beginner */}
-                    {/* Applied dark mode border */}
-                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
-                      <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/50 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400"></div>
-                        </div>
-
-                        <div>
-                          {/* Applied dark mode text color */}
-                          <h4 className={`font-medium ${textDark}`}>
-                            Cybersecurity Fundamentals
-                          </h4>
-                          {/* Applied dark mode text color */}
-                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
-                        </div>
-                      </div>
-                      {/* Level Badge */}
-                      <span className="text-xs font-semibold bg-green-600 text-white px-3 py-1 rounded-full">
-                        Beginner
-                      </span>
-                    </div>
-
-                    {/* Intermediate */}
-                    {/* Applied dark mode border */}
-                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
-                      <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/50 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-yellow-500 dark:bg-yellow-400"></div>
-                        </div>
-                        <div>
-                          {/* Applied dark mode text color */}
-                          <h4 className={`font-medium ${textDark}`}>
-                            Network Security & Ethical Hacking
-                          </h4>
-                          {/* Applied dark mode text color */}
-                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
-                        </div>
-                      </div>
-                      {/* Level Badge */}
-                      <span className="text-xs font-semibold bg-yellow-500 text-white px-3 py-1 rounded-full">
-                        Intermediate
-                      </span>
-                    </div>
-
-                    {/* Advanced */}
-                    {/* Applied dark mode border */}
-                    <div className={`flex items-center justify-between p-4 border ${borderLight} rounded-lg`}>
-                      <div className="flex items-center space-x-4">
-                        <div className="hidden sm:flex w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-red-500 dark:bg-red-400"></div>
-                        </div>
-                        <div>
-                          {/* Applied dark mode text color */}
-                          <h4 className={`font-medium ${textDark}`}>
-                            Advanced Penetration Testing
-                          </h4>
-                          {/* Applied dark mode text color */}
-                          <p className={`text-sm ${textMedium}`}>0 lessons</p>
-                        </div>
-                      </div>
-                      {/* Level Badge */}
-                      <span className="text-xs font-semibold bg-red-500 text-white px-3 py-1 rounded-full">
-                        Advanced
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
             </div>
 
-            {/* Right side (Learning Progress) */}
-            <div className="space-y-6">
-              {/* Applied theme gradient to progress card */}
-              <Card className={`bg-gradient-to-br from-[${primary}] to-[${primaryDarker}] text-white`}>
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-lg font-bold mb-4">Your Learning Path</h3>
-                  <ul className="text-sm space-y-4 mb-6">
-                    <li className="flex items-center justify-between">
-                      <span>Beginner</span>
-                      {/* Applied theme color to percentage badge text */}
-                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
-                        0%
-                      </span>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span>Intermediate</span>
-                      {/* Applied theme color to percentage badge text */}
-                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
-                        0%
-                      </span>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <span>Advanced</span>
-                      {/* Applied theme color to percentage badge text */}
-                      <span className={`text-xs bg-white text-[${primaryDarker}] px-2 py-1 rounded-full`}>
-                        0%
-                      </span>
-                    </li>
-                  </ul>
+            {/* Basic Info */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                      <User className={`w-5 h-5 text-[${primary}]`} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-gray-900 dark:text-gray-100">
+                        Basic Information
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 dark:text-gray-400">
+                        Update your personal account details
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Username */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Username
+                      </label>
+                      <div className="relative">
+                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value={profile.username}
+                          onChange={(e) =>
+                            setProfile({ ...profile, username: e.target.value })
+                          }
+                          placeholder="username"
+                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] focus:border-transparent text-gray-900 dark:text-gray-100 transition`}
+                        />
+                      </div>
+                    </div>
 
-                  <Link href="/learner-dashboard/tracks" passHref>
-                    <Button
-                      variant="outline"
-                      // Applied theme color to outline button inside the gradient card
-                      className={`w-full bg-white text-[${primaryDarker}] border-white hover:bg-gray-50 dark:hover:bg-gray-100 cursor-pointer`}
-                    >
-                      Continue Learning
-                    </Button>
-                  </Link>
+                    {/* Full Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value={profile.fullName}
+                          onChange={(e) =>
+                            setProfile({ ...profile, fullName: e.target.value })
+                          }
+                          placeholder="Enter your full name"
+                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] focus:border-transparent text-gray-900 dark:text-gray-100 transition`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email Address
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="email"
+                          value={profile.email}
+                          disabled
+                          className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex items-center gap-3 pt-4">
+                      <button
+                        onClick={handleSaveProfile}
+                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl cursor-pointer`}
+                      >
+                        <Save className="w-5 h-5" />
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         </main>
+
+        <Nav />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+
 import LearnerFooter from "@/components/ui/learner-footer";
 import { Phone, Mail, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -268,6 +270,8 @@ export default function ContactUsPage() {
               </div>
             </div>
           </main>
+
+          <Nav />
 
           {/* Footer */}
           <LearnerFooter />

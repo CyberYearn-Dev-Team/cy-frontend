@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu, ChevronDown, LogOut, User, Settings, Moon, Sun } from "lucide-react";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/api/auth";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -11,6 +12,8 @@ interface HeaderProps {
 export default function Header({ setSidebarOpen }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load theme from localStorage
@@ -20,6 +23,23 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
       setDarkMode(true);
       document.documentElement.classList.add("dark");
     }
+  }, []);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getCurrentUser();
+        console.log("🔍 [learner-header] Received user data:", userData);
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   // Handle theme toggle
@@ -81,21 +101,33 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
               className="flex items-center space-x-2 focus:outline-none cursor-pointer"
             >
               <div className="w-8 h-8 bg-[#72a210] rounded-full flex items-center justify-center text-white font-medium">
-                A
+                {loading ? "..." : (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "U"}
               </div>
               <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Alex Chen
-              </span>
+  {loading
+    ? "Loading..."
+    : user?.data?.username || user?.username || user?.data?.email || user?.email || "User"}
+</span>
+
               <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </button>
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
-                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Alex Chen</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">alex.chen@email.com</p>
-                </div>
+               <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+    {loading
+      ? "Loading..."
+      : user?.data?.username || user?.username || "User"}
+  </p>
+  <p className="text-xs text-gray-500 dark:text-gray-400">
+    {loading
+      ? "Loading..."
+      : user?.data?.email || user?.email || "user@email.com"}
+  </p>
+</div>
+
 
                 {/* Profile link */}
                 <Link href="/learner-dashboard/profile">

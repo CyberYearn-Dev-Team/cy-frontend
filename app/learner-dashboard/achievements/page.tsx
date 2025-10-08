@@ -5,6 +5,8 @@ import { Trophy } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+
 import LearnerFooter from "@/components/ui/learner-footer";
 
 // Reusable Card Wrapper
@@ -132,6 +134,8 @@ export default function AchievementsPage() {
               </CardContent>
             </Card>
           </main>
+
+          <Nav />
 
           {/* Footer */}
           <LearnerFooter />

@@ -22,6 +22,7 @@ import {
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 
 // Theme Colors
@@ -640,6 +641,9 @@ export default function LearnerDashboard() {
 
             </div>
           </main>
+
+          {/* Navigation */}
+          <Nav />
 
           {/* Footer */}
           <LearnerFooter />
