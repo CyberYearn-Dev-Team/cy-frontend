@@ -58,7 +58,7 @@ export default function Home() {
             build your skills in a safe, controlled environment designed
             exclusively for education.
           </p>
-          <div className="flex flex-col-reverse sm:flex-row gap-4 justify-center w-full">
+          <div className="flex sm:flex-row gap-4 justify-center w-full">
             <Link href="/auth/register" className="w-full sm:w-auto">
               <Button
                 size="lg"

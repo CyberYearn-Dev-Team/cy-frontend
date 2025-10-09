@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 import { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
@@ -93,6 +94,10 @@ export default function CookiesPage() {
               </div>
             )}
           </main>
+
+           {/* Navigation */}
+                              <Nav />
+                    
 
           {/* Footer */}
           <LearnerFooter />
