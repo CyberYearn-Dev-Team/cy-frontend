@@ -180,10 +180,27 @@ export default function TracksPage() {
 
   useEffect(() => {
     (async () => {
-      // Logic for fetching tracks remains the same
       try {
+        console.log('Fetching tracks from API...');
         const res = await fetch("/api/tracks");
+        
+        if (!res.ok) {
+          throw new Error(`API request failed: ${res.status}`);
+        }
+        
         const data = await res.json();
+        console.log('API Response:', data);
+        
+        // Handle different possible response structures from Directus
+        let tracksData = [];
+        if (data?.data && Array.isArray(data.data)) {
+          tracksData = data.data;
+        } else if (Array.isArray(data)) {
+          tracksData = data;
+        } else if (data?.tracks && Array.isArray(data.tracks)) {
+          tracksData = data.tracks;
+        }
+        
         const safe = (v: unknown): Track => {
           const obj = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
           const modulesVal = obj.modules;
@@ -204,11 +221,12 @@ export default function TracksPage() {
             buttonVariant: "secondary",
           };
         };
-        const cmsTracks: Track[] = Array.isArray(data?.data)
-          ? data.data.map((t: unknown) => safe(t))
-          : [];
+        
+        const cmsTracks: Track[] = tracksData.map((t: unknown) => safe(t));
+        console.log('Processed tracks:', cmsTracks);
         setTracksFromCMS(cmsTracks);
-      } catch {
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
         setTracksFromCMS([]);
       } finally {
         setLoading(false);

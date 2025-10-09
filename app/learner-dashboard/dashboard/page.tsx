@@ -330,7 +330,7 @@ export default function LearnerDashboard() {
   ];
 
   // Limited list for display in the main card (limit to 4)
-  const visibleMentors = allMentors.slice(0, 4);
+  const visibleMentors = allMentors.slice(0, 5);
 
   return (
     // APPLY MAIN BACKGROUND DARK MODE CLASS

@@ -100,7 +100,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
               onClick={() => setDropdownOpen((prev) => !prev)}
               className="flex items-center space-x-2 focus:outline-none cursor-pointer"
             >
-              <div className="w-8 h-8 bg-[#72a210] rounded-full flex items-center justify-center text-white font-medium">
+              <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[20px]">
                 {loading ? "..." : (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "U"}
               </div>
               <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">

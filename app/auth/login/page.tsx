@@ -45,7 +45,7 @@ export default function LoginPage() {
       toast.success("Login successful");
       router.push("/learner-dashboard/dashboard");
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       const message = error instanceof Error ? error.message : "Login failed! Please check your credentials.";
       toast.error(message);
     } finally {

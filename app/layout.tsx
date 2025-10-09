@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// All related to header 
+// All related to my header 
 export const metadata: Metadata = {
-  title: "cyberlearn",
+  title: "cyber Yearn",
   description: "Master Cybersecurity through hands-on learning",
   icons: {
     icon: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_favicon.png",
@@ -35,9 +35,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <Toaster position="top-right" richColors /> {/* 👈 Sonner Toaster */}
+        <Toaster position="top-right" richColors /> {/* Sonner Toaster */}
 
-        <CookieConsent /> {/* 👈 Shows on every page */}
+        <CookieConsent /> {/* shows on every page */}
       </body>
     </html>
   );

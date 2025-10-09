@@ -62,7 +62,7 @@ export default function RegisterPage() {
       toast.success("Account created successfully");
       router.push("/learner-dashboard/dashboard");
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       const message = error instanceof Error ? error.message : "Registration failed";
       toast.error(message);
     } finally {
