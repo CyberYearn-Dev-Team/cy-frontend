@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 
 // Reusable Card
@@ -171,6 +172,10 @@ export default function LabGuidesPage() {
               </CardContent>
             </Card>
           </main>
+
+          {/* Navigation */}
+                    <Nav />
+          
 
           {/* Footer */}
           <LearnerFooter />
