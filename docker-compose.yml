@@ -17,7 +17,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./uploads:/directus/uploads   # 👈 local folder in your project
+      - ./uploads:/directus/uploads   # local folder in your project
 
   db:
     image: postgres:15
@@ -26,6 +26,6 @@ services:
       POSTGRES_USER: "directus"
       POSTGRES_PASSWORD: "directus"
     volumes:
-      - ./data:/var/lib/postgresql/data   # 👈 keep DB data locally too
+      - ./data:/var/lib/postgresql/data   #keep DB data locally too
 
 # no need to define volumes block when using local folders

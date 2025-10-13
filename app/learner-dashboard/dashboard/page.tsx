@@ -17,7 +17,7 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
-  X, // Added X for modal close button
+  X,
 } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
@@ -29,9 +29,8 @@ import LearnerFooter from "@/components/ui/learner-footer";
 const primary = "#72a210";
 const secondary = "#507800";
 const hover = "#5a850d";
-// UPDATED BACKGROUNDS AND TEXT FOR DARK MODE SUPPORT
-const bgLight = "bg-gray-50 dark:bg-gray-950"; // Main page background
-const bgCard = "bg-white dark:bg-gray-900"; // Card background
+const bgLight = "bg-gray-50 dark:bg-gray-950";
+const bgCard = "bg-white dark:bg-gray-900";
 const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
@@ -46,7 +45,7 @@ interface Mentor {
   id: number;
   name: string;
   title: string;
-  avatar: string; // Kept avatar property, though currently using initials avatar
+  avatar: string;
   isFollowing: boolean;
 }
 
@@ -342,7 +341,6 @@ export default function LearnerDashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
             <div className="max-w-7xl mx-auto space-y-10">
@@ -566,79 +564,76 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
+              {/*Suggested for You */}
+              <section className="mt-12 space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Suggested for You
+                </h2>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div
+                      key={n}
+                      className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+                    >
+                      <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
+                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+                        Course Title {n}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Short description goes here.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
 
+              {/*Because You Took */}
+              <section className="mt-12 space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Because You Took “Frontend Basics”
+                </h2>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar">
+                  {[1, 2, 3].map((n) => (
+                    <div
+                      key={n}
+                      className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+                    >
+                      <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
+                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+                        Advanced Frontend {n}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Continue your journey with deeper concepts.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
 
-              {/* 📚 Suggested for You */}
-<section className="mt-12 space-y-6">
-  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-    Suggested for You
-  </h2>
-  <div className="flex gap-4 overflow-x-auto no-scrollbar">
-    {[1, 2, 3, 4].map((n) => (
-      <div
-        key={n}
-        className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
-      >
-        <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
-        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-          Course Title {n}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Short description goes here.
-        </p>
-      </div>
-    ))}
-  </div>
-</section>
-
-{/* 🎯 Because You Took */}
-<section className="mt-12 space-y-6">
-  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-    Because You Took “Frontend Basics”
-  </h2>
-  <div className="flex gap-4 overflow-x-auto no-scrollbar">
-    {[1, 2, 3].map((n) => (
-      <div
-        key={n}
-        className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
-      >
-        <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
-        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-          Advanced Frontend {n}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Continue your journey with deeper concepts.
-        </p>
-      </div>
-    ))}
-  </div>
-</section>
-
-{/* 🚀 Coming Soon */}
-<section className="mt-12 space-y-6 mb-16">
-  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-    Coming Soon
-  </h2>
-  <div className="flex gap-4 overflow-x-auto no-scrollbar">
-    {[1, 2].map((n) => (
-      <div
-        key={n}
-        className="min-w-[240px] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner border border-gray-300 dark:border-gray-700 p-4"
-      >
-        <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-500 dark:text-gray-400">
-          Coming Soon...
-        </div>
-        <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-          Upcoming Course {n}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Stay tuned for release!
-        </p>
-      </div>
-    ))}
-  </div>
-</section>
-
+              {/*Coming Soon */}
+              <section className="mt-12 space-y-6 mb-16">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Coming Soon
+                </h2>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar">
+                  {[1, 2].map((n) => (
+                    <div
+                      key={n}
+                      className="min-w-[240px] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner border border-gray-300 dark:border-gray-700 p-4"
+                    >
+                      <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                        Coming Soon...
+                      </div>
+                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
+                        Upcoming Course {n}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Stay tuned for release!
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </main>
 

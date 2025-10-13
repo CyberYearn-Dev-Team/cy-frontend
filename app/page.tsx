@@ -25,11 +25,11 @@ import {
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#5c880d";
-const bgLight = "bg-white dark:bg-gray-950"; // Main page background
-const cardBg = "bg-white dark:bg-gray-900"; // Card background
-const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
-const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
-const borderLight = "border-gray-200 dark:border-gray-800"; // Card border
+const bgLight = "bg-white dark:bg-gray-950"; 
+const cardBg = "bg-white dark:bg-gray-900";
+const textDark = "text-gray-900 dark:text-gray-100"; 
+const textMedium = "text-gray-600 dark:text-gray-300"; 
+const borderLight = "border-gray-200 dark:border-gray-800"; 
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function Home() {
   return (
     // Applied dark mode background
     <div className={`min-h-screen ${bgLight}`}>
-      {/* inporting header drom component */}
+      {/* inporting header component */}
       <Header />
 
       {/*My Hero Section */}
