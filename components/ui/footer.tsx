@@ -5,18 +5,23 @@ import { useState, useEffect } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export default function Footer() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true); // ✅ default is dark
 
-  // Load saved theme from localStorage
   useEffect(() => {
+    // Load saved theme from localStorage, or default to dark
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
+
+    if (savedTheme === "light") {
+      setDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    } else {
+      // Default or "dark"
       setDarkMode(true);
       document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     }
   }, []);
 
-  // Toggle theme
   const toggleTheme = () => {
     if (darkMode) {
       document.documentElement.classList.remove("dark");
@@ -34,17 +39,25 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
           {/* Brand */}
           <div className="md:max-w-sm">
-        <Link href="/">
-            <img
-              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
-              alt="CyberLearn Logo"
-              className="h-11 w-auto"
-            />
-        </Link>
-            <p className="text-[15px] text-gray-400 leading-relaxed mt-4">
+            <Link href="/">
+              <img
+                src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
+                alt="CyberLearn Logo"
+                className="h-11 w-auto"
+              />
+            </Link>
+            <p className="text-[15px] text-gray-300 leading-relaxed mt-4">
               CyberYearn is your comprehensive platform for cybersecurity
               education, offering hands-on training and expert-led courses
               to master cybersecurity skills efficiently.
+            </p>
+            <p className="text-[15px] text-gray-300 leading-relaxed mt-4">
+               Our curriculum is mapped to competencies and exam objectives from
+              (ISC)², CompTIA Security+, and Splunk, making it suitable as
+              supplementary study material. CyberYearn is not affiliated with,
+              sponsored, or endorsed by these organizations. All names, logos,
+              and trademarks belong to their respective owners and are used for
+              identification and reference only.
             </p>
           </div>
 
