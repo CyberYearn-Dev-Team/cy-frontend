@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Trophy } from "lucide-react";
+import { Trophy, Lock } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
-
 import LearnerFooter from "@/components/ui/learner-footer";
 
 // Reusable Card Wrapper
@@ -46,7 +45,7 @@ const CardContent = ({ children }: { children: React.ReactNode }) => (
 export default function AchievementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Example achievements
+  // Example achievements with locked/unlocked state
   const achievements = [
     {
       id: 1,
@@ -54,6 +53,7 @@ export default function AchievementsPage() {
       description: "Completed your first lesson",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+      unlocked: false,
     },
     {
       id: 2,
@@ -61,6 +61,7 @@ export default function AchievementsPage() {
       description: "Scored 90%+ on 5 quizzes",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+      unlocked: false,
     },
     {
       id: 3,
@@ -68,6 +69,7 @@ export default function AchievementsPage() {
       description: "Completed 5 lab guides",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%203.png",
+      unlocked: false,
     },
     {
       id: 4,
@@ -75,6 +77,7 @@ export default function AchievementsPage() {
       description: "Maintained a 7-day streak",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
+      unlocked: false,
     },
     {
       id: 5,
@@ -82,6 +85,7 @@ export default function AchievementsPage() {
       description: "Earned 1000 XP",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%205.png",
+      unlocked: false,
     },
     {
       id: 6,
@@ -89,6 +93,7 @@ export default function AchievementsPage() {
       description: "Top 1 in leaderboard",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%206.png",
+      unlocked: false,
     },
   ];
 
@@ -97,7 +102,6 @@ export default function AchievementsPage() {
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-
       {/* Main Content Layout */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -105,7 +109,7 @@ export default function AchievementsPage() {
 
         {/* Page Content + Footer Wrapper */}
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-<main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-8">
+          <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-8">
             {/* Achievements Grid */}
             <Card>
               <CardHeader
@@ -113,15 +117,32 @@ export default function AchievementsPage() {
                 icon={<Trophy className="h-5 w-5 text-[#72a210]" />}
               />
               <CardContent>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {achievements.map((a) => (
                     <div
                       key={a.id}
-                      className="relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210] 
-                      bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300 
-                      hover:scale-105 hover:shadow-lg cursor-pointer"
+                      className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
+                        bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300
+                        hover:scale-105 hover:shadow-lg cursor-pointer
+                        ${!a.unlocked ? "opacity-60 grayscale hover:grayscale-0" : ""}`}
                     >
-                      <img src={a.image} alt={a.name} className="w-22 h-20" />
+                      {/* Image */}
+                      <img
+                        src={a.image}
+                        alt={a.name}
+                        className={`w-22 h-20 transition-all duration-300 ${
+                          !a.unlocked ? "grayscale" : ""
+                        }`}
+                      />
+
+                      {/* Lock Overlay for Locked Achievements */}
+                      {!a.unlocked && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
+                          <Lock className="h-8 w-8 text-white opacity-80" />
+                        </div>
+                      )}
+
+                      {/* Text */}
                       <p className="font-semibold text-gray-900 dark:text-gray-100 mt-3 text-base">
                         {a.name}
                       </p>

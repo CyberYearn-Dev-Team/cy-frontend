@@ -1,8 +1,7 @@
 // /app/api/legal-pages/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 
-const DIRECTUS_URL = process.env.DIRECTUS_URL || "http://localhost:8055"; // e.g., https://my-directus.com
-const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || process.env.DIRECTUS_STATIC_TOKEN || ""; // Optional: if you need auth
+const DIRECTUS_URL = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com"; // e.g., https://my-directus.com
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,12 +11,11 @@ export async function GET(request: NextRequest) {
 
     // If a type is specified, filter by type
     if (type) {
-      url.searchParams.append("filter[type][_eq]", encodeURIComponent(type));
+      url.searchParams.append("filter[type][_eq]", type);
     }
 
     // Build headers only when token is present
     const headers: Record<string, string> = {};
-    if (DIRECTUS_TOKEN) headers.Authorization = `Bearer ${DIRECTUS_TOKEN}`;
 
     // Fetch from Directus (no-store so dev reflects latest)
     const res = await fetch(url.toString(), {

@@ -21,7 +21,6 @@ import {
   Users,
   ArrowRight,
 } from "lucide-react";
-
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#5c880d";

@@ -7,7 +7,7 @@ export async function GET(
   const { moduleSlug } = await context.params;
 
   try {
-    const base = process.env.DIRECTUS_URL || "http://localhost:8055";
+    const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
     const encoded = encodeURIComponent(moduleSlug);
 
     const directusRes = await fetch(

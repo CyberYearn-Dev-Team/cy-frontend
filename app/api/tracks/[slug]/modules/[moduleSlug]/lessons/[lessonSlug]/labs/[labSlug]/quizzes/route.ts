@@ -14,20 +14,37 @@ export async function GET(
   const { labSlug } = await context.params;
 
   try {
-    const base = process.env.DIRECTUS_URL || "http://localhost:8055";
+    const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const token = process.env.DIRECTUS_TOKEN;
     const encoded = encodeURIComponent(labSlug);
 
+    const baseHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    const headers: HeadersInit = { ...baseHeaders };
+    const hasAuth = Boolean(token && token.trim() !== "" && token !== "undefined");
+    if (hasAuth) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     // ✅ Fetch from lab_guides (not lessons)
-    const directusRes = await fetch(
+    let directusRes = await fetch(
       `${base}/items/lab_guides?filter[slug][_eq]=${encoded}&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
       {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.DIRECTUS_TOKEN ?? ""}`,
-        },
+        headers,
         cache: "no-store",
       }
     );
+
+    if (!directusRes.ok && [401, 403].includes(directusRes.status) && hasAuth) {
+      directusRes = await fetch(
+        `${base}/items/lab_guides?filter[slug][_eq]=${encoded}&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
+        {
+          headers: baseHeaders,
+          cache: "no-store",
+        }
+      );
+    }
 
     if (!directusRes.ok) {
       return NextResponse.json(

@@ -113,7 +113,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
         </nav>
       </aside>
 
-      {/* ✅ Logout Confirmation Modal */}
+      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-80 p-6 text-center">

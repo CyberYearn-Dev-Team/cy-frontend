@@ -16,10 +16,18 @@ export default function LearnerFooter() {
               alt="CyberLearn Logo"
               className="h-11 w-auto"
             />
-            <p className="text-[15px] text-gray-400 leading-relaxed mt-4">
+            <p className="text-[15px] text-gray-300 leading-relaxed mt-4">
               CyberYearn is your comprehensive platform for cybersecurity
               education, offering hands-on training and expert-led courses
               to master cybersecurity skills efficiently.
+            </p>
+            <p className="text-[15px] text-gray-300 leading-relaxed mt-4">
+               Our curriculum is mapped to competencies and exam objectives from
+              (ISC)², CompTIA Security+, and Splunk, making it suitable as
+              supplementary study material. CyberYearn is not affiliated with,
+              sponsored, or endorsed by these organizations. All names, logos,
+              and trademarks belong to their respective owners and are used for
+              identification and reference only.
             </p>
           </div>
 

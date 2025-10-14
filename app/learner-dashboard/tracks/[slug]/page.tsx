@@ -17,7 +17,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#5c880d";
@@ -46,7 +45,7 @@ interface Track {
   title: string;
   slug: string;
   description: string;
-  thumbnail?: string;
+  thumbnail?: string | { id: string };
   level: string;
   topic: string;
   duration: string;
@@ -103,17 +102,19 @@ export default function TrackDetailPage() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Breadcrumb */}
           <Breadcrumb>
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/learner-dashboard/tracks">Tracks</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbPage>Result</BreadcrumbPage>
-    </BreadcrumbItem>
-  </BreadcrumbList>
-</Breadcrumb>
- <br />
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/learner-dashboard/tracks">
+                  Tracks
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Result</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <br />
           {loading ? (
             <p className={textLight}>Loading track...</p>
           ) : !track ? (
@@ -123,70 +124,79 @@ export default function TrackDetailPage() {
               {/* Left: Track info + modules */}
               <div className="lg:col-span-3 space-y-6">
                 {/* Track Header */}
-                <div className={`${cardBg} shadow rounded-lg p-6`}>
-                  <div className="flex items-start gap-6">
-                    {track.thumbnail && (
+                <div
+                  className={`${cardBg} shadow-lg rounded-2xl overflow-hidden`}
+                >
+                  {/* Thumbnail */}
+                  {track.thumbnail && (
+                    <div className="relative w-full aspect-[16/9] overflow-hidden">
                       <img
                         src={`${
-                          process.env.NEXT_PUBLIC_DIRECTUS_URL ||
                           process.env.DIRECTUS_URL ||
-                          "http://localhost:8055"
-                        }/assets/${track.thumbnail}`}
+                          "https://cy-directus.onrender.com"
+                        }/assets/${
+                          typeof track.thumbnail === "string"
+                            ? track.thumbnail
+                            : track.thumbnail?.id
+                        }`}
                         alt={track.title}
-                        className="w-24 h-24 rounded-lg object-cover"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
-                    )}
-                    <div className="flex-1">
-                      <h1 className={`text-3xl font-bold ${textDark} mb-2`}>
-                        {track.title}
-                      </h1>
-                      <p className={`${textMedium} mb-4`}>
-                        {track.description}
-                      </p>
-
-                      <div className="flex items-center gap-4 mb-4">
-                        <span
-                          className={`px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 ${textMedium} text-sm capitalize`}
-                        >
-                          {track.level}
-                        </span>
-                        <div
-                          className={`flex items-center gap-1 text-sm ${textLight}`}
-                        >
-                          <BookOpen className={`h-4 w-4 text-[${primary}]`} />
-                          <span>{moduleCount} modules</span>
-                        </div>
-                        <span className={`text-sm ${textLight}`}>
-                          {track.duration}
-                        </span>
-                      </div>
-
-                      {/* Progress */}
-                      {moduleCount > 0 && (
-                        <div className="space-y-2">
-                          <div
-                            className={`flex items-center justify-between text-sm ${textMedium}`}
-                          >
-                            <span>Overall Progress</span>
-                            <span>{overallPercent}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div
-                              className={`bg-[${primary}] h-2 rounded-full`}
-                              style={{
-                                width: `${overallPercent}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
+                      {/* Optional overlay gradient for contrast */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
+                  )}
+
+                  {/* Text content */}
+                  <div className="p-6 space-y-4">
+                    <h1 className={`text-3xl font-bold ${textDark}`}>
+                      {track.title}
+                    </h1>
+
+                    <p className={`${textMedium}`}>{track.description}</p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span
+                        className={`px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 ${textMedium} text-sm capitalize`}
+                      >
+                        {track.level}
+                      </span>
+                      <div
+                        className={`flex items-center gap-1 text-sm ${textLight}`}
+                      >
+                        <BookOpen className={`h-4 w-4 text-[${primary}]`} />
+                        <span>{moduleCount} modules</span>
+                      </div>
+                      <span className={`text-sm ${textLight}`}>
+                        {track.duration}
+                      </span>
+                    </div>
+
+                    {/* Progress */}
+                    {moduleCount > 0 && (
+                      <div className="pt-2">
+                        <div
+                          className={`flex items-center justify-between text-sm ${textMedium} mb-1`}
+                        >
+                          <span>Overall Progress</span>
+                          <span>{overallPercent}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                          <div
+                            className={`bg-[${primary}] h-2 rounded-full`}
+                            style={{ width: `${overallPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Modules */}
                 {/* Applied card background and padding for consistency */}
-                <div className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}>
+                <div
+                  className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
+                >
                   <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
                     Modules
                   </h2>

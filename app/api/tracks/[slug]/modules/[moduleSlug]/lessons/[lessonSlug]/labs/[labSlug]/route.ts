@@ -8,17 +8,35 @@ export async function GET(
 
   try {
     const encodedSlug = encodeURIComponent(labSlug);
-    const base = process.env.DIRECTUS_URL || "http://localhost:8055";
+    const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const token = process.env.DIRECTUS_TOKEN;
 
-    const res = await fetch(
+    const baseHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    const headers: HeadersInit = { ...baseHeaders };
+    const hasAuth = Boolean(token && token.trim() !== "" && token !== "undefined");
+    if (hasAuth) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    let res = await fetch(
       `${base}/items/lab_guides?filter[slug][_eq]=${encodedSlug}`,
       {
-        headers: {
-          Authorization: `Bearer ${process.env.DIRECTUS_TOKEN ?? ""}`,
-        },
+        headers,
         cache: "no-store",
       }
     );
+
+    if (!res.ok && [401, 403].includes(res.status) && hasAuth) {
+      res = await fetch(
+        `${base}/items/lab_guides?filter[slug][_eq]=${encodedSlug}`,
+        {
+          headers: baseHeaders,
+          cache: "no-store",
+        }
+      );
+    }
 
     if (!res.ok) {
       return NextResponse.json(

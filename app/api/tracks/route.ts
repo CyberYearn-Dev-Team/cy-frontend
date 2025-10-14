@@ -7,44 +7,49 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const url = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
     const token = process.env.DIRECTUS_TOKEN;
 
-    // Prepare headers
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+    // Base headers
+    const baseHeaders: HeadersInit = {
+      "Content-Type": "application/json",
     };
 
-    // Add authentication token if available
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    // Add token if it exists
+    const headers: HeadersInit = { ...baseHeaders };
+    if (token && token.trim() !== "" && token !== "undefined") {
+      headers["Authorization"] = `Bearer ${token}`;
+      console.log("Using Directus token for authenticated request");
+    } else {
+      console.log("No valid Directus token found — using public access");
     }
 
-    // Try to fetch with authentication first, then without if it fails
-    let res = await fetch(`${url}/items/tracks?filter[published][_eq]=true`, {
+    // --- Try fetching tracks ---
+    let res = await fetch(`${url}/items/tracks`, {
       cache: "no-store",
       next: { revalidate: 0 },
       headers,
     });
 
-    // If authenticated request fails with 403, try without authentication
-    if (!res.ok && res.status === 403 && token) {
-      console.log('Authenticated request failed, trying without authentication...');
-      res = await fetch(`${url}/items/tracks?filter[published][_eq]=true`, {
+    // --- Retry without token if first attempt fails ---
+    if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
+      console.warn(`Directus responded ${res.status}. Retrying without token...`);
+      res = await fetch(`${url}/items/tracks`, {
         cache: "no-store",
         next: { revalidate: 0 },
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: baseHeaders,
       });
     }
 
+    // --- Handle errors ---
     if (!res.ok) {
-      console.error(`Directus API Error: ${res.status} ${res.statusText}`);
       const errorText = await res.text();
-      console.error('Error response:', errorText);
+      console.error(`Directus API Error: ${res.status} ${res.statusText}`);
+      console.error("Error response:", errorText);
       throw new Error(`Failed to fetch tracks: ${res.status} ${res.statusText}`);
     }
 
+    // --- Parse and return data ---
     const data = await res.json();
-    console.log('Successfully fetched tracks:', data);
+    console.log("✅ Successfully fetched tracks:", data);
+
     return NextResponse.json(data);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
