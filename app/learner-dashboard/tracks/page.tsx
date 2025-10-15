@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Clock,
-  Filter,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-} from "lucide-react";
+import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
@@ -19,14 +13,12 @@ const primary = "#72a210";
 const primaryDarker = "#5a850d";
 const primarySecondary = "#507800";
 
-// SWAPPED COLORS
-const bgLight = "bg-white dark:bg-gray-950";       // Main page background (now uses original card color)
-const cardBg = "bg-gray-50 dark:bg-gray-900";     // Card/component background (now uses original page color)
+const bgLight = "bg-white dark:bg-gray-950";
+const cardBg = "bg-gray-50 dark:bg-gray-900";
 
-const borderPrimary = `border-[${primary}]`;
-const textDark = "text-gray-900 dark:text-gray-100"; // Headings
-const textMedium = "text-gray-700 dark:text-gray-300"; // Body text
-const textLight = "text-gray-500 dark:text-gray-400"; // Loading/placeholder text
+const textDark = "text-gray-900 dark:text-gray-100";
+const textMedium = "text-gray-700 dark:text-gray-300";
+const textLight = "text-gray-500 dark:text-gray-400";
 
 // Types
 type TrackLevel =
@@ -51,6 +43,7 @@ interface Track {
   progress: number;
   buttonText?: string;
   buttonVariant?: "primary" | "secondary";
+  thumbnail?: string | { id?: string };
 }
 
 // Progress bar
@@ -63,33 +56,11 @@ const Progress = ({ value }: { value: number }) => (
   </div>
 );
 
-// Button
-const Button = ({
-  children,
-  variant = "primary",
-  className = "",
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary";
-}) => {
-  const base =
-    "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950";
-  const variants = {
-    primary:
-      `bg-[${primary}] text-white hover:bg-[${primaryDarker}] focus:ring-[${primary}]`,
-    secondary:
-      `bg-[${primarySecondary}] text-white hover:bg-[${primaryDarker}] focus:ring-[${primarySecondary}]`,
-  };
-  return (
-    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
-      {children}
-    </button>
-  );
-};
-
 // Badge
 const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[${primary}]/10 text-[${primarySecondary}] dark:bg-[${primary}]/20 dark:text-white`}>
+  <span
+    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[${primary}]/10 text-[${primarySecondary}] dark:bg-[${primary}]/20 dark:text-white`}
+  >
     {children}
   </span>
 );
@@ -104,66 +75,64 @@ const TrackCard = ({
   modules,
   duration,
   progress,
-  buttonText = "Continue Track",
-  buttonVariant = "primary",
+  buttonText = "View Track",
+  thumbnail,
 }: Track) => {
-  const [showMore, setShowMore] = useState(false);
+  const imageUrl = thumbnail
+    ? `${process.env.DIRECTUS_URL || "https://cy-directus.onrender.com"}/assets/${
+        typeof thumbnail === "string" ? thumbnail : thumbnail.id
+      }`
+    : null;
 
   return (
-    // Card background is now the former page background (lighter)
-    <div className={`${cardBg} rounded-2xl shadow-md ${borderPrimary} hover:shadow-lg transition-all p-6 flex flex-col`}>
-      {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        <Badge>{level}</Badge>
-        <Badge>{topic}</Badge>
-      </div>
+    <div className="relative rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-transform hover:scale-[1.02] duration-300 bg-white dark:bg-gray-900">
+      {/* Image Header */}
+      <div className="relative h-48 w-full">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+            <FileText className="h-12 w-12 text-gray-400" />
+          </div>
+        )}
 
-      {/* Title */}
-      <h3 className={`text-lg font-semibold ${textDark} mb-2`}>{title}</h3>
-
-      {/* Description */}
-      <p
-        className={`text-sm ${textMedium} mb-2 ${
-          showMore ? "" : "line-clamp-4"
-        }`}
-      >
-        {description}
-      </p>
-
-      {/* Toggle */}
-      {description.length > 150 && (
-        <button
-          onClick={() => setShowMore(!showMore)}
-          className={`text-xs font-semibold text-[${primary}] hover:text-[${primaryDarker}] hover:underline mb-3`}
-        >
-          {showMore ? "Show less" : "Read more"}
-        </button>
-      )}
-
-      {/* Meta */}
-      <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm ${textLight} mb-4 gap-2`}>
-        <span>{modules} modules</span>
-        <div className="flex items-center gap-1">
-          <Clock className={`h-4 w-4 text-[${primary}]`} />
-          <span>{duration}</span>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent rounded-t-3xl" />
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
+          <div>
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <p className="text-sm text-gray-200">{topic}</p>
+          </div>
+          <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
+            <button className="bg-[#5a850d] text-white text-sm px-4 py-2 rounded-full hover:bg-[#72a210] focus:ring-2 focus:ring-[#72a210] transition cursor-pointer">
+              {buttonText}
+            </button>
+          </Link>
         </div>
       </div>
 
-      {/* Progress */}
-      <div className="space-y-2 mb-4">
-        <div className={`flex justify-between text-sm ${textMedium}`}>
-          <span>Progress</span>
-          <span>{progress}%</span>
+      {/* Content */}
+      <div className="p-5 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Badge>{level}</Badge>
+          <span className="text-xs text-gray-500">{modules} Modules</span>
         </div>
+
+        <p className={`text-sm ${textMedium} line-clamp-3`}>{description}</p>
+
+        <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+          <div className="flex items-center gap-1">
+            <Clock className={`h-4 w-4 text-[${primary}]`} />
+            <span>{duration}</span>
+          </div>
+          <span className="font-semibold">{progress}%</span>
+        </div>
+
         <Progress value={progress} />
       </div>
-
-      {/* Button */}
-      <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
-        <Button variant={buttonVariant} className="w-full">
-          {buttonText}
-        </Button>
-      </Link>
     </div>
   );
 };
@@ -173,60 +142,41 @@ export default function TracksPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("All Levels");
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
-  const [loading, setLoading] = useState(true);
-  const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
   const [showLevelDropdown, setShowLevelDropdown] = useState(false);
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
 
   useEffect(() => {
     (async () => {
       try {
-        console.log('Fetching tracks from API...');
         const res = await fetch("/api/tracks");
-        
-        if (!res.ok) {
-          throw new Error(`API request failed: ${res.status}`);
-        }
-        
+        if (!res.ok) throw new Error(`API failed: ${res.status}`);
         const data = await res.json();
-        console.log('API Response:', data);
-        
-        // Handle different possible response structures from Directus
-        let tracksData = [];
-        if (data?.data && Array.isArray(data.data)) {
-          tracksData = data.data;
-        } else if (Array.isArray(data)) {
-          tracksData = data;
-        } else if (data?.tracks && Array.isArray(data.tracks)) {
-          tracksData = data.tracks;
-        }
-        
-        const safe = (v: unknown): Track => {
-          const obj = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
-          const modulesVal = obj.modules;
-          return {
-            title: (obj.title as string) ?? "Untitled",
-            slug: (obj.slug as string) ?? "",
-            description: (obj.description as string) ?? "",
-            level: ((obj.level as TrackLevel) ?? "beginner") as TrackLevel,
-            topic: (obj.topic as string) ?? "General",
-            modules: Array.isArray(modulesVal)
-              ? modulesVal.length
-              : typeof modulesVal === "number"
-              ? modulesVal
-              : 0,
-            duration: (obj.duration as string) ?? "",
-            progress: typeof obj.progress === "number" ? (obj.progress as number) : 0,
-            buttonText: "View Track",
-            buttonVariant: "secondary",
-          };
-        };
-        
-        const cmsTracks: Track[] = tracksData.map((t: unknown) => safe(t));
-        console.log('Processed tracks:', cmsTracks);
-        setTracksFromCMS(cmsTracks);
-      } catch (error) {
-        console.error('Error fetching tracks:', error);
+
+        const tracksData =
+          data?.data || data?.tracks || (Array.isArray(data) ? data : []);
+
+        const safe = (v: any): Track => ({
+          title: v.title || "Untitled",
+          slug: v.slug || "",
+          description: v.description || "",
+          level: v.level || "beginner",
+          topic: v.topic || "General",
+          modules: Array.isArray(v.modules)
+            ? v.modules.length
+            : typeof v.modules === "number"
+            ? v.modules
+            : 0,
+          duration: v.duration || "",
+          progress: typeof v.progress === "number" ? v.progress : 0,
+          thumbnail: v.thumbnail || null,
+          buttonText: "View Track",
+        });
+
+        setTracksFromCMS(tracksData.map(safe));
+      } catch (err) {
+        console.error(err);
         setTracksFromCMS([]);
       } finally {
         setLoading(false);
@@ -234,21 +184,18 @@ export default function TracksPage() {
     })();
   }, []);
 
-  function capitalizeFirstLetter(str: string) {
-    if (!str) return str;
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
+  // Generate unique levels and topics from CMS
   const levels = React.useMemo(() => {
     const unique = Array.from(new Set(tracksFromCMS.map((t) => t.level)));
-    return ["All Levels", ...unique.map((l) => capitalizeFirstLetter(l))];
+    return ["All Levels", ...unique.map((l) => l.charAt(0).toUpperCase() + l.slice(1))];
   }, [tracksFromCMS]);
 
   const topics = React.useMemo(() => {
     const unique = Array.from(new Set(tracksFromCMS.map((t) => t.topic)));
-    return ["All Topics", ...unique.map((t) => capitalizeFirstLetter(t))];
+    return ["All Topics", ...unique.map((t) => t.charAt(0).toUpperCase() + t.slice(1))];
   }, [tracksFromCMS]);
 
+  // Filter logic
   const filteredTracks = tracksFromCMS.filter((track) => {
     const levelMatch =
       selectedLevel === "All Levels" ||
@@ -260,17 +207,14 @@ export default function TracksPage() {
   });
 
   return (
-    // Main container background is now the former card background (white/dark-950)
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            {/* Header */}
             <div className="mb-6">
               <h1 className={`text-2xl font-bold ${textDark} mb-2`}>
                 Learning Tracks
@@ -290,19 +234,20 @@ export default function TracksPage() {
                 </span>
               </div>
 
-<div className="flex sm:flex-row sm:justify-between gap-2">
+              <div className="flex sm:flex-row sm:justify-between gap-2">
                 {/* Level Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setShowLevelDropdown((prev) => !prev)}
-                    // Dropdown button uses the lighter card background
-                    className={`flex items-center justify-between w-40 border ${borderPrimary} dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+                    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
                   >
                     {selectedLevel}
                     <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
                   </button>
                   {showLevelDropdown && (
-                    <div className={`absolute mt-1 w-40 ${cardBg} border ${borderPrimary} dark:border-gray-700 rounded-lg shadow-lg z-10`}>
+                    <div
+                      className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}
+                    >
                       {levels.map((level) => (
                         <button
                           key={level}
@@ -310,9 +255,9 @@ export default function TracksPage() {
                             setSelectedLevel(level);
                             setShowLevelDropdown(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 dark:hover:bg-gray-700 ${
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
                             selectedLevel === level
-                              ? `bg-[${primary}]/20 text-[${primarySecondary}] dark:bg-[${primary}]/40 dark:text-white`
+                              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
                               : textMedium
                           }`}
                         >
@@ -327,14 +272,15 @@ export default function TracksPage() {
                 <div className="relative">
                   <button
                     onClick={() => setShowTopicDropdown((prev) => !prev)}
-                    // Dropdown button uses the lighter card background
-                    className={`flex items-center justify-between w-40 border ${borderPrimary} dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+                    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
                   >
                     {selectedTopic}
                     <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
                   </button>
                   {showTopicDropdown && (
-                    <div className={`absolute mt-1 w-40 ${cardBg} border ${borderPrimary} dark:border-gray-700 rounded-lg shadow-lg z-10`}>
+                    <div
+                      className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}
+                    >
                       {topics.map((topic) => (
                         <button
                           key={topic}
@@ -342,9 +288,9 @@ export default function TracksPage() {
                             setSelectedTopic(topic);
                             setShowTopicDropdown(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 dark:hover:bg-gray-700 ${
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
                             selectedTopic === topic
-                              ? `bg-[${primary}]/20 text-[${primarySecondary}] dark:bg-[${primary}]/40 dark:text-white`
+                              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
                               : textMedium
                           }`}
                         >
@@ -361,29 +307,29 @@ export default function TracksPage() {
             {loading ? (
               <p className={textLight}>Loading tracks...</p>
             ) : filteredTracks.length === 0 ? (
-              // Empty State Updated for dark mode and theme
-              <div className={`${cardBg} text-center py-20 border dark:border-gray-700 rounded-lg shadow-md`}>
-                <FileText className={`mx-auto h-20 w-20 text-[${primary}] mb-4`} />
+              <div
+                className={`${cardBg} text-center py-20 border rounded-lg shadow-md`}
+              >
+                <FileText
+                  className={`mx-auto h-20 w-20 text-[${primary}] mb-4`}
+                />
                 <h2 className={`text-lg font-semibold ${textDark}`}>
-                  No Learning Tracks Yet
+                  No Learning Tracks Found
                 </h2>
                 <p className={`${textMedium} mt-2 px-4`}>
-                  Your instructors haven’t published any tracks. Please check
-                  back later.
+                  Try adjusting your filters or check back later.
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTracks.map((track, index) => (
-                  <TrackCard key={index} {...track} />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredTracks.map((track, i) => (
+                  <TrackCard key={i} {...track} />
                 ))}
               </div>
             )}
           </main>
 
-          {/* Navigation */}
           <Nav />
-
           <LearnerFooter />
         </div>
       </div>

@@ -271,16 +271,85 @@ export default function LearnerDashboard() {
       thumbnail: "/api/placeholder/280/160",
       category: "Branding",
     },
+    {
+      id: 4,
+      title: "Reviving and Refresh Company Image Reviving and Refresh",
+      instructor: "David Chen",
+      instructorTitle: "Mentor",
+      progress: 30,
+      thumbnail: "/api/placeholder/280/160",
+      category: "Branding",
+    },
+    {
+      id: 5,
+      title: "Reviving and Refresh Company Image Reviving and Refresh",
+      instructor: "David Chen",
+      instructorTitle: "Mentor",
+      progress: 30,
+      thumbnail: "/api/placeholder/280/160",
+      category: "Branding",
+    },
+    {
+      id: 6,
+      title: "Advanced Topic 1",
+      instructor: "John Doe",
+      instructorTitle: "Expert",
+      progress: 10,
+      thumbnail: "/api/placeholder/280/160",
+      category: "Advanced",
+    },
+    {
+      id: 7,
+      title: "Advanced Topic 2",
+      instructor: "Jane Smith",
+      instructorTitle: "Instructor",
+      progress: 20,
+      thumbnail: "/api/placeholder/280/160",
+      category: "Advanced",
+    },
   ];
 
+  const suggestedItems = [1, 2, 3, 4, 5, 6, 7];
+
+  const becauseItems = [1, 2, 3, 4, 5, 6];
+
+  const comingItems = [1, 2, 3, 4, 5, 6, 7, 8];
+
   const continueWatchingRef = useRef<HTMLDivElement | null>(null);
-  const scrollBy = (delta: number) => {
+  const scrollContinueBy = (delta: number) => {
     const el = continueWatchingRef.current;
     if (!el) return;
     el.scrollBy({ left: delta, behavior: "smooth" });
   };
-  const scrollLeft = () => scrollBy(-300);
-  const scrollRight = () => scrollBy(300);
+  const scrollContinueLeft = () => scrollContinueBy(-300);
+  const scrollContinueRight = () => scrollContinueBy(300);
+
+  const suggestedRef = useRef<HTMLDivElement | null>(null);
+  const scrollSuggestedBy = (delta: number) => {
+    const el = suggestedRef.current;
+    if (!el) return;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+  const scrollSuggestedLeft = () => scrollSuggestedBy(-300);
+  const scrollSuggestedRight = () => scrollSuggestedBy(300);
+
+  const becauseRef = useRef<HTMLDivElement | null>(null);
+  const scrollBecauseBy = (delta: number) => {
+    const el = becauseRef.current;
+    if (!el) return;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+  const scrollBecauseLeft = () => scrollBecauseBy(-300);
+  const scrollBecauseRight = () => scrollBecauseBy(300);
+
+  const comingRef = useRef<HTMLDivElement | null>(null);
+  const scrollComingBy = (delta: number) => {
+    const el = comingRef.current;
+    if (!el) return;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+  const scrollComingLeft = () => scrollComingBy(-300);
+  const scrollComingRight = () => scrollComingBy(300);
 
   // Expanded Mentor List for Modal
   const allMentors: Mentor[] = [
@@ -441,9 +510,11 @@ export default function LearnerDashboard() {
               </div>
 
               {/* Continue Watching + Mentors Container */}
-              <div className="flex flex-col lg:flex-row lg:items-start gap-8 w-full">
+              <div className="flex flex-col lg:flex-row lg:items-start gap-6 w-full">
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
+                  {/* <div className="w-full lg:flex-[0.8]"> */}
+
                   <Card>
                     {/* Header: titles align flex-start on mobile, justify-between on desktop */}
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
@@ -452,12 +523,12 @@ export default function LearnerDashboard() {
                       </CardTitle>
 
                       <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                        <button onClick={scrollLeft}>
+                        <button onClick={scrollContinueLeft}>
                           <ChevronLeft
                             className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
                           />
                         </button>
-                        <button onClick={scrollRight}>
+                        <button onClick={scrollContinueRight}>
                           <ChevronRight
                             className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
                           />
@@ -479,29 +550,22 @@ export default function LearnerDashboard() {
                             scroll-smooth snap-x snap-mandatory
                           "
                         >
-                          {continueWatchingItems.map((item) => (
+                          {continueWatchingItems.slice(0, 5).map((item) => (
                             <div
                               key={item.id}
                               className="
-                                group cursor-pointer 
-                                min-w-[280px] max-w-[280px] 
-                                flex-shrink-0 snap-start
-                              "
+      group cursor-pointer 
+      min-w-[280px] max-w-[280px] 
+      flex-shrink-0 snap-start
+    "
                             >
-                              {/* Video thumbnail */}
-                              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px] flex items-center justify-center">
-                                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 flex items-center justify-center">
-                                  <Play className={`${textLight} h-8 w-8`} />
-                                </div>
-
-                                {/* Hover overlay */}
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className="bg-white/90 dark:bg-gray-800/90 rounded-full p-3">
-                                    <Play
-                                      className={`h-6 w-6 text-[${secondary}]`}
-                                    />
-                                  </div>
-                                </div>
+                              {/* Image thumbnail only */}
+                              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                                <img
+                                  src={item.thumbnail}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
                               </div>
 
                               {/* Text content */}
@@ -537,7 +601,8 @@ export default function LearnerDashboard() {
                 </div>
 
                 {/* Mentors - 40% (Updated logic) */}
-                <div className="w-full lg:w-[40%] xl:w-[35%] min-w-0">
+                {/* <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6"> */}
+                <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
                   <Card>
                     <CardHeader className="flex sm:flex-row items-center sm:items-center justify-between">
                       <CardTitle className={`text-[${primary}]`}>
@@ -565,75 +630,203 @@ export default function LearnerDashboard() {
               </div>
 
               {/*Suggested for You */}
-              <section className="mt-12 space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Suggested for You
-                </h2>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar">
-                  {[1, 2, 3, 4].map((n) => (
+              <Card>
+                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                  <CardTitle className={`text-[${secondary}]`}>
+                    Suggested for You
+                  </CardTitle>
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={scrollSuggestedLeft}>
+                      <ChevronLeft
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                    <button onClick={scrollSuggestedRight}>
+                      <ChevronRight
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full">
                     <div
-                      key={n}
-                      className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+                      ref={suggestedRef}
+                      className="
+                        flex gap-4 
+                        overflow-x-auto overflow-y-hidden 
+                        lg:overflow-x-hidden 
+                        no-scrollbar 
+                        py-2 px-1 sm:px-2 
+                        scroll-smooth snap-x snap-mandatory
+                      "
                     >
-                      <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-                        Course Title {n}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Short description goes here.
-                      </p>
+                      {suggestedItems.slice(0, 5).map((n) => (
+                        <div
+                          key={n}
+                          className="
+                            group cursor-pointer 
+                            min-w-[280px] max-w-[280px] 
+                            flex-shrink-0 snap-start
+                          "
+                        >
+                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                            <img
+                              src="/api/placeholder/280/160"
+                              alt={`Course Title ${n}`}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <h3
+                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                              >
+                                Course Title {n}
+                              </h3>
+                              <p className={`text-xs ${textLight} line-clamp-2`}>
+                                Short description goes here.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/*Because You Took */}
-              <section className="mt-12 space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Because You Took “Frontend Basics”
-                </h2>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar">
-                  {[1, 2, 3].map((n) => (
+              <Card>
+                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                  <CardTitle className={`text-[${secondary}]`}>
+                    Because You Took “Frontend Basics”
+                  </CardTitle>
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={scrollBecauseLeft}>
+                      <ChevronLeft
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                    <button onClick={scrollBecauseRight}>
+                      <ChevronRight
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full">
                     <div
-                      key={n}
-                      className="min-w-[240px] bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+                      ref={becauseRef}
+                      className="
+                        flex gap-4 
+                        overflow-x-auto overflow-y-hidden 
+                        lg:overflow-x-hidden 
+                        no-scrollbar 
+                        py-2 px-1 sm:px-2 
+                        scroll-smooth snap-x snap-mandatory
+                      "
                     >
-                      <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3" />
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-                        Advanced Frontend {n}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Continue your journey with deeper concepts.
-                      </p>
+                      {becauseItems.slice(0, 5).map((n) => (
+                        <div
+                          key={n}
+                          className="
+                            group cursor-pointer 
+                            min-w-[280px] max-w-[280px] 
+                            flex-shrink-0 snap-start
+                          "
+                        >
+                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                            <img
+                              src="/api/placeholder/280/160"
+                              alt={`Advanced Frontend ${n}`}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <h3
+                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                              >
+                                Advanced Frontend {n}
+                              </h3>
+                              <p className={`text-xs ${textLight} line-clamp-2`}>
+                                Continue your journey with deeper concepts.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/*Coming Soon */}
-              <section className="mt-12 space-y-6 mb-16">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Coming Soon
-                </h2>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar">
-                  {[1, 2].map((n) => (
+              <Card>
+                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                  <CardTitle className={`text-[${secondary}]`}>
+                    Coming Soon
+                  </CardTitle>
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={scrollComingLeft}>
+                      <ChevronLeft
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                    <button onClick={scrollComingRight}>
+                      <ChevronRight
+                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                      />
+                    </button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full">
                     <div
-                      key={n}
-                      className="min-w-[240px] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner border border-gray-300 dark:border-gray-700 p-4"
+                      ref={comingRef}
+                      className="
+                        flex gap-4 
+                        overflow-x-auto overflow-y-hidden 
+                        lg:overflow-x-hidden 
+                        no-scrollbar 
+                        py-2 px-1 sm:px-2 
+                        scroll-smooth snap-x snap-mandatory
+                      "
                     >
-                      <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                        Coming Soon...
-                      </div>
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-1">
-                        Upcoming Course {n}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Stay tuned for release!
-                      </p>
+                      {comingItems.slice(0, 5).map((n) => (
+                        <div
+                          key={n}
+                          className="
+                            group cursor-pointer 
+                            min-w-[280px] max-w-[280px] 
+                            flex-shrink-0 snap-start
+                          "
+                        >
+                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
+                            <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                              Coming Soon...
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <h3
+                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                              >
+                                Upcoming Course {n}
+                              </h3>
+                              <p className={`text-xs ${textLight} line-clamp-2`}>
+                                Stay tuned for release!
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </main>
 
