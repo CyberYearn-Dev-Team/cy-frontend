@@ -13,31 +13,31 @@ const tracks = [
   {
     id: 1,
     title: "Cyber Hygiene Essentials",
-    progress: 75,
+    progress: 0,
     modules: [
-      { name: "Password Security & Management", progress: 100 },
-      { name: "Multi-Factor Authentication", progress: 80 },
-      { name: "Safe Browsing Practices", progress: 50 },
-      { name: "Software Updates & Patches", progress: 30 },
+      { name: "Password Security & Management", progress: 0 },
+      { name: "Multi-Factor Authentication", progress: 0 },
+      { name: "Safe Browsing Practices", progress: 0 },
+      { name: "Software Updates & Patches", progress: 0 },
     ],
   },
   {
     id: 2,
     title: "Network Security Fundamentals",
-    progress: 40,
+    progress: 0,
     modules: [
-      { name: "Network Security Basics", progress: 60 },
-      { name: "Firewalls & Intrusion Detection", progress: 40 },
-      { name: "Network Monitoring & Analysis", progress: 20 },
+      { name: "Network Security Basics", progress: 0 },
+      { name: "Firewalls & Intrusion Detection", progress: 0 },
+      { name: "Network Monitoring & Analysis", progress: 0 },
     ],
   },
   {
     id: 3,
     title: "Phishing Detection & Prevention",
-    progress: 100,
+    progress: 0,
     modules: [
-      { name: "Phishing Fundamentals", progress: 100 },
-      { name: "Email Security Analysis", progress: 100 },
+      { name: "Phishing Fundamentals", progress: 0 },
+      { name: "Email Security Analysis", progress: 0 },
     ],
   },
 ];
@@ -59,7 +59,7 @@ export default function ProgressPage() {
     .filter((track) => {
       if (filter === "In Progress")
         return track.progress < 100 && track.progress > 0;
-      if (filter === "Completed") return track.progress === 100;
+      if (filter === "Completed") return track.progress === 0;
       return true; // "All Tracks"
     })
     .filter((track) =>

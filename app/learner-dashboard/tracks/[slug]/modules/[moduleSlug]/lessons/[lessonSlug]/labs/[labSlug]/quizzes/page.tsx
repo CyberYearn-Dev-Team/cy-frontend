@@ -292,13 +292,13 @@ if (score === 100) {
               {/* Quiz Header */}
               {/* Applied card background and border */}
               <div className={`${borderLight} rounded-lg ${cardBg} shadow p-6`}>
-                <div className="flex justify-between items-center mb-4">
+                  <span className={`text-sm ${textLight} flex justify-end items-center`}>
+                    {currentFlatIndex} of {totalQuestions}
+                  </span>
+                <div className="flex justify-between items-center mb-5">
                   <h1 className={`text-xl font-bold ${textDark}`}>
                     {currentQuiz?.title}
                   </h1>
-                  <span className={`text-sm ${textLight}`}>
-                    {currentFlatIndex} of {totalQuestions}
-                  </span>
                 </div>
 
                 {currentQuiz?.description && (
