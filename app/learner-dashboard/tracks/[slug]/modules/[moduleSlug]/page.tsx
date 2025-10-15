@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+
 // import Breadcrumb from "@/components/ui/breadcrumb";
 // import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
@@ -79,7 +81,7 @@ export default function ModuleDetailPage() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
           <Breadcrumb>
   <BreadcrumbList>
@@ -156,6 +158,10 @@ export default function ModuleDetailPage() {
             </div>
           )}
         </main>
+
+
+         {/* Bottom Navigation */}
+                <Nav />
       </div>
     </div>
   );

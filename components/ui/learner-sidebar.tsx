@@ -34,7 +34,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
-    { name: "Switch to Admin", icon: Lock, href: `/admin-dashboard/overview` },
+    // { name: "Switch to Admin", icon: Lock, href: `/admin-dashboard/overview` },
   ];
 
   const isActive = (href: string) =>

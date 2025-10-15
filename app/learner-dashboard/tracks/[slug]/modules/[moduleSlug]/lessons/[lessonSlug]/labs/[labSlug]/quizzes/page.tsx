@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
 import { useRouter } from "next/navigation";
 // import Breadcrumb from "@/components/ui/breadcrumb";
 // import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -188,15 +189,21 @@ export default function QuizzesPage() {
     const xp = correctCount * 10;
 
     // ✅ Show toast with green (success) or red (error)
-    if (passed) {
-      toast.success("Congratulations, you passed the quiz!", {
-        // description: `Score: ${score}% | Passing Score: ${passingScore}% | XP: ${xp}`,
-      });
-    } else {
-      toast.error("Quiz attempt failed, try again", {
-        // description: `Score: ${score}% | Passing Score: ${passingScore}%`,
-      });
-    }
+   // ✅ Toast feedback logic
+if (score === 100) {
+  toast.success("Perfect score! You aced the quiz!", {
+    // description: `Score: ${score}% | XP: ${xp}`,
+  });
+} else if (passed && score < 100) {
+  toast.warning("Good job! You passed, but there’s room for improvement.", {
+    // description: `Score: ${score}% | Passing Score: ${passingScore}% | XP: ${xp}`,
+  });
+} else {
+  toast.error("Quiz attempt failed, try again.", {
+    // description: `Score: ${score}% | Passing Score: ${passingScore}%`,
+  });
+}
+
 
     // Redirect with results
     router.push(
@@ -252,7 +259,8 @@ export default function QuizzesPage() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-6">
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
+
           {/* Breadcrumb */}
           <Breadcrumb>
   <BreadcrumbList>
@@ -387,6 +395,10 @@ export default function QuizzesPage() {
             </div>
           )}
         </main>
+
+
+        {/* Bottom Navigation */}
+                <Nav />
       </div>
     </div>
   );

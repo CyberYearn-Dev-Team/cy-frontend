@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+
 import { BookOpen } from "lucide-react";
 // import Breadcrumb from "@/components/ui/breadcrumb";
 // import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -99,7 +101,7 @@ export default function TrackDetailPage() {
         {/* Header */}
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
           <Breadcrumb>
             <BreadcrumbList>
@@ -148,10 +150,10 @@ export default function TrackDetailPage() {
                   )}
 
                   {/* Text content */}
-                  <div className="p-6 space-y-4">
-                    <h1 className={`text-3xl font-bold ${textDark}`}>
-                      {track.title}
-                    </h1>
+<div className="p-4 sm:px-[20px] space-y-5">
+                    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold ${textDark}`}>
+  {track.title}
+</h1>
 
                     <p className={`${textMedium}`}>{track.description}</p>
 
@@ -191,6 +193,8 @@ export default function TrackDetailPage() {
                     )}
                   </div>
                 </div>
+
+
 
                 {/* Modules */}
                 {/* Applied card background and padding for consistency */}
@@ -351,6 +355,10 @@ export default function TrackDetailPage() {
             </div>
           )}
         </main>
+
+
+         {/* Bottom Navigation */}
+                <Nav />
       </div>
     </div>
   );

@@ -15,11 +15,14 @@ import {
   XCircle,
   RotateCcw,
   ChevronRight,
+  HelpCircle,
 } from "lucide-react";
 
 // ✅ import your layout pieces
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
+import Nav from "@/components/ui/learner-nav";
+
 
 // ✅ import confetti
 import confetti from "canvas-confetti";
@@ -96,68 +99,146 @@ export default function QuizResultsPage() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-3xl mx-auto space-y-8">
-            {/* Overall Result Card */}
-            <Card className="!bg-transparent !border-none shadow-none">
-              <CardHeader className="text-center p-0">
-                <div className="mb-4">
-                  {passed ? (
-                    <CheckCircle className={`h-16 w-16 text-[${primary}] mx-auto`} />
-                  ) : (
-                    <XCircle className="h-16 w-16 text-red-500 mx-auto" />
-                  )}
-                </div>
-                <CardTitle className={`text-2xl font-bold ${textDark}`}>
-                  {passed ? "Congratulations!" : "Quiz Complete"}
-                </CardTitle>
-                <CardDescription className={textMedium}>
-                  You scored <span className="font-semibold">{score}%</span>{" "}
-                  {passed
-                    ? "and passed this quiz!"
-                    : "and did not reach the passing score."}
-                </CardDescription>
-              </CardHeader>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
+          {/* --- MODIFICATION START: Increased max-width for flex layout --- */}
+          <div className="max-w-6xl mx-auto space-y-8">
 
-              <CardContent className="space-y-6 text-center p-0">
-                <div className="space-y-2">
-                  <div className={`text-3xl font-bold text-[${primary}]`}>
-                    {score}%
-                  </div>
-                  <div className={textMedium}>
-                    Pass threshold: {threshold}%
-                  </div>
-                  <Badge
-                    className={
-                      passed
-                        ? `bg-[${primary}] hover:bg-[${primaryDarker}]`
-                        : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800"
-                    }
-                  >
-                    {passed ? `Passed • +${xp} XP Earned` : "Not Passed"}
-                  </Badge>
-                </div>
+            {/* --- MODIFICATION START: New Flex Container for side-by-side layout --- */}
+            <div className="flex flex-col lg:flex-row lg:items-start gap-8">
 
-                {/* Question Review Section */}
-                <div className="space-y-6">
-                  {results.map((r, idx) => {
+             {/* --- ITEM 1: The Redesigned, "Cool" Result Card --- */}
+<div className="w-full lg:w-2/5 lg:sticky lg:top-8">
+  <Card
+    className={
+      passed
+        ? `bg-gradient-to-br from-[${primary}] to-[${primaryDarker}] text-white shadow-lg`
+        : `${cardBg} shadow-lg border border-gray-200 dark:border-gray-800`
+    }
+  >
+    <CardHeader className="text-center">
+      <div className="mb-4">
+        {passed ? (
+          <CheckCircle className="h-16 w-16 text-white mx-auto" />
+        ) : (
+          <XCircle className="h-16 w-16 text-red-500 dark:text-red-400 mx-auto" />
+        )}
+      </div>
+
+      <CardTitle
+        className={`text-2xl font-bold ${
+          passed ? "text-white" : `${textDark}`
+        }`}
+      >
+        {passed ? "Congratulations!" : "Quiz Complete"}
+      </CardTitle>
+
+      <CardDescription
+        className={
+          passed
+            ? "text-gray-100/90 dark:text-gray-200"
+            : `${textMedium}`
+        }
+      >
+        You scored <span className="font-semibold">{score}%</span>{" "}
+        {passed
+          ? "and passed this quiz!"
+          : "and did not reach the passing score."}
+      </CardDescription>
+    </CardHeader>
+
+    <CardContent className="space-y-6 text-center">
+      <div className="space-y-2">
+        <div
+          className={`text-4xl font-bold ${
+            passed ? "text-white" : `text-[${primary}] dark:text-[${primaryDarker}]`
+          }`}
+        >
+          {score}%
+        </div>
+
+        <div
+          className={
+            passed ? "text-gray-100/90 dark:text-gray-200" : `${textMedium}`
+          }
+        >
+          Pass threshold: {threshold}%
+        </div>
+
+        <Badge
+          className={
+            passed
+              ? `bg-white/20 text-white hover:bg-white/30 text-sm py-1 px-3`
+              : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-sm py-1 px-3"
+          }
+        >
+          {passed ? `Passed • +${xp} XP Earned` : "Not Passed"}
+        </Badge>
+      </div>
+
+      {/* Action Buttons */}
+<div className="flex  sm:flex-row gap-4 justify-center pt-4">
+  <Button
+    variant="outline"
+    className={`w-full text-base py-5 sm:py-5 sm:w-auto flex-1 cursor-pointer
+      ${
+        passed
+          ? `bg-transparent border-white/50 text-white hover:bg-white/10 hover:text-white`
+          : `border-gray-300 dark:border-gray-700 ${cardBg} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-800`
+      }`}
+    onClick={() =>
+      router.push(
+        `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes`
+      )
+    }
+  >
+    <RotateCcw className="h-4 w-4 mr-2" />
+    Retake Quiz
+  </Button>
+
+  {passed && (
+    <Button
+      className={`w-full text-base py-5 sm:py-5 sm:w-auto flex-1 cursor-pointer bg-white text-black dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700`}
+      onClick={() =>
+        router.push(
+          `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`
+        )
+      }
+    >
+      Continue <ChevronRight className="h-4 w-4 ml-2" />
+    </Button>
+  )}
+</div>
+
+    </CardContent>
+  </Card>
+</div>
+
+
+              {/* --- ITEM 2: The Question Review Section --- */}
+              <div className="w-full lg:w-3/5 space-y-6">
+                <h2 className={`text-2xl font-bold ${textDark}`}>Question Review</h2>
+                {results.length === 0 ? (
+                  <Card className={`${cardBg}`}>
+                    <CardContent className="p-6 text-center ${textMedium}">
+                      <HelpCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p>There are no questions to review.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  results.map((r, idx) => {
                     const isCorrect = r.selected === r.answer;
                     return (
-                      <Card key={idx} className={`${cardBg} shadow dark:shadow-lg`}>
+                      <Card key={idx} className={`${cardBg} shadow-md dark:shadow-lg`}>
                         <CardContent className="p-6">
                           <h3
-                            className={`font-semibold mb-4 flex items-center ${textDark} ${
-                              isCorrect
-                                ? "text-green-500 dark:text-green-400"
-                                : "text-red-500 dark:text-red-400"
-                            }`}
+                            className={`font-semibold mb-4 flex items-start ${textDark}`}
                           >
                             {isCorrect ? (
-                              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                              <CheckCircle className="h-7 w-7 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
                             ) : (
-                              <XCircle className="h-5 w-5 mr-2 text-red-500" />
+                              <XCircle className="h-5 w-5 mr-2 mt-0.5 text-red-500 flex-shrink-0" />
                             )}
-                            Question {idx + 1}: {r.question}
+                            <span>Question {idx + 1}: {r.question}</span>
                           </h3>
 
                           <div className="space-y-2">
@@ -167,11 +248,11 @@ export default function QuizResultsPage() {
                               return (
                                 <div
                                   key={i}
-                                  className={`px-3 py-2 rounded-lg border ${textDark} ${
+                                  className={`px-3 py-2 rounded-lg border text-sm ${textDark} ${
                                     correct
-                                      ? "bg-green-100 dark:bg-green-900 border-green-500 dark:border-green-700 text-green-700 dark:text-green-300"
+                                      ? "bg-green-100 dark:bg-green-900/50 border-green-500 dark:border-green-700"
                                       : selected && !correct
-                                      ? "bg-red-100 dark:bg-red-900 border-red-500 dark:border-red-700 text-red-700 dark:text-red-300"
+                                      ? "bg-red-100 dark:bg-red-900/50 border-red-500 dark:border-red-700"
                                       : "bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700"
                                   }`}
                                 >
@@ -183,44 +264,16 @@ export default function QuizResultsPage() {
                         </CardContent>
                       </Card>
                     );
-                  })}
-                </div>
-
-                {/* Action Buttons*/}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button
-                    variant="outline"
-                    className={`w-full text-base px-5 py-5 sm:w-1/2 cursor-pointer 
-                      border-gray-300 dark:border-gray-700 ${cardBg} ${textDark}
-                      hover:bg-gray-100 dark:hover:bg-gray-800`}
-                    onClick={() =>
-                      router.push(
-                        `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes`
-                      )
-                    }
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Retake Quiz
-                  </Button>
-
-                  {passed && (
-                    <Button
-                      className={`w-full text-base px-5 py-5 sm:w-1/2 cursor-pointer bg-[${primary}] hover:bg-[${primaryDarker}]`}
-                      onClick={() =>
-                        router.push(
-                          `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`
-                        )
-                      }
-                    >
-                      Continue to Next Lesson{" "}
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  })
+                )}
+              </div>
+              {/* --- MODIFICATION END --- */}
+            </div>
           </div>
         </main>
+
+        {/* Bottom Navigation */}
+        <Nav />
       </div>
     </div>
   );
