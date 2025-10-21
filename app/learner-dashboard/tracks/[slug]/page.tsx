@@ -12,12 +12,12 @@ import { BookOpen } from "lucide-react";
 // import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   Breadcrumb,
-  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
 // Theme Constants
 const primary = "#72a210";
@@ -104,6 +104,17 @@ export default function TrackDetailPage() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
           <Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/learner-dashboard/tracks">Learning Tracks</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Track</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+          {/* <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink href="/learner-dashboard/tracks">
@@ -115,7 +126,7 @@ export default function TrackDetailPage() {
                 <BreadcrumbPage>Result</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </Breadcrumb> */}
           <br />
           {loading ? (
             <p className={textLight}>Loading track...</p>

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+/* @plugin "@tailwindcss/line-clamp"; */
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -120,3 +122,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer components {
+  /* Match any link inside .prose, even if it has other classes */
+  .prose a,
+  .prose a.decorated-link,
+  .prose .decorated-link {
+    color: #72a210 !important; /* force your brand color */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+  }
+
+  .prose a:hover,
+  .prose a.decorated-link:hover,
+  .prose .decorated-link:hover {
+    color: #5a850d !important; /* darker hover shade */
+  }
+
+  /* Optional for dark mode */
+  .dark .prose a,
+  .dark .prose .decorated-link {
+    color: #8bc420 !important;
+  }
+}
+
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
@@ -60,6 +60,13 @@ export default function LessonDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  function decodeHtml(input: string) {
+    if (typeof window === "undefined") return input;
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = input;
+    return textarea.value;
+  }
+
   useEffect(() => {
     async function fetchLesson() {
       try {
@@ -77,6 +84,47 @@ export default function LessonDetailPage() {
     fetchLesson();
   }, [slug, moduleSlug, lessonSlug]);
 
+  
+// make link clickable 
+useEffect(() => {
+  if (!lesson?.content) return;
+
+  // Wait for content to render
+  const container = document.querySelector(".prose");
+  if (!container) return;
+
+  const links = container.querySelectorAll("a.decorated-link");
+
+  links.forEach((link) => {
+    const el = link as HTMLAnchorElement;
+
+    // If there's no href, infer it from its text content
+    if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
+      el.setAttribute("href", el.textContent.trim());
+      el.setAttribute("target", "_blank");
+      el.setAttribute("rel", "noopener noreferrer");
+    }
+
+    // Optional: always open new tab safely
+    el.setAttribute("target", "_blank");
+    el.setAttribute("rel", "noopener noreferrer");
+  });
+}, [lesson]);
+
+
+// log all getting lesson content
+  useEffect(() => {
+  if (lesson?.content) {
+    console.log("Lesson content:", lesson.content);
+  }
+}, [lesson]);
+
+
+
+
+  const contentHtml = useMemo(() => decodeHtml(lesson?.content || ""), [lesson?.content]);
+
+
   return (
     // Applied dark mode background
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -89,19 +137,32 @@ export default function LessonDetailPage() {
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/learner-dashboard/tracks">
-                  Tracks
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Result</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+       {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/learner-dashboard/tracks">
+              Learning Tracks
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
+              {slug}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>
+              {moduleSlug}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{lessonSlug}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
           <br />
 
           {loading ? (
@@ -118,11 +179,10 @@ export default function LessonDetailPage() {
                 <p className={`text-sm ${textLight} mb-4`}>
                   Estimated time: {lesson.estimated_time}
                 </p>
-                {/* Applied dark mode styles to the prose for content */}
-                <div className="prose max-w-none dark:prose-invert">
-                  {/* Assuming lesson.content is HTML or markdown */}
-                  <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
+                <div className="prose prose-slate lg:prose-lg max-w-none dark:prose-invert">
+                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
                 </div>
+
               </div>
 
               {/* Labs Section */}

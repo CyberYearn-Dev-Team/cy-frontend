@@ -14,75 +14,91 @@ const textMedium = "text-gray-800 dark:text-gray-300"; // Body text
 const textLight = "text-gray-500 dark:text-gray-400"; // Subtle/Placeholder text
 const proseText = "text-gray-700 dark:text-gray-300"; // Prose content text
 
-export default function PrivacyPage() {
-  const [privacyContent, setPrivacyContent] = useState<{
+export default function TermsPage() {
+  const [termsContent, setTermsContent] = useState<{
     title?: string;
     content?: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Fetch Terms Page Content
   useEffect(() => {
-    const fetchPrivacy = async () => {
+    const fetchTerms = async () => {
       try {
-        const res = await fetch("/api/legal-pages?type=privacy");
+        const res = await fetch("/api/legal-pages?type=terms");
         const data = await res.json();
 
         if (data.data && data.data.length > 0) {
-          setPrivacyContent({
+          setTermsContent({
             title: data.data[0].title,
             content: data.data[0].content,
           });
         } else {
-          setPrivacyContent(null);
+          setTermsContent(null);
         }
       } catch (err) {
-        console.error("Error fetching Privacy Policy:", err);
-        setPrivacyContent(null);
+        console.error("Error fetching Terms of Service:", err);
+        setTermsContent(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPrivacy();
+    fetchTerms();
   }, []);
 
+  // 🔹 Make links clickable (safe + styled)
+  useEffect(() => {
+    if (!termsContent?.content) return;
+
+    const container = document.querySelector(".prose");
+    if (!container) return;
+
+    const links = container.querySelectorAll("a");
+
+    links.forEach((link) => {
+      const el = link as HTMLAnchorElement;
+
+      // Add href if missing but text looks like a URL
+      if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
+        el.setAttribute("href", el.textContent.trim());
+      }
+
+      // Always open in a new tab safely
+      el.setAttribute("target", "_blank");
+      el.setAttribute("rel", "noopener noreferrer");
+
+      // Apply theme color and underline
+      el.style.color = primary;
+      el.style.textDecoration = "underline";
+    });
+  }, [termsContent]);
+
   return (
-    // Applied dark mode background
     <div className={`min-h-screen flex flex-col ${bgLight}`}>
       <Header />
 
-      {/* Applied dark mode text color for main container */}
       <main className={`flex-1 mx-auto lg:px-20 px-6 py-12 ${textMedium} leading-relaxed`}>
         {loading ? (
           <p className={textLight}>Loading content...</p>
-        ) : privacyContent ? (
+        ) : termsContent ? (
           <>
-            {/* Applied dark mode text color for title */}
             <h1 className={`text-3xl md:text-4xl font-bold mb-6 ${textDark}`}>
-              {privacyContent.title || "Privacy Policy"}
+              {termsContent.title || "Terms of Service"}
             </h1>
             <div
-              // Applied dark mode text color for the dynamic content
-              // NOTE: For full dark mode support, the `prose` class requires a custom `prose-dark` configuration in the Tailwind CSS setup, which isn't present here. The text color class below provides partial adaptation.
-              className={`prose max-w-none space-y-6 ${proseText}
-                dark:prose-invert 
-                dark:prose-headings:text-gray-100 
-                dark:prose-strong:text-gray-100 
-                dark:prose-a:text-blue-400
-              `}
-              dangerouslySetInnerHTML={{ __html: privacyContent.content || "" }}
+              className={`prose max-w-none space-y-6 ${proseText} dark:prose-invert`}
+              dangerouslySetInnerHTML={{ __html: termsContent.content || "" }}
             />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-gray-500 space-y-4 px-4 sm:px-0">
-            {/* Applied theme color to icon */}
             <FileText className={`w-15 h-15 sm:w-20 sm:h-20 mx-auto text-[${primary}]`} />
             <p className={`text-xl sm:text-1xl font-semibold ${textDark}`}>
               Oops! No content available.
             </p>
             <p className="max-w-sm sm:max-w-md text-gray-400">
-              It looks like the Privacy Policy hasn’t been added yet. Please
-              check back later.
+              It looks like the Terms of Service hasn’t been added yet. Please check back later.
             </p>
           </div>
         )}

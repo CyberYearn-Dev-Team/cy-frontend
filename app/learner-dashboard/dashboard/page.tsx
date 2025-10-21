@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  BookAIcon,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -131,9 +132,7 @@ const Button = ({
   const baseClasses =
     "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
   const variants = {
-    // Primary: bg-[#72a210] hover:bg-[#507800]
     primary: `bg-[${primary}] hover:bg-[${secondary}] text-white focus:ring-[${primary}]`,
-    // Secondary: bg-gray-100 hover:bg-gray-200 text-gray-700 -> UPDATED FOR DARK MODE
     secondary: `bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 ${textMedium} focus:ring-gray-500`,
   };
 
@@ -147,11 +146,10 @@ const Button = ({
   );
 };
 
-// Reusable Mentor Item Component (Refactored for requested layout)
+// Reusable Mentor Item Component
 const MentorListItem = ({ mentor }: { mentor: Mentor }) => (
   <div key={mentor.id} className="flex items-center justify-between group">
     <div className="flex items-center space-x-3">
-      {/* Profile Avatar (using initials) */}
       <div
         className={`w-11 h-11 rounded-full bg-gradient-to-br from-[${primary}] to-[${secondary}] flex items-center justify-center text-white font-semibold text-sm shadow-md`}
       >
@@ -160,7 +158,6 @@ const MentorListItem = ({ mentor }: { mentor: Mentor }) => (
           .map((n) => n[0])
           .join("")}
       </div>
-      {/* User Name and Title */}
       <div>
         <p
           className={`font-semibold text-sm ${textDark} group-hover:text-[${primary}] transition-colors`}
@@ -170,7 +167,6 @@ const MentorListItem = ({ mentor }: { mentor: Mentor }) => (
         <p className={`text-xs ${textLight}`}>{mentor.title}</p>
       </div>
     </div>
-    {/* The follow/following button is now removed as requested */}
   </div>
 );
 
@@ -186,35 +182,12 @@ const MentorModal = ({
 }) => {
   if (!isOpen) return null;
 
-  // Use the same MentorListItem component for consistency
   return (
-    <div
-      className="
-        fixed inset-0 z-50 
-        flex justify-center items-center p-4
-        bg-black/40 backdrop-blur-md
-        transition-all duration-300
-      "
-    >
+    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-black/40 backdrop-blur-md transition-all duration-300">
       <div
-        className={`
-          relative ${bgCard}
-          rounded-xl shadow-2xl
-          w-full max-w-lg max-h-[90vh]
-          overflow-y-auto
-          border border-gray-200 dark:border-gray-700
-          animate-fadeIn
-        `}
+        className={`relative ${bgCard} rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 animate-fadeIn`}
       >
-        {/* Modal Header */}
-        <div
-          className="
-            sticky top-0 z-10 p-6
-            border-b border-gray-200 dark:border-gray-700
-            flex justify-between items-center
-            bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm
-          "
-        >
+        <div className="sticky top-0 z-10 p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
           <h2 className={`text-xl font-bold ${textDark}`}>
             All Mentors ({mentors.length})
           </h2>
@@ -225,8 +198,6 @@ const MentorModal = ({
             <X className="h-6 w-6" />
           </button>
         </div>
-
-        {/* Mentor List */}
         <div className="p-6 space-y-4">
           {mentors.map((mentor) => (
             <MentorListItem key={mentor.id} mentor={mentor} />
@@ -237,85 +208,36 @@ const MentorModal = ({
   );
 };
 
+// A reusable placeholder for empty sections
+const EmptyState = ({
+  icon: Icon,
+  title,
+  message,
+}: {
+  icon: React.ElementType;
+  title: string;
+  message: string;
+}) => (
+  <div className="flex flex-col items-center justify-center text-center py-12 text-gray-500 dark:text-gray-400">
+    <Icon className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
+    <h4 className={`font-semibold ${textDark}`}>{title}</h4>
+    <p className={`text-sm ${textMedium}`}>{message}</p>
+  </div>
+);
+
 // Dashboard
 export default function LearnerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // State for the Mentor Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Mock data setup... (omitted for brevity)
-  const continueWatchingItems = [
-    {
-      id: 1,
-      title: "Beginner's Guide to Becoming a Professional Front-End Developer",
-      instructor: "Bradlee Santos",
-      instructorTitle: "Mentor",
-      progress: 45,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Frontend",
-    },
-    {
-      id: 2,
-      title: "Optimizing User Experience with the Best UI/UX Design",
-      instructor: "Rebecca Kim",
-      instructorTitle: "Instructor",
-      progress: 70,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Design",
-    },
-    {
-      id: 3,
-      title: "Reviving and Refresh Company Image Reviving and Refresh",
-      instructor: "David Chen",
-      instructorTitle: "Mentor",
-      progress: 30,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Branding",
-    },
-    {
-      id: 4,
-      title: "Reviving and Refresh Company Image Reviving and Refresh",
-      instructor: "David Chen",
-      instructorTitle: "Mentor",
-      progress: 30,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Branding",
-    },
-    {
-      id: 5,
-      title: "Reviving and Refresh Company Image Reviving and Refresh",
-      instructor: "David Chen",
-      instructorTitle: "Mentor",
-      progress: 30,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Branding",
-    },
-    {
-      id: 6,
-      title: "Advanced Topic 1",
-      instructor: "John Doe",
-      instructorTitle: "Expert",
-      progress: 10,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Advanced",
-    },
-    {
-      id: 7,
-      title: "Advanced Topic 2",
-      instructor: "Jane Smith",
-      instructorTitle: "Instructor",
-      progress: 20,
-      thumbnail: "/api/placeholder/280/160",
-      category: "Advanced",
-    },
-  ];
+  // Mock data is now initialized as empty arrays for a new user
+  const continueWatchingItems: any[] = [];
+  const suggestedItems: any[] = [];
+  const becauseItems: any[] = [];
+  const comingItems: any[] = [];
+  const allMentors: Mentor[] = [];
 
-  const suggestedItems = [1, 2, 3, 4, 5, 6, 7];
-
-  const becauseItems = [1, 2, 3, 4, 5, 6];
-
-  const comingItems = [1, 2, 3, 4, 5, 6, 7, 8];
-
+  // Refs and scroll functions (no changes needed here)
   const continueWatchingRef = useRef<HTMLDivElement | null>(null);
   const scrollContinueBy = (delta: number) => {
     const el = continueWatchingRef.current;
@@ -352,62 +274,13 @@ export default function LearnerDashboard() {
   const scrollComingLeft = () => scrollComingBy(-300);
   const scrollComingRight = () => scrollComingBy(300);
 
-  // Expanded Mentor List for Modal
-  const allMentors: Mentor[] = [
-    {
-      id: 1,
-      name: "Bradlee Santos",
-      title: "Lead Developer",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: true,
-    },
-    {
-      id: 2,
-      name: "Rebecca Kim",
-      title: "UX Designer",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: true,
-    },
-    {
-      id: 3,
-      name: "David Chen",
-      title: "Branding Specialist",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: false,
-    },
-    {
-      id: 4,
-      name: "Carlos Reyes",
-      title: "Cloud Architect",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: false,
-    },
-    {
-      id: 5,
-      name: "Aisha Hassan",
-      title: "Data Scientist",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: true,
-    },
-    {
-      id: 6,
-      name: "Gavin Smith",
-      title: "Cyber Security Pro",
-      avatar: "/api/placeholder/40/40",
-      isFollowing: false,
-    },
-  ];
-
-  // Limited list for display in the main card (limit to 4)
+  // This will now correctly be an empty array from the empty allMentors array
   const visibleMentors = allMentors.slice(0, 5);
 
   return (
-    // APPLY MAIN BACKGROUND DARK MODE CLASS
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
-      {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
@@ -432,16 +305,16 @@ export default function LearnerDashboard() {
                         Professional Online Courses
                       </h1>
                       <Link href="/learner-dashboard/tracks">
-                      <Button
-                        variant="secondary"
-                        className={`
-                        bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
-                        dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black
-                      `}
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Start Learning Now
-                      </Button>
+                        <Button
+                          variant="secondary"
+                          className={`
+                          bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
+                          dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black
+                        `}
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Start Learning Now
+                        </Button>
                       </Link>
                     </div>
                     <div className="absolute top-12 right-15 w-55 h-55 opacity-90 hidden sm:block">
@@ -456,7 +329,6 @@ export default function LearnerDashboard() {
 
                 {/* Stats Section - 30% */}
                 <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6">
-                  {/* Card components now handle dark mode via their definitions */}
                   <Card>
                     <CardContent>
                       <div className="flex items-center justify-between">
@@ -513,56 +385,40 @@ export default function LearnerDashboard() {
               </div>
 
               {/* Continue Watching + Mentors Container */}
-              <div className="flex flex-col lg:flex-row lg:items-start gap-6 w-full">
+              <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
-                  {/* <div className="w-full lg:flex-[0.8]"> */}
-
-                  <Card>
-                    {/* Header: titles align flex-start on mobile, justify-between on desktop */}
+                  <Card className="h-full">
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
                         Continue Learning
                       </CardTitle>
-
-                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                        <button onClick={scrollContinueLeft}>
-                          <ChevronLeft
-                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                          />
-                        </button>
-                        <button onClick={scrollContinueRight}>
-                          <ChevronRight
-                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                          />
-                        </button>
-                      </div>
+                      {continueWatchingItems.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                          <button onClick={scrollContinueLeft}>
+                            <ChevronLeft
+                              className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                            />
+                          </button>
+                          <button onClick={scrollContinueRight}>
+                            <ChevronRight
+                              className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                            />
+                          </button>
+                        </div>
+                      )}
                     </CardHeader>
-
-                    <CardContent>
-                      {/* Responsive scroll container */}
-                      <div className="w-full">
+                    <CardContent className="h-full flex items-center justify-center">
+                      {continueWatchingItems.length > 0 ? (
                         <div
                           ref={continueWatchingRef}
-                          className="
-                            flex gap-4 
-                            overflow-x-auto overflow-y-hidden 
-                            lg:overflow-x-hidden 
-                            no-scrollbar 
-                            py-2 px-1 sm:px-2 
-                            scroll-smooth snap-x snap-mandatory
-                          "
+                          className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
                         >
-                          {continueWatchingItems.slice(0, 5).map((item) => (
+                          {continueWatchingItems.map((item: any) => (
                             <div
                               key={item.id}
-                              className="
-      group cursor-pointer 
-      min-w-[280px] max-w-[280px] 
-      flex-shrink-0 snap-start
-    "
+                              className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
                             >
-                              {/* Image thumbnail only */}
                               <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
                                 <img
                                   src={item.thumbnail}
@@ -570,8 +426,6 @@ export default function LearnerDashboard() {
                                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
-
-                              {/* Text content */}
                               <div className="space-y-2 h-[110px] flex flex-col justify-between">
                                 <div>
                                   <h3
@@ -587,7 +441,6 @@ export default function LearnerDashboard() {
                                     <span>{item.instructorTitle}</span>
                                   </div>
                                 </div>
-
                                 <div className="space-y-1">
                                   <Progress value={item.progress} />
                                   <p className={`text-xs ${textLight}`}>
@@ -598,21 +451,25 @@ export default function LearnerDashboard() {
                             </div>
                           ))}
                         </div>
-                      </div>
+                      ) : (
+                        <EmptyState
+                          icon={BookAIcon}
+                          title="Start Your Journey"
+                          message="Your active courses will appear here once you begin."
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Mentors - 40% (Updated logic) */}
-                {/* <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6"> */}
+                {/* Mentors - 40% */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
-                  <Card>
+                  <Card className="h-full">
                     <CardHeader className="flex sm:flex-row items-center sm:items-center justify-between">
                       <CardTitle className={`text-[${primary}]`}>
                         Your Mentors
                       </CardTitle>
-                      {/* See All Button that opens the modal */}
-                      {allMentors.length > 4 && (
+                      {allMentors.length > 5 && (
                         <Button
                           variant="secondary"
                           onClick={() => setIsModalOpen(true)}
@@ -622,224 +479,225 @@ export default function LearnerDashboard() {
                         </Button>
                       )}
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Render only the limited list of mentors (up to 4) */}
-                      {visibleMentors.map((mentor) => (
-                        <MentorListItem key={mentor.id} mentor={mentor} />
-                      ))}
+                    <CardContent className="h-full flex items-center justify-center space-y-4">
+                      {visibleMentors.length > 0 ? (
+                        visibleMentors.map((mentor) => (
+                          <MentorListItem key={mentor.id} mentor={mentor} />
+                        ))
+                      ) : (
+                        <EmptyState
+                          icon={Users}
+                          title="Find a Mentor"
+                          message="Connect with mentors to guide your learning."
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 </div>
               </div>
 
-              {/*Suggested for You */}
-              {/* ---------- Suggested for You ---------- */}
-<div className="w-full lg:w-[60%] xl:w-[72%]">
-  <Card>
-    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-      <CardTitle className={`text-[${secondary}]`}>
-        Suggested for You
-      </CardTitle>
-      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-        <button onClick={scrollSuggestedLeft}>
-          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-        <button onClick={scrollSuggestedRight}>
-          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-      </div>
-    </CardHeader>
+              {/* Suggested for You */}
+              <div className="w-full lg:w-[60%] xl:w-[72%]">
+                <Card>
+                  <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                    <CardTitle className={`text-[${secondary}]`}>
+                      Suggested for You
+                    </CardTitle>
+                    {suggestedItems.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                        <button onClick={scrollSuggestedLeft}>
+                          <ChevronLeft
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                        <button onClick={scrollSuggestedRight}>
+                          <ChevronRight
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                      </div>
+                    )}
+                  </CardHeader>
 
-    <CardContent>
-      <div className="w-full">
-        <div
-          ref={suggestedRef}
-          className="
-            flex gap-4 
-            overflow-x-auto overflow-y-hidden 
-            lg:overflow-x-hidden 
-            no-scrollbar 
-            py-2 px-1 sm:px-2 
-            scroll-smooth snap-x snap-mandatory
-          "
-        >
-          {suggestedItems.slice(0, 5).map((n) => (
-            <div
-              key={n}
-              className="
-                group cursor-pointer 
-                min-w-[280px] max-w-[280px] 
-                flex-shrink-0 snap-start
-              "
-            >
-              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
-                <img
-                  src="/api/placeholder/280/160"
-                  alt={`Course Title ${n}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+                  <CardContent>
+                    {suggestedItems.length > 0 ? (
+                      <div
+                        ref={suggestedRef}
+                        className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
+                      >
+                        {suggestedItems.map((n) => (
+                          <div
+                            key={n}
+                            className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
+                          >
+                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                              <img
+                                src="/api/placeholder/280/160"
+                                alt={`Course Title ${n}`}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <div>
+                                <h3
+                                  className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                >
+                                  Course Title {n}
+                                </h3>
+                                <p
+                                  className={`text-xs ${textLight} line-clamp-2`}
+                                >
+                                  Short description goes here.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState
+                        icon={Star}
+                        title="Suggestions Coming Soon"
+                        message="We'll recommend courses here based on your activity."
+                      />
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-              <div className="space-y-2">
-                <div>
-                  <h3
-                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                  >
-                    Course Title {n}
-                  </h3>
-                  <p className={`text-xs ${textLight} line-clamp-2`}>
-                    Short description goes here.
-                  </p>
+
+              {/* For a new user, this section doesn't make sense, so we hide it entirely unless there's data. */}
+              {becauseItems.length > 0 && (
+                <div className="w-full lg:w-[60%] xl:w-[72%]">
+                  <Card>
+                    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                      <CardTitle className={`text-[${secondary}]`}>
+                        Because You Took “Frontend Basics”
+                      </CardTitle>
+                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                        <button onClick={scrollBecauseLeft}>
+                          <ChevronLeft
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                        <button onClick={scrollBecauseRight}>
+                          <ChevronRight
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div
+                        ref={becauseRef}
+                        className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
+                      >
+                        {becauseItems.map((n) => (
+                          <div
+                            key={n}
+                            className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
+                          >
+                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                              <img
+                                src="/api/placeholder/280/160"
+                                alt={`Advanced Frontend ${n}`}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <div>
+                                <h3
+                                  className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                >
+                                  Advanced Frontend {n}
+                                </h3>
+                                <p
+                                  className={`text-xs ${textLight} line-clamp-2`}
+                                >
+                                  Continue your journey with deeper concepts.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-</div>
+              )}
 
-{/* ---------- Because You Took “Frontend Basics” ---------- */}
-<div className="w-full lg:w-[60%] xl:w-[72%]">
-  <Card>
-    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-      <CardTitle className={`text-[${secondary}]`}>
-        Because You Took “Frontend Basics”
-      </CardTitle>
-      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-        <button onClick={scrollBecauseLeft}>
-          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-        <button onClick={scrollBecauseRight}>
-          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-      </div>
-    </CardHeader>
-
-    <CardContent>
-      <div className="w-full">
-        <div
-          ref={becauseRef}
-          className="
-            flex gap-4 
-            overflow-x-auto overflow-y-hidden 
-            lg:overflow-x-hidden 
-            no-scrollbar 
-            py-2 px-1 sm:px-2 
-            scroll-smooth snap-x snap-mandatory
-          "
-        >
-          {becauseItems.slice(0, 5).map((n) => (
-            <div
-              key={n}
-              className="
-                group cursor-pointer 
-                min-w-[280px] max-w-[280px] 
-                flex-shrink-0 snap-start
-              "
-            >
-              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
-                <img
-                  src="/api/placeholder/280/160"
-                  alt={`Advanced Frontend ${n}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+              {/* Coming Soon */}
+              <div className="w-full lg:w-[60%] xl:w-[72%]">
+                <Card>
+                  <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                    <CardTitle className={`text-[${secondary}]`}>
+                      Coming Soon
+                    </CardTitle>
+                    {comingItems.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                        <button onClick={scrollComingLeft}>
+                          <ChevronLeft
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                        <button onClick={scrollComingRight}>
+                          <ChevronRight
+                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                          />
+                        </button>
+                      </div>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {comingItems.length > 0 ? (
+                      <div
+                        ref={comingRef}
+                        className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
+                      >
+                        {comingItems.map((n) => (
+                          <div
+                            key={n}
+                            className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
+                          >
+                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
+                              <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                Coming Soon...
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div>
+                                <h3
+                                  className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                >
+                                  Upcoming Course {n}
+                                </h3>
+                                <p
+                                  className={`text-xs ${textLight} line-clamp-2`}
+                                >
+                                  Stay tuned for release!
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState
+                        icon={Clock}
+                        title="Exciting Courses on the Way"
+                        message="We are working on new content. Check back soon!"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-              <div className="space-y-2">
-                <div>
-                  <h3
-                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                  >
-                    Advanced Frontend {n}
-                  </h3>
-                  <p className={`text-xs ${textLight} line-clamp-2`}>
-                    Continue your journey with deeper concepts.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-</div>
-
-{/* ---------- Coming Soon ---------- */}
-<div className="w-full lg:w-[60%] xl:w-[72%]">
-  <Card>
-    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-      <CardTitle className={`text-[${secondary}]`}>
-        Coming Soon
-      </CardTitle>
-      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-        <button onClick={scrollComingLeft}>
-          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-        <button onClick={scrollComingRight}>
-          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
-        </button>
-      </div>
-    </CardHeader>
-
-    <CardContent>
-      <div className="w-full">
-        <div
-          ref={comingRef}
-          className="
-            flex gap-4 
-            overflow-x-auto overflow-y-hidden 
-            lg:overflow-x-hidden 
-            no-scrollbar 
-            py-2 px-1 sm:px-2 
-            scroll-smooth snap-x snap-mandatory
-          "
-        >
-          {comingItems.slice(0, 5).map((n) => (
-            <div
-              key={n}
-              className="
-                group cursor-pointer 
-                min-w-[280px] max-w-[280px] 
-                flex-shrink-0 snap-start
-              "
-            >
-              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
-                <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  Coming Soon...
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <h3
-                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                  >
-                    Upcoming Course {n}
-                  </h3>
-                  <p className={`text-xs ${textLight} line-clamp-2`}>
-                    Stay tuned for release!
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-</div>
             </div>
           </main>
 
-          {/* Navigation */}
           <Nav />
-
-          {/* Footer */}
           <LearnerFooter />
         </div>
       </div>
 
-      {/* Mentor Modal Component */}
       <MentorModal
         mentors={allMentors}
         isOpen={isModalOpen}

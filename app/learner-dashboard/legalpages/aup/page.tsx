@@ -22,6 +22,7 @@ export default function AupPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Fetch Acceptable Use Policy content
   useEffect(() => {
     const fetchAup = async () => {
       try {
@@ -47,12 +48,37 @@ export default function AupPage() {
     fetchAup();
   }, []);
 
+  // 🔹 Make links clickable + styled (auto-enhancer)
+  useEffect(() => {
+    if (!aupContent?.content) return;
+
+    const container = document.querySelector(".prose");
+    if (!container) return;
+
+    const links = container.querySelectorAll("a");
+
+    links.forEach((link) => {
+      const el = link as HTMLAnchorElement;
+
+      // If there's no href, but text looks like a URL, infer it
+      if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
+        el.setAttribute("href", el.textContent.trim());
+      }
+
+      // Always open in a new tab safely
+      el.setAttribute("target", "_blank");
+      el.setAttribute("rel", "noopener noreferrer");
+
+      // Apply theme color and underline for clarity
+      el.style.color = primary;
+      el.style.textDecoration = "underline";
+    });
+  }, [aupContent]);
+
   return (
-    // Applied dark mode background
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -60,32 +86,28 @@ export default function AupPage() {
 
         {/* Content + Footer wrapper */}
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          {/* Applied base text color for dark mode to the main tag */}
           <main className={`flex-1 mx-auto lg:px-20 px-6 py-12 ${textMedium} leading-relaxed`}>
             {loading ? (
               <p className={textLight}>Loading content...</p>
             ) : aupContent ? (
               <>
-                {/* Applied dark mode heading color */}
                 <h1 className={`text-3xl md:text-4xl font-bold mb-6 ${textDark}`}>
                   {aupContent.title || "Acceptable Use Policy"}
                 </h1>
                 <div
-                  // Applied dark mode prose styling and text color
-                  className={`prose max-w-none space-y-6 dark:prose-invert prose-p:${textMedium} prose-headings:${textDark} dark:prose-strong:${textDark} dark:prose-ol:${textMedium} dark:prose-ul:${textMedium}`}
+                  className={`prose max-w-none space-y-6 ${textMedium} dark:prose-invert`}
                   dangerouslySetInnerHTML={{ __html: aupContent.content || "" }}
                 />
               </>
             ) : (
-              // Empty State Updated for dark mode and theme
-              <div className={`flex flex-col items-center justify-center text-center ${textLight} space-y-4 px-4 sm:px-0`}>
-                {/* Theme Color on Icon */}
+              // Empty state
+              <div
+                className={`flex flex-col items-center justify-center text-center ${textLight} space-y-4 px-4 sm:px-0`}
+              >
                 <FileText className={`w-15 h-15 sm:w-20 sm:h-20 mx-auto text-[${primary}]`} />
-                {/* Applied dark mode text color */}
                 <p className={`text-xl sm:text-1xl font-semibold ${textDark}`}>
                   Oops! No content available.
                 </p>
-                {/* Applied dark mode text color */}
                 <p className={`max-w-sm sm:max-w-md ${textMedium}`}>
                   It looks like the Acceptable Use Policy hasn’t been added yet.
                   Please check back later.
@@ -95,8 +117,7 @@ export default function AupPage() {
           </main>
 
           {/* Navigation */}
-                    <Nav />
-          
+          <Nav />
 
           {/* Footer */}
           <LearnerFooter />
