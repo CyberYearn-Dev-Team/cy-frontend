@@ -188,7 +188,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className={`text-yellow-700 dark:text-yellow-400 leading-relaxed max-w-5xl`}>
-                CyberLearn is designed exclusively for educational purposes. All
+                CyberYearn  is designed exclusively for educational purposes. All
                 content, tools, and exercises are provided in a controlled
                 environment to help learners understand cybersecurity concepts
                 safely and responsibly. Any misuse of the knowledge gained here

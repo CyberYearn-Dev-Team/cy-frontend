@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, BarChart3, BookOpen, Award } from "lucide-react";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 
-import { Search, BarChart3, BookOpen, Award } from "lucide-react";
-
+// --- CHANGE 1: Added more dummy modules for demonstration ---
 const tracks = [
   {
     id: 1,
@@ -38,9 +37,13 @@ const tracks = [
     modules: [
       { name: "Phishing Fundamentals", progress: 0 },
       { name: "Email Security Analysis", progress: 0 },
+      // Added new modules below
+      { name: "Social Engineering Tactics", progress: 0 },
+      { name: "Reporting Phishing Attempts", progress: 0 },
     ],
   },
 ];
+// --- END OF CHANGE 1 ---
 
 export default function ProgressPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,44 +52,36 @@ export default function ProgressPage() {
   const [sort, setSort] = useState("Activity");
   const [filterDropdown, setFilterDropdown] = useState<boolean>(false);
   const [sortDropdown, setSortDropdown] = useState<boolean>(false);
-  const [openTrack, setOpenTrack] = useState<number | null>(null); // for collapsible tracks
+  const [openTrack, setOpenTrack] = useState<number | null>(null);
 
   const filterOptions: string[] = ["All Tracks", "In Progress", "Completed"];
   const sortOptions: string[] = ["Activity", "Progress"];
 
-  // Filtering logic
+  // Filtering and sorting logic remains the same
   const filteredTracks = tracks
     .filter((track) => {
       if (filter === "In Progress")
         return track.progress < 100 && track.progress > 0;
       if (filter === "Completed") return track.progress === 0;
-      return true; // "All Tracks"
+      return true;
     })
     .filter((track) =>
       track.title.toLowerCase().includes(search.toLowerCase())
     );
 
-  // Sorting logic
   const sortedTracks = [...filteredTracks].sort((a, b) => {
     if (sort === "Progress") return b.progress - a.progress;
-    return b.id - a.id; // default: latest activity (higher id)
+    return b.id - a.id;
   });
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
-      {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <Header setSidebarOpen={setSidebarOpen} />
-
-        {/* Content + Footer Wrapper */}
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
+            
             {/* Stats Section */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
@@ -113,7 +108,6 @@ export default function ProgressPage() {
 
             {/* Search + Filter Bar */}
             <div className="rounded-xl flex flex-col sm:flex-row sm:items-center gap-4 w-full p-0 bg-transparent shadow-none">
-              {/* Search */}
               <div className="relative w-full sm:basis-[70%] sm:flex-grow">
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
                 <input
@@ -124,10 +118,7 @@ export default function ProgressPage() {
                   className="w-full border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#72a210]"
                 />
               </div>
-
-              {/* Filters */}
               <div className="flex w-full sm:basis-[30%] sm:justify-end gap-2">
-                {/* Filter Dropdown */}
                 <div className="relative flex-1 sm:flex-none">
                   <button
                     onClick={() => setFilterDropdown((prev) => !prev)}
@@ -139,50 +130,24 @@ export default function ProgressPage() {
                   {filterDropdown && (
                     <div className="absolute mt-1 w-full sm:w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                       {filterOptions.map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setFilter(option);
-                            setFilterDropdown(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                            filter === option
-                              ? "bg-gray-50 dark:bg-gray-700 text-[#72a210]"
-                              : "text-gray-700 dark:text-gray-200"
-                          }`}
-                        >
+                        <button key={option} onClick={() => { setFilter(option); setFilterDropdown(false); }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${ filter === option ? "bg-gray-50 dark:bg-gray-700 text-[#72a210]" : "text-gray-700 dark:text-gray-200"}`} >
                           {option}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-
-                {/* Sort Dropdown */}
                 <div className="relative flex-1 sm:flex-none">
-                  <button
-                    onClick={() => setSortDropdown((prev) => !prev)}
-                    className="flex items-center justify-between w-full sm:w-40 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#72a210]"
-                  >
+                  <button onClick={() => setSortDropdown((prev) => !prev)} className="flex items-center justify-between w-full sm:w-40 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#72a210]">
                     {sort}
                     <ChevronDown className="h-4 w-4 ml-2 text-gray-500 dark:text-gray-400" />
                   </button>
-
                   {sortDropdown && (
                     <div className="absolute mt-1 w-full sm:w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                       {sortOptions.map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setSort(option);
-                            setSortDropdown(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                            sort === option
-                              ? "bg-gray-50 dark:bg-gray-700 text-[#72a210]"
-                              : "text-gray-700 dark:text-gray-200"
-                          }`}
-                        >
+                        <button key={option} onClick={() => { setSort(option); setSortDropdown(false); }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${ sort === option ? "bg-gray-50 dark:bg-gray-700 text-[#72a210]" : "text-gray-700 dark:text-gray-200" }`}>
                           {option}
                         </button>
                       ))}
@@ -196,54 +161,45 @@ export default function ProgressPage() {
             <div className="space-y-4">
               {sortedTracks.length > 0 ? (
                 sortedTracks.map((track) => (
-                  <div
-                    key={track.id}
-                    className="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden transition"
-                  >
-                    {/* Track Header */}
-                   <button
-  onClick={() =>
-    setOpenTrack(openTrack === track.id ? null : track.id)
-  }
-  className="w-full flex flex-col gap-2 p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
->
-  {/* Top row: Title + Progress */}
-  <div className="flex w-full items-center justify-between">
-  <h2 className="flex-1 text-left text-lg font-semibold text-gray-800 dark:text-gray-100">
-    {track.title}
-  </h2>
-  <div className="flex items-center gap-2 flex-shrink-0">
-    <span className="text-sm font-semibold text-[#507800]">
-      {track.progress}%
-    </span>
-    {openTrack === track.id ? (
-      <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-    ) : (
-      <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-    )}
-  </div>
-</div>
-
-
-  {/* Progress Bar always full width under title */}
-  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-    <div
-      className="h-2 rounded-full bg-[#72a210]"
-      style={{ width: `${track.progress}%` }}
-    />
-  </div>
-</button>
-
+                  <div key={track.id} className="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden transition">
+                    <button
+                      onClick={() => setOpenTrack(openTrack === track.id ? null : track.id)}
+                      className="w-full flex flex-col gap-2 p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <h2 className="flex-1 text-left text-lg font-semibold text-gray-800 dark:text-gray-100">
+                          {track.title}
+                        </h2>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-sm font-semibold text-[#507800]">
+                            {track.progress}%
+                          </span>
+                          {openTrack === track.id ? (
+                            <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div
+                          className="h-2 rounded-full bg-[#72a210]"
+                          style={{ width: `${track.progress}%` }}
+                        />
+                      </div>
+                    </button>
 
                     {/* Track Modules (collapsible body) */}
                     {openTrack === track.id && (
-                      <div className="p-5 border-t border-gray-200 dark:border-gray-700 space-y-3 animate-fadeIn">
+                       // --- CHANGE 2: Replaced single-column layout with a 2-column grid ---
+                      <div className="p-5 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
+                       {/* --- END OF CHANGE 2 --- */}
                         {track.modules.map((mod, i) => (
                           <div
                             key={i}
                             className="flex justify-between items-center border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                           >
-                            <div>
+                            <div className="flex-1 pr-4">
                               <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                                 {mod.name}
                               </p>
@@ -254,7 +210,7 @@ export default function ProgressPage() {
                                 />
                               </div>
                             </div>
-                            <button className="text-xs bg-[#72a210] text-white px-3 py-1 rounded-md hover:bg-[#507800] transition">
+                            <button className="text-1xs bg-[#72a210] text-white px-3 py-2 rounded-md hover:bg-[#507800] transition flex-shrink-0">
                               {mod.progress === 100 ? "Review" : "Continue"}
                             </button>
                           </div>
@@ -271,10 +227,7 @@ export default function ProgressPage() {
             </div>
           </main>
 
-          {/* Navigation */}
-          <Nav /> 
-
-          {/* Footer */}
+          <Nav />
           <LearnerFooter />
         </div>
       </div>
