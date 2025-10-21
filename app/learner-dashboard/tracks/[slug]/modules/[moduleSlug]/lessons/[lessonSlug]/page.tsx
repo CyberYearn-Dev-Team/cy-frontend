@@ -6,9 +6,6 @@ import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
-
-// import Breadcrumb from "@/components/ui/breadcrumb";
-// import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -26,19 +23,8 @@ const cardBg = "bg-white dark:bg-gray-900"; // Card background
 const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
 const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
 const textLight = "text-gray-500 dark:text-gray-400"; // Placeholder/Subtle text
-const borderLight = "border dark:border-gray-700";
 
 // Interfaces
-interface Lab {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  difficulty: string;
-  xp: number;
-  time: string;
-}
-
 interface Lesson {
   id: number;
   title: string;
@@ -46,7 +32,6 @@ interface Lesson {
   content: string;
   estimated_time: string;
   order?: number;
-  labs?: Lab[];
 }
 
 export default function LessonDetailPage() {
@@ -67,6 +52,7 @@ export default function LessonDetailPage() {
     return textarea.value;
   }
 
+  // Fetch Lesson
   useEffect(() => {
     async function fetchLesson() {
       try {
@@ -84,49 +70,31 @@ export default function LessonDetailPage() {
     fetchLesson();
   }, [slug, moduleSlug, lessonSlug]);
 
-  
-// make link clickable 
-useEffect(() => {
-  if (!lesson?.content) return;
+  // Make in-content links clickable
+  useEffect(() => {
+    if (!lesson?.content) return;
+    const container = document.querySelector(".prose");
+    if (!container) return;
 
-  // Wait for content to render
-  const container = document.querySelector(".prose");
-  if (!container) return;
-
-  const links = container.querySelectorAll("a.decorated-link");
-
-  links.forEach((link) => {
-    const el = link as HTMLAnchorElement;
-
-    // If there's no href, infer it from its text content
-    if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
-      el.setAttribute("href", el.textContent.trim());
+    const links = container.querySelectorAll("a.decorated-link");
+    links.forEach((link) => {
+      const el = link as HTMLAnchorElement;
+      if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
+        el.setAttribute("href", el.textContent.trim());
+        el.setAttribute("target", "_blank");
+        el.setAttribute("rel", "noopener noreferrer");
+      }
       el.setAttribute("target", "_blank");
       el.setAttribute("rel", "noopener noreferrer");
-    }
+    });
+  }, [lesson]);
 
-    // Optional: always open new tab safely
-    el.setAttribute("target", "_blank");
-    el.setAttribute("rel", "noopener noreferrer");
-  });
-}, [lesson]);
-
-
-// log all getting lesson content
-  useEffect(() => {
-  if (lesson?.content) {
-    console.log("Lesson content:", lesson.content);
-  }
-}, [lesson]);
-
-
-
-
-  const contentHtml = useMemo(() => decodeHtml(lesson?.content || ""), [lesson?.content]);
-
+  const contentHtml = useMemo(
+    () => decodeHtml(lesson?.content || ""),
+    [lesson?.content]
+  );
 
   return (
-    // Applied dark mode background
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -137,32 +105,33 @@ useEffect(() => {
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
-       {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/learner-dashboard/tracks">
-              Learning Tracks
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
-              {slug}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>
-              {moduleSlug}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{lessonSlug}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/learner-dashboard/tracks">
+                  Learning Tracks
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
+                  Track
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink
+                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}
+                >
+                  Module
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Lesson</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <br />
 
           {loading ? (
@@ -180,57 +149,32 @@ useEffect(() => {
                   Estimated time: {lesson.estimated_time}
                 </p>
                 <div className="prose prose-slate lg:prose-lg max-w-none dark:prose-invert">
-                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                  <div
+                    dangerouslySetInnerHTML={{ __html: contentHtml }}
+                  />
                 </div>
-
               </div>
 
-              {/* Labs Section */}
-              {lesson.labs && lesson.labs.length > 0 && (
-                // Applied card background and padding for consistency
-                <div
-                  className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
+              {/* --- QUIZ SECTION --- */}
+              <div
+                className={`${cardBg} shadow rounded-lg p-3 sm:p-6 flex flex-col sm:flex-row justify-between items-center`}
+              >
+                <p className={`${textMedium} mb-3 sm:mb-0 sm:p-[10px]`}>
+                  Test your knowledge before proceeding to labs.
+                </p>
+                <Link
+                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`}
+                  className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
                 >
-                  <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
-                    Lab Guides
-                  </h2>
-                  <div className="space-y-4">
-                    {lesson.labs.map((lab) => (
-                      <div
-                        key={lab.id}
-                        className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
-                      >
-                        <div className="flex-1">
-                          <h3 className={`font-semibold ${textDark}`}>
-                            {lab.title}
-                          </h3>
-                          <p className={`text-sm ${textMedium} line-clamp-2`}>
-                            {lab.description}
-                          </p>
-                          <span className={`text-xs ${textLight} block mt-1`}>
-                            {lab.difficulty} • {lab.time} • {lab.xp} XP
-                          </span>
-                        </div>
-
-                        <Link
-                          href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${lab.slug}`}
-                          className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[#72a210] text-white hover:bg-[#5a850d] text-center self-center sm:self-auto`}
-                        >
-                          Start Lab
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  Take Quiz for this Lesson
+                </Link>
+              </div>
             </div>
           )}
         </main>
 
-
-
-         {/* Bottom Navigation */}
-                <Nav />
+        {/* Bottom Navigation */}
+        <Nav />
       </div>
     </div>
   );

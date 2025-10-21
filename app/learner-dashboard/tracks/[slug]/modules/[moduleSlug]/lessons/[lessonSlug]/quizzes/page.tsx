@@ -66,8 +66,17 @@ export default function QuizzesPage() {
     async function fetchQuizzes() {
       try {
         const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes`
+          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`
         );
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error(
+            `Quizzes API error ${res.status} ${res.statusText}:`,
+            errText.slice(0, 500)
+          );
+          setQuizzes([]);
+          return;
+        }
         const data = await res.json();
         console.log("Quizzes API raw:", JSON.stringify(data, null, 2));
 
@@ -114,25 +123,19 @@ export default function QuizzesPage() {
           return [String(opts)];
         };
 
-        const mapped: Quiz[] = (data.quizzes || []).map(
-          (q: any, idx: number) => ({
-            id: idx + 1,
-            title: q.title ?? "Untitled Quiz",
-            description: q.description ?? "",
-            questions: [
-              {
-                question_text: q.question_text ?? "",
-                options: Array.isArray(q.options)
-                  ? q.options
-                  : typeof q.options === "string"
-                  ? JSON.parse(q.options)
-                  : [],
-                answer: q.answer ?? "",
-              },
-            ],
-            passing_score: q.passing_score ?? 0,
-          })
-        );
+        const mapped: Quiz[] = (data.quizzes || []).map((q: any, idx: number) => ({
+          id: idx + 1,
+          title: q.title ?? "Untitled Quiz",
+          description: q.description ?? "",
+          questions: Array.isArray(q.questions)
+            ? q.questions.map((qq: any) => ({
+                question_text: qq?.question_text ?? "",
+                options: normalizeOptions(qq?.options),
+                answer: qq?.answer ?? "",
+              }))
+            : [],
+          passing_score: q.passing_score ?? 0,
+        }));
 
         setQuizzes(mapped);
       } catch (err) {
@@ -207,7 +210,7 @@ if (score === 100) {
 
     // Redirect with results
     router.push(
-      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
+      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
         JSON.stringify(allQuestions)
       )}`
     );
@@ -259,21 +262,38 @@ if (score === 100) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
 
           {/* Breadcrumb */}
           <Breadcrumb>
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/learner-dashboard/tracks">Tracks</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbPage>Result</BreadcrumbPage>
-    </BreadcrumbItem>
-  </BreadcrumbList>
-</Breadcrumb>
- <br />
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/learner-dashboard/tracks">Learning Tracks</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>Track</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>Module</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}>Lesson</BreadcrumbLink>
+              </BreadcrumbItem>
+              {/* <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/labs/${labSlug}`}>Lab</BreadcrumbLink>
+              </BreadcrumbItem> */}
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Quizzes</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          <br />
 
           {loading ? (
             <p className={textLight}>Loading quizzes...</p>

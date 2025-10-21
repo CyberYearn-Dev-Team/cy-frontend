@@ -10,38 +10,18 @@ export async function GET(
 
   try {
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
-    const token = process.env.DIRECTUS_TOKEN;
     const encoded = encodeURIComponent(lessonSlug);
 
-    // Build headers and only include Authorization if token is valid
-    const baseHeaders: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    const headers: HeadersInit = { ...baseHeaders };
-    const hasAuth = Boolean(token && token.trim() !== "" && token !== "undefined");
-    if (hasAuth) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    // ✅ only fetch lesson + its linked lab_guides
-    let directusRes = await fetch(
-      `${base}/items/lessons?filter[slug][_eq]=${encoded}&fields=*,lab_guides.lab_guides_id.*`,
+    // Fetch lesson and its linked quizzes
+    const directusRes = await fetch(
+      `${base}/items/lessons?filter[slug][_eq]=${encoded}&fields=*,quizzes.quizzes_id.*`,
       {
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+        },
         cache: "no-store",
       }
     );
-
-    // Retry without token if unauthorized/forbidden
-    if (!directusRes.ok && [401, 403].includes(directusRes.status) && hasAuth) {
-      directusRes = await fetch(
-        `${base}/items/lessons?filter[slug][_eq]=${encoded}&fields=*,lab_guides.lab_guides_id.*`,
-        {
-          headers: baseHeaders,
-          cache: "no-store",
-        }
-      );
-    }
 
     if (!directusRes.ok) {
       return NextResponse.json(
@@ -58,19 +38,19 @@ export async function GET(
 
     const lesson = json.data[0];
 
-    // ✅ flatten lab_guides into labs array
-    const flatLabs = (lesson.lab_guides || [])
-      .map((l: any) => l.lab_guides_id)
-      .filter((l: any) => l !== null);
+    // ✅ Flatten quizzes (just like modules in your working route)
+    const flatQuizzes = (lesson.quizzes || [])
+      .map((q: any) => q.quizzes_id)
+      .filter((q: any) => q !== null);
 
     return NextResponse.json({
       lesson: {
         ...lesson,
-        labs: flatLabs,
+        quizzes: flatQuizzes,
       },
     });
-  } catch (err) {
-    console.error("API error:", err);
+  } catch (error) {
+    console.error("API error:", error);
     return NextResponse.json(
       { lesson: null, error: "Server error" },
       { status: 500 }

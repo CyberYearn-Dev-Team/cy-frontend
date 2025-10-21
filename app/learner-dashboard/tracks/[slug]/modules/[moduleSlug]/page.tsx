@@ -92,7 +92,7 @@ export default function ModuleDetailPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/learner-dashboard/tracks/[slug]">
+            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
               Track
             </BreadcrumbLink>
           </BreadcrumbItem>

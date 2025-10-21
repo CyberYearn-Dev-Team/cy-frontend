@@ -127,12 +127,30 @@ const getVideoUrl = (url?: string): string | undefined => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink href="/learner-dashboard/tracks">
-                  Tracks
+                  Learning Tracks
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Result</BreadcrumbPage>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
+                  Track
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>
+                  Module
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}>
+                  Lesson
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Lab</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
