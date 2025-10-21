@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner"; // 👈 import Toaster
+import { Toaster } from "sonner";
 import CookieConsent from "@/components/ui/CookieConsent";
 
 
@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 // All related to my header 
 export const metadata: Metadata = {
-  title: "cyber Yearn",
+  title: "cyber yearn",
   description: "Master Cybersecurity through hands-on learning",
   icons: {
     icon: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_favicon.png",

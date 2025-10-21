@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 
+import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -430,6 +431,7 @@ export default function LearnerDashboard() {
                         Sharpen Your Skills with <br />
                         Professional Online Courses
                       </h1>
+                      <Link href="/learner-dashboard/tracks">
                       <Button
                         variant="secondary"
                         className={`
@@ -440,6 +442,7 @@ export default function LearnerDashboard() {
                         <Play className="h-4 w-4 mr-2" />
                         Start Learning Now
                       </Button>
+                      </Link>
                     </div>
                     <div className="absolute top-12 right-15 w-55 h-55 opacity-90 hidden sm:block">
                       <img
@@ -519,7 +522,7 @@ export default function LearnerDashboard() {
                     {/* Header: titles align flex-start on mobile, justify-between on desktop */}
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
-                        Continue Watching
+                        Continue Learning
                       </CardTitle>
 
                       <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -630,203 +633,201 @@ export default function LearnerDashboard() {
               </div>
 
               {/*Suggested for You */}
-              <Card>
-                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-                  <CardTitle className={`text-[${secondary}]`}>
-                    Suggested for You
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={scrollSuggestedLeft}>
-                      <ChevronLeft
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                    <button onClick={scrollSuggestedRight}>
-                      <ChevronRight
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full">
-                    <div
-                      ref={suggestedRef}
-                      className="
-                        flex gap-4 
-                        overflow-x-auto overflow-y-hidden 
-                        lg:overflow-x-hidden 
-                        no-scrollbar 
-                        py-2 px-1 sm:px-2 
-                        scroll-smooth snap-x snap-mandatory
-                      "
-                    >
-                      {suggestedItems.slice(0, 5).map((n) => (
-                        <div
-                          key={n}
-                          className="
-                            group cursor-pointer 
-                            min-w-[280px] max-w-[280px] 
-                            flex-shrink-0 snap-start
-                          "
-                        >
-                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
-                            <img
-                              src="/api/placeholder/280/160"
-                              alt={`Course Title ${n}`}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <div>
-                              <h3
-                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                              >
-                                Course Title {n}
-                              </h3>
-                              <p className={`text-xs ${textLight} line-clamp-2`}>
-                                Short description goes here.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* ---------- Suggested for You ---------- */}
+<div className="w-full lg:w-[60%] xl:w-[72%]">
+  <Card>
+    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+      <CardTitle className={`text-[${secondary}]`}>
+        Suggested for You
+      </CardTitle>
+      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+        <button onClick={scrollSuggestedLeft}>
+          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+        <button onClick={scrollSuggestedRight}>
+          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+      </div>
+    </CardHeader>
 
-              {/*Because You Took */}
-              <Card>
-                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-                  <CardTitle className={`text-[${secondary}]`}>
-                    Because You Took “Frontend Basics”
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={scrollBecauseLeft}>
-                      <ChevronLeft
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                    <button onClick={scrollBecauseRight}>
-                      <ChevronRight
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full">
-                    <div
-                      ref={becauseRef}
-                      className="
-                        flex gap-4 
-                        overflow-x-auto overflow-y-hidden 
-                        lg:overflow-x-hidden 
-                        no-scrollbar 
-                        py-2 px-1 sm:px-2 
-                        scroll-smooth snap-x snap-mandatory
-                      "
-                    >
-                      {becauseItems.slice(0, 5).map((n) => (
-                        <div
-                          key={n}
-                          className="
-                            group cursor-pointer 
-                            min-w-[280px] max-w-[280px] 
-                            flex-shrink-0 snap-start
-                          "
-                        >
-                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
-                            <img
-                              src="/api/placeholder/280/160"
-                              alt={`Advanced Frontend ${n}`}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <div>
-                              <h3
-                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                              >
-                                Advanced Frontend {n}
-                              </h3>
-                              <p className={`text-xs ${textLight} line-clamp-2`}>
-                                Continue your journey with deeper concepts.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+    <CardContent>
+      <div className="w-full">
+        <div
+          ref={suggestedRef}
+          className="
+            flex gap-4 
+            overflow-x-auto overflow-y-hidden 
+            lg:overflow-x-hidden 
+            no-scrollbar 
+            py-2 px-1 sm:px-2 
+            scroll-smooth snap-x snap-mandatory
+          "
+        >
+          {suggestedItems.slice(0, 5).map((n) => (
+            <div
+              key={n}
+              className="
+                group cursor-pointer 
+                min-w-[280px] max-w-[280px] 
+                flex-shrink-0 snap-start
+              "
+            >
+              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                <img
+                  src="/api/placeholder/280/160"
+                  alt={`Course Title ${n}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <h3
+                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                  >
+                    Course Title {n}
+                  </h3>
+                  <p className={`text-xs ${textLight} line-clamp-2`}>
+                    Short description goes here.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>
 
-              {/*Coming Soon */}
-              <Card>
-                <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-                  <CardTitle className={`text-[${secondary}]`}>
-                    Coming Soon
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={scrollComingLeft}>
-                      <ChevronLeft
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                    <button onClick={scrollComingRight}>
-                      <ChevronRight
-                        className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                      />
-                    </button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="w-full">
-                    <div
-                      ref={comingRef}
-                      className="
-                        flex gap-4 
-                        overflow-x-auto overflow-y-hidden 
-                        lg:overflow-x-hidden 
-                        no-scrollbar 
-                        py-2 px-1 sm:px-2 
-                        scroll-smooth snap-x snap-mandatory
-                      "
-                    >
-                      {comingItems.slice(0, 5).map((n) => (
-                        <div
-                          key={n}
-                          className="
-                            group cursor-pointer 
-                            min-w-[280px] max-w-[280px] 
-                            flex-shrink-0 snap-start
-                          "
-                        >
-                          <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
-                            <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                              Coming Soon...
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div>
-                              <h3
-                                className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                              >
-                                Upcoming Course {n}
-                              </h3>
-                              <p className={`text-xs ${textLight} line-clamp-2`}>
-                                Stay tuned for release!
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+{/* ---------- Because You Took “Frontend Basics” ---------- */}
+<div className="w-full lg:w-[60%] xl:w-[72%]">
+  <Card>
+    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+      <CardTitle className={`text-[${secondary}]`}>
+        Because You Took “Frontend Basics”
+      </CardTitle>
+      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+        <button onClick={scrollBecauseLeft}>
+          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+        <button onClick={scrollBecauseRight}>
+          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+      </div>
+    </CardHeader>
+
+    <CardContent>
+      <div className="w-full">
+        <div
+          ref={becauseRef}
+          className="
+            flex gap-4 
+            overflow-x-auto overflow-y-hidden 
+            lg:overflow-x-hidden 
+            no-scrollbar 
+            py-2 px-1 sm:px-2 
+            scroll-smooth snap-x snap-mandatory
+          "
+        >
+          {becauseItems.slice(0, 5).map((n) => (
+            <div
+              key={n}
+              className="
+                group cursor-pointer 
+                min-w-[280px] max-w-[280px] 
+                flex-shrink-0 snap-start
+              "
+            >
+              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                <img
+                  src="/api/placeholder/280/160"
+                  alt={`Advanced Frontend ${n}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <h3
+                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                  >
+                    Advanced Frontend {n}
+                  </h3>
+                  <p className={`text-xs ${textLight} line-clamp-2`}>
+                    Continue your journey with deeper concepts.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>
+
+{/* ---------- Coming Soon ---------- */}
+<div className="w-full lg:w-[60%] xl:w-[72%]">
+  <Card>
+    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+      <CardTitle className={`text-[${secondary}]`}>
+        Coming Soon
+      </CardTitle>
+      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+        <button onClick={scrollComingLeft}>
+          <ChevronLeft className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+        <button onClick={scrollComingRight}>
+          <ChevronRight className={`${textLight} hover:text-[${secondary}] cursor-pointer`} />
+        </button>
+      </div>
+    </CardHeader>
+
+    <CardContent>
+      <div className="w-full">
+        <div
+          ref={comingRef}
+          className="
+            flex gap-4 
+            overflow-x-auto overflow-y-hidden 
+            lg:overflow-x-hidden 
+            no-scrollbar 
+            py-2 px-1 sm:px-2 
+            scroll-smooth snap-x snap-mandatory
+          "
+        >
+          {comingItems.slice(0, 5).map((n) => (
+            <div
+              key={n}
+              className="
+                group cursor-pointer 
+                min-w-[280px] max-w-[280px] 
+                flex-shrink-0 snap-start
+              "
+            >
+              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
+                <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                  Coming Soon...
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <h3
+                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                  >
+                    Upcoming Course {n}
+                  </h3>
+                  <p className={`text-xs ${textLight} line-clamp-2`}>
+                    Stay tuned for release!
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>
             </div>
           </main>
 

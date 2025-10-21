@@ -132,7 +132,7 @@ export default function LessonDetailPage() {
                   className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
                 >
                   <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
-                    Lab Guildes
+                    Lab Guides
                   </h2>
                   <div className="space-y-4">
                     {lesson.labs.map((lab) => (

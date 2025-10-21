@@ -47,28 +47,50 @@ export default function RegisterPage() {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      if (form.password !== form.confirmPassword) {
-        toast.error("Passwords do not match!");
-        setLoading(false);
-        return;
-      }
-
-      await registerUser(form.email, form.password);
-      toast.success("Account created successfully");
-      router.push("/learner-dashboard/dashboard");
-    } catch (error) {
-      // console.error(error);
-      const message = error instanceof Error ? error.message : "Registration failed";
-      toast.error(message);
-    } finally {
+  try {
+    // Password match validation
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords do not match!");
       setLoading(false);
+      return;
     }
-  };
+
+    // Password length and complexity validation
+    const password = form.password;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
+
+    if (!hasLetter || !hasNumber) {
+      toast.error("Password must include both letters and numbers.");
+      setLoading(false);
+      return;
+    }
+
+    await registerUser(form.email, form.password);
+    toast.success("Account created successfully!");
+    router.push("/learner-dashboard/dashboard");
+  } catch (error: any) {
+    // Handle readable backend or generic errors
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Registration failed. Please try again.";
+    toast.error(message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   return (
@@ -77,7 +99,7 @@ export default function RegisterPage() {
       <div className={`flex min-h-screen items-center justify-center ${bgLight} px-4 py-8`}>
         <div className="w-full max-w-md">
 {/* Logo */}
-        <Link href="/">
+          <Link href="/" className="flex justify-center">
           <div className="flex items-center gap-2">
             {/* Light mode logo */}
             <img
@@ -320,7 +342,7 @@ export default function RegisterPage() {
             </p>
             {/* Applied dark mode text color */}
             <p className={`text-xs ${textLight}`}>
-              CyberLearn is committed to providing a safe learning environment.
+              Cyber Yearn is committed to providing a safe learning environment.
             </p>
           </div>
         </div>
