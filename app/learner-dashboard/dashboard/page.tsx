@@ -43,13 +43,7 @@ interface Track {
   description: string;
 }
 
-interface Mentor {
-  id: number;
-  name: string;
-  title: string;
-  avatar: string;
-  isFollowing: boolean;
-}
+// REMOVED: interface Mentor {} - No longer needed
 
 // UI Helpers (same as your original code)
 const Progress = ({ value }: { value: number }) => (
@@ -146,67 +140,8 @@ const Button = ({
   );
 };
 
-// Reusable Mentor Item Component
-const MentorListItem = ({ mentor }: { mentor: Mentor }) => (
-  <div key={mentor.id} className="flex items-center justify-between group">
-    <div className="flex items-center space-x-3">
-      <div
-        className={`w-11 h-11 rounded-full bg-gradient-to-br from-[${primary}] to-[${secondary}] flex items-center justify-center text-white font-semibold text-sm shadow-md`}
-      >
-        {mentor.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")}
-      </div>
-      <div>
-        <p
-          className={`font-semibold text-sm ${textDark} group-hover:text-[${primary}] transition-colors`}
-        >
-          {mentor.name}
-        </p>
-        <p className={`text-xs ${textLight}`}>{mentor.title}</p>
-      </div>
-    </div>
-  </div>
-);
-
-// See All Mentors Modal Component
-const MentorModal = ({
-  mentors,
-  isOpen,
-  onClose,
-}: {
-  mentors: Mentor[];
-  isOpen: boolean;
-  onClose: () => void;
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-black/40 backdrop-blur-md transition-all duration-300">
-      <div
-        className={`relative ${bgCard} rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 animate-fadeIn`}
-      >
-        <div className="sticky top-0 z-10 p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
-          <h2 className={`text-xl font-bold ${textDark}`}>
-            All Mentors ({mentors.length})
-          </h2>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-full ${textMedium} hover:text-[${secondary}] hover:bg-gray-100 dark:hover:bg-gray-800`}
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          {mentors.map((mentor) => (
-            <MentorListItem key={mentor.id} mentor={mentor} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+// REMOVED: Reusable Mentor Item Component
+// REMOVED: See All Mentors Modal Component
 
 // A reusable placeholder for empty sections
 const EmptyState = ({
@@ -228,14 +163,19 @@ const EmptyState = ({
 // Dashboard
 export default function LearnerDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // REMOVED: const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data is now initialized as empty arrays for a new user
   const continueWatchingItems: any[] = [];
   const suggestedItems: any[] = [];
   const becauseItems: any[] = [];
   const comingItems: any[] = [];
-  const allMentors: Mentor[] = [];
+  // REMOVED: const allMentors: Mentor[] = [];
+
+  // --- (MODIFIED) Mock Data: Set to empty array as requested ---
+  const recentActivityItems: any[] = []; // Now empty
+  const achievementItems: any[] = []; // Now empty
+  // --- (END MODIFIED) Mock Data ---
 
   // Refs and scroll functions (no changes needed here)
   const continueWatchingRef = useRef<HTMLDivElement | null>(null);
@@ -274,8 +214,7 @@ export default function LearnerDashboard() {
   const scrollComingLeft = () => scrollComingBy(-300);
   const scrollComingRight = () => scrollComingBy(300);
 
-  // This will now correctly be an empty array from the empty allMentors array
-  const visibleMentors = allMentors.slice(0, 5);
+  // REMOVED: const visibleMentors = allMentors.slice(0, 5);
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -308,9 +247,9 @@ export default function LearnerDashboard() {
                         <Button
                           variant="secondary"
                           className={`
-                          bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
-                          dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black
-                        `}
+                            bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
+                            dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black
+                          `}
                         >
                           <Play className="h-4 w-4 mr-2" />
                           Start Learning Now
@@ -384,8 +323,8 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
-              {/* Continue Watching + Mentors Container */}
-              <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
+              {/* Continue Watching + Recent Activity Container */}
+              <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
                   <Card className="h-full">
@@ -462,33 +401,48 @@ export default function LearnerDashboard() {
                   </Card>
                 </div>
 
-                {/* Mentors - 40% */}
+                {/* (MODIFIED) Recent Activity - 40% */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
                   <Card className="h-full">
-                    <CardHeader className="flex sm:flex-row items-center sm:items-center justify-between">
-                      <CardTitle className={`text-[${primary}]`}>
-                        Your Mentors
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className={`h-5 w-5 ${textMedium}`} />
+                        <span>Recent Activity</span>
                       </CardTitle>
-                      {allMentors.length > 5 && (
-                        <Button
-                          variant="secondary"
-                          onClick={() => setIsModalOpen(true)}
-                          className={`text-[${primary}] text-sm px-3 py-1.5 h-auto mt-2 sm:mt-0 cursor-pointer`}
-                        >
-                          See All
-                        </Button>
-                      )}
                     </CardHeader>
-                    <CardContent className="h-full flex items-center justify-center space-y-4">
-                      {visibleMentors.length > 0 ? (
-                        visibleMentors.map((mentor) => (
-                          <MentorListItem key={mentor.id} mentor={mentor} />
+                    <CardContent
+                      className={
+                        recentActivityItems.length > 0
+                          ? "space-y-4"
+                          : "h-full flex items-center justify-center"
+                      }
+                    >
+                      {recentActivityItems.length > 0 ? (
+                        recentActivityItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-start space-x-3"
+                          >
+                            <item.icon
+                              className={`h-5 w-5 mt-0.5 flex-shrink-0 ${item.iconClassName}`}
+                              aria-hidden="true"
+                            />
+                            <div>
+                              <p className={`font-medium text-sm ${textDark}`}>
+                                {item.title}
+                              </p>
+                              <p className={`text-xs ${textLight}`}>
+                                {item.status}
+                              </p>
+                            </div>
+                          </div>
                         ))
                       ) : (
                         <EmptyState
-                          icon={Users}
-                          title="Find a Mentor"
-                          message="Connect with mentors to guide your learning."
+                          icon={Clock}
+                          title="Ready to Learn?"
+                          // Cool message here:
+                          message="Your recent activities will appear here once you start exploring the platform."
                         />
                       )}
                     </CardContent>
@@ -496,74 +450,144 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
-              {/* Suggested for You */}
-              <div className="w-full lg:w-[60%] xl:w-[72%]">
-                <Card>
-                  <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
-                    <CardTitle className={`text-[${secondary}]`}>
-                      Suggested for You
-                    </CardTitle>
-                    {suggestedItems.length > 0 && (
-                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                        <button onClick={scrollSuggestedLeft}>
-                          <ChevronLeft
-                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                          />
-                        </button>
-                        <button onClick={scrollSuggestedRight}>
-                          <ChevronRight
-                            className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
-                          />
-                        </button>
-                      </div>
-                    )}
-                  </CardHeader>
+              {/* Suggested + Achievements Container */}
+              <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
+                {/* Main Content - 60% */}
+                <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
+                  <Card className="h-full">
+                    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                      <CardTitle className={`text-[${secondary}]`}>
+                        Suggested for You
+                      </CardTitle>
+                      {suggestedItems.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                          <button onClick={scrollSuggestedLeft}>
+                            <ChevronLeft
+                              className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                            />
+                          </button>
+                          <button onClick={scrollSuggestedRight}>
+                            <ChevronRight
+                              className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                            />
+                          </button>
+                        </div>
+                      )}
+                    </CardHeader>
 
-                  <CardContent>
-                    {suggestedItems.length > 0 ? (
-                      <div
-                        ref={suggestedRef}
-                        className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
-                      >
-                        {suggestedItems.map((n) => (
-                          <div
-                            key={n}
-                            className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
-                          >
-                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
-                              <img
-                                src="/api/placeholder/280/160"
-                                alt={`Course Title ${n}`}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
+                    <CardContent>
+                      {suggestedItems.length > 0 ? (
+                        <div
+                          ref={suggestedRef}
+                          className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
+                        >
+                          {suggestedItems.map((n) => (
+                            <div
+                              key={n}
+                              className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
+                            >
+                              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                                <img
+                                  src="/api/placeholder/280/160"
+                                  alt={`Course Title ${n}`}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <h3
+                                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                  >
+                                    Course Title {n}
+                                  </h3>
+                                  <p
+                                    className={`text-xs ${textLight} line-clamp-2`}
+                                  >
+                                    Short description goes here.
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="space-y-2">
+                          ))}
+                        </div>
+                      ) : (
+                        <EmptyState
+                          icon={Star}
+                          title="Suggestions Coming Soon"
+                          message="We'll recommend courses here based on your activity."
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* (MODIFIED) Achievements - 40% */}
+                <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
+                  <Card className="h-full">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Trophy className={`h-5 w-5 ${textMedium}`} />
+                        <span>Achievements</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent
+                      className={
+                        achievementItems.length > 0
+                          ? "space-y-4"
+                          : "h-full flex items-center justify-center"
+                      }
+                    >
+                      {achievementItems.length > 0 ? (
+                        <>
+                          {achievementItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-start space-x-3"
+                            >
+                              <item.icon
+                                className={`h-5 w-5 mt-0.5 flex-shrink-0 ${item.iconClassName}`}
+                                aria-hidden="true"
+                              />
                               <div>
-                                <h3
-                                  className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
-                                >
-                                  Course Title {n}
-                                </h3>
                                 <p
-                                  className={`text-xs ${textLight} line-clamp-2`}
+                                  className={`font-medium text-sm ${textDark}`}
                                 >
-                                  Short description goes here.
+                                  {item.title}
+                                </p>
+                                <p className={`text-xs ${textLight}`}>
+                                  {item.status}
                                 </p>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={Star}
-                        title="Suggestions Coming Soon"
-                        message="We'll recommend courses here based on your activity."
-                      />
-                    )}
-                  </CardContent>
-                </Card>
+                          ))}
+                          {/* "View All Achievements" button */}
+                          <Link href="/learner-dashboard/achievements">
+                            <div className="pt-2">
+                              <Button
+                                variant="secondary"
+                                className="w-full"
+                                onClick={() => {
+                                  // Add navigation or modal logic here
+                                }}
+                              >
+                                View All Achievements
+                              </Button>
+                            </div>
+                          </Link>
+                        </>
+                      ) : (
+                        <EmptyState
+                          icon={Trophy}
+                          title="Goals Await!"
+                          // Cool message here:
+                          message="Complete your first few steps to unlock your initial achievements."
+                        />
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
+              {/* (END NEW) Suggested + Achievements Container */}
 
               {/* For a new user, this section doesn't make sense, so we hide it entirely unless there's data. */}
               {becauseItems.length > 0 && (
@@ -658,10 +682,12 @@ export default function LearnerDashboard() {
                             key={n}
                             className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
                           >
-                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 h-[160px]">
-                              <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                Coming Soon...
-                              </div>
+                            <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                              <img
+                                src="/api/placeholder/280/160"
+                                alt={`Upcoming Course ${n}`}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
                             </div>
                             <div className="space-y-2">
                               <div>
@@ -673,7 +699,7 @@ export default function LearnerDashboard() {
                                 <p
                                   className={`text-xs ${textLight} line-clamp-2`}
                                 >
-                                  Stay tuned for release!
+                                  Get ready for this new course!
                                 </p>
                               </div>
                             </div>
@@ -682,27 +708,24 @@ export default function LearnerDashboard() {
                       </div>
                     ) : (
                       <EmptyState
-                        icon={Clock}
-                        title="Exciting Courses on the Way"
-                        message="We are working on new content. Check back soon!"
+                        icon={BookOpen}
+                        title="More Courses on the Horizon"
+                        message="Check back soon for exciting new learning opportunities."
                       />
                     )}
                   </CardContent>
                 </Card>
               </div>
+
+              {/* REMOVED: Top Mentors Card */}
             </div>
           </main>
 
-          <Nav />
+       <Nav/>
           <LearnerFooter />
         </div>
       </div>
-
-      <MentorModal
-        mentors={allMentors}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {/* REMOVED: MentorModal */}
     </div>
   );
 }

@@ -70,7 +70,7 @@ function ResetPasswordForm() {
       <div className={`flex min-h-screen items-center justify-center ${bgLight} px-4 py-8`}>
         <div className="w-full max-w-md">
           {/* Logo */}
-          <Link href="/" className="flex justify-center">
+          <Link href="/" className="flex justify-center mb-3">
           <div className="flex items-center gap-2">
             {/* Light mode logo */}
             <img

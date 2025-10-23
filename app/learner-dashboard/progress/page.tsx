@@ -108,7 +108,7 @@ export default function ProgressPage() {
 
             {/* Search + Filter Bar */}
             <div className="rounded-xl flex flex-col sm:flex-row sm:items-center gap-4 w-full p-0 bg-transparent shadow-none">
-              <div className="relative w-full sm:basis-[70%] sm:flex-grow">
+              <div className="relative w-full sm:basis-[50%] sm:flex-grow">
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
@@ -118,7 +118,7 @@ export default function ProgressPage() {
                   className="w-full border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#72a210]"
                 />
               </div>
-              <div className="flex w-full sm:basis-[30%] sm:justify-end gap-2">
+              <div className="flex w-full sm:basis-[50%] sm:justify-end gap-2">
                 <div className="relative flex-1 sm:flex-none">
                   <button
                     onClick={() => setFilterDropdown((prev) => !prev)}
@@ -157,74 +157,84 @@ export default function ProgressPage() {
               </div>
             </div>
 
-            {/* Collapsible Tracks */}
-            <div className="space-y-4">
-              {sortedTracks.length > 0 ? (
-                sortedTracks.map((track) => (
-                  <div key={track.id} className="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden transition">
-                    <button
-                      onClick={() => setOpenTrack(openTrack === track.id ? null : track.id)}
-                      className="w-full flex flex-col gap-2 p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <div className="flex w-full items-center justify-between">
-                        <h2 className="flex-1 text-left text-lg font-semibold text-gray-800 dark:text-gray-100">
-                          {track.title}
-                        </h2>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-sm font-semibold text-[#507800]">
-                            {track.progress}%
-                          </span>
-                          {openTrack === track.id ? (
-                            <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          ) : (
-                            <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div
-                          className="h-2 rounded-full bg-[#72a210]"
-                          style={{ width: `${track.progress}%` }}
-                        />
-                      </div>
-                    </button>
-
-                    {/* Track Modules (collapsible body) */}
-                    {openTrack === track.id && (
-                       // --- CHANGE 2: Replaced single-column layout with a 2-column grid ---
-                      <div className="p-5 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-                       {/* --- END OF CHANGE 2 --- */}
-                        {track.modules.map((mod, i) => (
-                          <div
-                            key={i}
-                            className="flex justify-between items-center border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                          >
-                            <div className="flex-1 pr-4">
-                              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                                {mod.name}
-                              </p>
-                              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2">
-                                <div
-                                  className="h-1.5 rounded-full bg-[#72a210]"
-                                  style={{ width: `${mod.progress}%` }}
-                                />
-                              </div>
-                            </div>
-                            <button className="text-1xs bg-[#72a210] text-white px-3 py-2 rounded-md hover:bg-[#507800] transition flex-shrink-0">
-                              {mod.progress === 100 ? "Review" : "Continue"}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))
+  {/* Collapsible Tracks */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+  {sortedTracks.length > 0 ? (
+    sortedTracks.map((track) => (
+      <div
+        key={track.id}
+        className="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden transition flex flex-col h-fit"
+      >
+        <button
+          onClick={() =>
+            setOpenTrack(openTrack === track.id ? null : track.id)
+          }
+          className="w-full flex flex-col gap-2 p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          <div className="flex w-full items-center justify-between">
+            <h2 className="flex-1 text-left text-lg font-semibold text-gray-800 dark:text-gray-100">
+              {track.title}
+            </h2>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-sm font-semibold text-[#507800]">
+                {track.progress}%
+              </span>
+              {openTrack === track.id ? (
+                <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400">
-                  No tracks found.
-                </p>
+                <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               )}
             </div>
+          </div>
+          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+            <div
+              className="h-2 rounded-full bg-[#72a210]"
+              style={{ width: `${track.progress}%` }}
+            />
+          </div>
+        </button>
+
+        {/* Collapsible Track Modules */}
+        <div
+          className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            openTrack === track.id
+              ? "max-h-[1000px] opacity-100"
+              : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="p-5 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 gap-4">
+            {track.modules.map((mod, i) => (
+              <div
+                key={i}
+                className="flex justify-between items-center border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                <div className="flex-1 pr-4">
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                    {mod.name}
+                  </p>
+                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2">
+                    <div
+                      className="h-1.5 rounded-full bg-[#72a210]"
+                      style={{ width: `${mod.progress}%` }}
+                    />
+                  </div>
+                </div>
+                <button className="text-1xs bg-[#72a210] text-white px-3 py-2 rounded-md hover:bg-[#507800] transition flex-shrink-0">
+                  {mod.progress === 100 ? "Review" : "Continue"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-center text-gray-500 dark:text-gray-400 col-span-full">
+      No tracks found.
+    </p>
+  )}
+</div>
+
           </main>
 
           <Nav />

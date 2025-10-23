@@ -5,6 +5,8 @@ import { Menu, ChevronDown, LogOut, User, Settings, Moon, Sun } from "lucide-rea
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -55,10 +57,40 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     setDarkMode(!darkMode);
   };
 
-  // Handle logout
-  const handleLogout = () => {
-    setShowLogoutConfirm(false);
-    router.push("/auth/login");
+  // ✅ Enhanced Logout Handler
+  const handleLogout = async () => {
+    try {
+      // Optional: call your backend logout endpoint
+      await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // Clear local/session storage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Expire all cookies manually (simple loop)
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+      });
+
+      // Show toast message
+      toast.info("You have been logged out securely.", {
+        description: "Please log in again to continue.",
+      });
+
+      // Hide modal and redirect securely
+      setShowLogoutConfirm(false);
+      setTimeout(() => {
+        router.replace("/auth/login"); // replace prevents going back
+      }, 1000);
+    } catch (err) {
+      console.error("Logout failed:", err);
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   // Close dropdown on outside click
@@ -154,29 +186,31 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
         </div>
       </header>
 
-      {/* Logout Confirmation Modal */}
+      {/* ✅ Logout Confirmation Modal (using shadcn buttons) */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-80 p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Confirm Logout
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to log out of your account?
             </p>
-            <div className="flex justify-center space-x-4">
-              <button
+            <div className="flex justify-center space-x-3">
+              <Button
+                variant="outline"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                className="w-28"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-md bg-[#72a210] hover:bg-[#507800] text-white transition"
+                className="w-28 bg-[#72a210] hover:bg-[#5d880c]"
               >
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
         </div>

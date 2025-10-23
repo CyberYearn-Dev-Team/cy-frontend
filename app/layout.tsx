@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import CookieConsent from "@/components/ui/CookieConsent";
-
+import InactivityHandler from "@/components/ui/InactivityHandler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +34,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Client-side inactivity monitor */}
+        <InactivityHandler />
+
         {children}
         <Toaster position="top-right" richColors /> {/* Sonner Toaster */}
-
         <CookieConsent /> {/* shows on every page */}
       </body>
     </html>

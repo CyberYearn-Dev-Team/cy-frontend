@@ -45,7 +45,7 @@ const CardContent = ({ children }: { children: React.ReactNode }) => (
 export default function AchievementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Example achievements with locked/unlocked state
+  // 🔹 Now includes 9 total achievements
   const achievements = [
     {
       id: 1,
@@ -93,6 +93,30 @@ export default function AchievementsPage() {
       description: "Top 1 in leaderboard",
       image:
         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%206.png",
+      unlocked: false,
+    },
+    {
+      id: 7,
+      name: "Bug Bounty Hunter",
+      description: "Reported your first security flaw",
+      image:
+        "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+      unlocked: false,
+    },
+    {
+      id: 8,
+      name: "Course Finisher",
+      description: "Completed an entire track",
+      image:
+        "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+      unlocked: false,
+    },
+    {
+      id: 9,
+      name: "Mentor in Training",
+      description: "Helped 3 other learners",
+      image:
+        "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
       unlocked: false,
     },
   ];

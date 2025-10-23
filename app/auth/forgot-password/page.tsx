@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner"; // ✅ Import Sonner
+import { toast } from "sonner"; // Import Sonner
 
 // Theme Constants
 const primary = "#72a210";
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
       <div className={`flex min-h-screen items-center justify-center ${bgLight} px-4 py-8`}>
         <div className="w-full max-w-md">
 {/* Logo */}
-          <Link href="/" className="flex justify-center">
+          <Link href="/" className="flex justify-center mb-3">
           <div className="flex items-center gap-2">
             {/* Light mode logo */}
             <img

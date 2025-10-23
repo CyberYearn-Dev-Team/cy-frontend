@@ -60,7 +60,7 @@ export default function LoginPage() {
       >
         <div className="w-full max-w-md">
           {/* Logo */}
-          <Link href="/" className="flex justify-center">
+          <Link href="/" className="flex justify-center mb-3">
             <div className="flex items-center gap-2">
               <img
                 src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
