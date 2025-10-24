@@ -112,7 +112,7 @@ export default function QuizzesPage() {
                 answer: qq?.answer ?? "",
                 // --- CHANGE START ---
                 // Fetch the hint from your API response
-                hint: qq?.hint ?? "No hint available for this question.",
+                hint: (qq?.hint ?? qq?.explanation ?? qq?.tip ?? qq?.help ?? qq?.hint_text ?? qq?.hintText ?? ""),
                 // --- CHANGE END ---
               }))
             : [],

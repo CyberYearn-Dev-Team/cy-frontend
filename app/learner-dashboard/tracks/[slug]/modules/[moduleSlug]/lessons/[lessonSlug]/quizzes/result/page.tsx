@@ -278,9 +278,7 @@ export default function QuizResultsPage() {
         Hint
       </h4>
       <p className="text-sm text-yellow-700 dark:text-yellow-300">
-        {r.hint && r.hint !== "No hint available for this question."
-          ? r.hint
-          : "No hint provided for this question."}
+        {r.hint && r.hint.trim().length > 0 ? r.hint : "No hint provided for this question."}
       </p>
     </div>
   </div>
