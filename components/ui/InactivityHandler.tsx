@@ -45,9 +45,16 @@ export default function InactivityHandler() {
           credentials: "include",
         });
 
-        // Clear local/session storage
-        localStorage.clear();
-        sessionStorage.clear();
+        // Keep theme intact
+const theme = localStorage.getItem("theme");
+
+// Remove everything else
+localStorage.clear();
+sessionStorage.clear();
+
+// Restore theme
+if (theme) localStorage.setItem("theme", theme);
+
 
         // Expire all cookies manually
         document.cookie.split(";").forEach((c) => {

@@ -66,9 +66,16 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
         credentials: "include",
       });
 
-      // Clear local/session storage
-      localStorage.clear();
-      sessionStorage.clear();
+      // Keep theme intact
+const theme = localStorage.getItem("theme");
+
+// Remove everything else
+localStorage.clear();
+sessionStorage.clear();
+
+// Restore theme
+if (theme) localStorage.setItem("theme", theme);
+
 
       // Expire all cookies manually (simple loop)
       document.cookie.split(";").forEach((c) => {
@@ -106,7 +113,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex items-center h-16 px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+      <header className="sticky top-0 z-20 flex items-center h-16 px-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
         <div className="flex w-full items-center justify-between">
           {/* Mobile sidebar toggle */}
           <button
@@ -175,7 +182,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                       setDropdownOpen(false);
                       setShowLogoutConfirm(true);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-200 dark:hover:bg-red-800 cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </button>
@@ -200,14 +207,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
               <Button
                 variant="outline"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="w-28"
+                className="w-28 cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleLogout}
-                className="w-28 bg-[#72a210] hover:bg-[#5d880c]"
+                className="w-28 bg-[#72a210] hover:bg-[#5d880c] cursor-pointer"
               >
                 Logout
               </Button>

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Clock, RefreshCw } from "lucide-react"; // Import Clock and RefreshCw
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -205,6 +205,7 @@ export default function QuizzesPage() {
   const currentFlatIndex = quizzes.slice(0, currentQuizIndex).reduce((acc, quiz) => acc + quiz.questions.length, 0) + currentQuestionIndex + 1;
   const progressPercent = totalQuestions > 0 ? (currentFlatIndex / totalQuestions) * 100 : 0;
   
+  // --- START OF MODIFIED JSX ---
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -212,19 +213,19 @@ export default function QuizzesPage() {
         <Header setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
         <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem><BreadcrumbLink href="/learner-dashboard/tracks">Learning Tracks</BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>Track</BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>Module</BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}>Lesson</BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbPage>Quizzes</BreadcrumbPage></BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <br />
+          <BreadcrumbList>
+            <BreadcrumbItem><BreadcrumbLink href="/learner-dashboard/tracks">Learning Tracks</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>Track</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>Module</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}>Lesson</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem><BreadcrumbPage>Quizzes</BreadcrumbPage></BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <br />
           {loading ? (
             <p className={textLight}>Loading quizzes...</p>
           ) : quizzes.length === 0 ? (
@@ -238,92 +239,160 @@ export default function QuizzesPage() {
               </p>
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className={`${borderLight} rounded-lg ${cardBg} shadow p-6`}>
-                <span className={`text-sm ${textLight} flex justify-end items-center`}>
-                  {currentFlatIndex} of {totalQuestions}
-                </span>
-                <div className="flex justify-between items-center mb-5">
-                  <h1 className={`text-xl font-bold ${textDark}`}>
-                    {currentQuiz?.title}
-                  </h1>
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* Quiz Header/Title Card - Matches the top section of the image */}
+              <div className={`p-4 rounded-lg shadow-sm ${cardBg} border border-gray-200 dark:border-gray-800`}>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center space-x-4 text-sm font-semibold">
+                    <span 
+                      className={`px-2 py-0.5 rounded-md text-white`} 
+                      style={{ backgroundColor: primary }} // Use primary for the 'Pass >= 70%' badge
+                    >
+                      Pass &ge; {currentQuiz?.passing_score ?? 70}%
+                    </span>
+                  </div>
+                  <div className={`flex items-center space-x-4 ${textMedium} text-sm`}>
+                    <span className="flex items-center">
+                      <RefreshCw className="w-4 h-4 mr-1" /> Retakes allowed
+                    </span>
+                  </div>
                 </div>
-                {currentQuiz?.description && (
-                  <p className={`${textMedium} mb-4`}>
-                    {currentQuiz.description}
-                  </p>
-                )}
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6">
+
+                <h1 className={`text-xl font-bold ${textDark} mb-1`}>
+                  {currentQuiz?.title ?? "Untitled Quiz"}
+                </h1>
+                <p className={`${textMedium} text-sm mb-3`}>
+                  Test your understanding of password manager setup and security best practices.
+                </p>
+                
+                {/* Progress Bar and Text */}
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`text-sm font-medium ${textDark}`}>Progress</span>
+                  <span className={`text-sm font-medium ${textDark}`}>
+                    {currentFlatIndex} of {totalQuestions}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
-                    className={`bg-[${primary}] h-2 rounded-full`}
-                    style={{ width: `${progressPercent}%` }}
+                    className={`h-2 rounded-full`}
+                    style={{ 
+                      width: `${progressPercent}%`, 
+                      backgroundColor: primary 
+                    }} // Use primary for progress bar color
                   />
                 </div>
-                {currentQuestion && (
-                  <div className="mb-6">
-                    <p className={`font-medium ${textDark} mb-4`}>
-                      {currentQuestion.question_text}
-                    </p>
-                    <div className="space-y-3">
-                      {currentQuestion.options.map((option, idx) => {
-                        const key = `${currentQuiz.id}-${currentQuestionIndex}`;
-                        const selected = answers[key] === option;
-                        const isCorrect = option === currentQuestion.answer;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() =>
-                              handleSelect(
-                                currentQuiz.id,
-                                currentQuestionIndex,
-                                option
-                              )
-                            }
-                            className={`w-full text-left px-4 py-3 rounded-lg border transition cursor-pointer 
-                            ${textDark} ${borderLight}
-                            ${
-                              selected
-                                ? `bg-[${primaryLighter}] border-[${primary}] dark:bg-gray-700 dark:border-[${primary}]`
-                                : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-700"
-                            }`}
-                            disabled={submitted}>
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={prevQuestion}
-                    disabled={currentFlatIndex === 1}
-                    className={`text-base px-5 py-2 rounded-lg 
-                      bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer
-                      disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-600 dark:disabled:text-gray-400 disabled:cursor-not-allowed`}
-                  >
-                    Previous
-                  </button>
-                  {currentFlatIndex === totalQuestions && !submitted ? (
-                    <button
-                      onClick={handleSubmit}
-                      className={`text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer`}
-                    >
-                      Submit Answers
-                    </button>
-                  ) : (
-                    <button
-                      onClick={nextQuestion}
-                      disabled={currentFlatIndex === totalQuestions}
-                      className={`text-base px-5 py-2 rounded-lg 
-                        bg-[${primary}] text-white hover:bg-[${primaryDarker}] cursor-pointer
-                        disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-600 dark:disabled:text-gray-400 disabled:cursor-not-allowed`}
-                    >
-                      Next
-                    </button>
-                  )}
-                </div>
               </div>
+              
+              {/* Question Card - Matches the main question area in the image */}
+              {currentQuestion && (
+                <div className={`${cardBg} shadow-md p-6 rounded-lg border border-gray-200 dark:border-gray-800`}>
+                  
+                  {/* Question Title/Header */}
+                  <div className="flex items-center border-b pb-4 mb-4 border-gray-200 dark:border-gray-800">
+<h2 className={`text-2xl font-bold ${textDark}`}>
+  Question {currentFlatIndex}
+</h2>
+<span
+  className={`ml-3 px-3 py-1 text-xs font-semibold rounded-full 
+  bg-gray-100 text-gray-700 
+  dark:bg-gray-800 dark:text-gray-300 
+  border border-gray-200 dark:border-gray-700`}
+>
+  Single Choice
+</span>
+                  </div>
+                  
+                  {/* Question Text */}
+                  <p className={`text-lg font-normal ${textDark} mb-6`}>
+                    {currentQuestion.question_text}
+                  </p>
+                  
+                  {/* Options List - Radio style like the image */}
+                  <div className="space-y-4">
+                    {currentQuestion.options.map((option, idx) => {
+                      const key = `${currentQuiz.id}-${currentQuestionIndex}`;
+                      const selected = answers[key] === option;
+                      
+                      // Tailwind for radio button appearance
+                      const optionClasses = `
+                        w-full flex items-center p-4 rounded-xl transition-all duration-200 cursor-pointer 
+                        ${textDark} border-2 
+                        ${
+                          selected
+                            ? `border-[${primary}] bg-[${primaryLighter}]` // Selected state - use primary color for border and lighter for background
+                            : `border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 ${cardBg}` // Default state
+                        }
+                      `;
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleSelect(currentQuiz.id, currentQuestionIndex, option)}
+                          className={optionClasses}
+                          disabled={submitted}
+                        >
+                          {/* Custom Radio Button Circle */}
+                          <div className={`
+                            w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0
+                            ${
+                              selected 
+                                ? `border-[${primaryDarker}] bg-[${primary}]` // Selected state
+                                : 'border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-900' // Default state
+                            }
+                          `}>
+                            {selected && <div className="w-2.5 h-2.5 rounded-full bg-white dark:bg-gray-900" />}
+                          </div>
+                          
+                          <span className="text-base text-left">
+                            {option}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Navigation Buttons - Aligned left and right */}
+                  <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <button
+                      onClick={prevQuestion}
+                      disabled={currentFlatIndex === 1}
+                      // Previous Button Styling
+                      className={`
+                        text-base font-medium px-5 py-3 rounded-lg border border-gray-300 dark:border-gray-700 
+                        ${textDark} bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer
+                        disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed
+                      `}
+                    >
+                      Previous
+                    </button>
+                    
+                    {currentFlatIndex === totalQuestions && !submitted ? (
+                      <button
+                        onClick={handleSubmit}
+                        // Submit Button Styling
+                        className={`text-base font-medium px-5 py-3 rounded-lg text-white transition-colors
+                          bg-[${primary}] hover:bg-[${primaryDarker}] cursor-pointer`}
+                      >
+                        Submit Answers
+                      </button>
+                    ) : (
+                      <button
+                        onClick={nextQuestion}
+                        disabled={currentFlatIndex === totalQuestions}
+                        // Next Button Styling - Matches the blue/dark button in the screenshot
+                        className={`text-base font-medium px-5 py-3 rounded-lg text-white transition-colors
+                          bg-[${primary}] hover:bg-[${primaryDarker}] disabled:bg-gray-300 dark:disabled:bg-gray-700 
+                          disabled:text-gray-600 dark:disabled:text-gray-400 disabled:cursor-not-allowed
+                          flex items-center cursor-pointer`}
+                      >
+                        Next 
+                      </button>
+                    )}
+                  </div>
+                  
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -331,4 +400,5 @@ export default function QuizzesPage() {
       </div>
     </div>
   );
+  // --- END OF MODIFIED JSX ---
 }

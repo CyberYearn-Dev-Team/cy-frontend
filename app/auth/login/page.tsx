@@ -37,21 +37,39 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      await loginUser(form.email, form.password);
-      toast.success("Login successful");
-      router.push("/learner-dashboard/dashboard");
-    } catch (error) {
-      // console.error(error);
-      const message = error instanceof Error ? error.message : "Login failed! Please check your credentials.";
-      toast.error(message);
-    } finally {
-      setLoading(false);
+  try {
+    // Check if the device is online before attempting login
+    if (!navigator.onLine) {
+      toast.error("Mobile data disconnected. Please turn on your internet connection.");
+      return;
     }
-  };
+
+    await loginUser(form.email, form.password);
+    toast.success("Login successful");
+    router.push("/learner-dashboard/dashboard");
+  } catch (error: any) {
+    console.error(error);
+
+    let message = "Login failed! Please check your credentials.";
+
+    // Handle offline / fetch network error
+    if (!navigator.onLine) {
+      message = "Mobile data disconnected. Please reconnect and try again.";
+    } else if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
+      message = "Network error. Please check your connection.";
+    } else if (error.response?.status === 502 || error.response?.status === 504) {
+      message = "Server unreachable. Please try again shortly.";
+    }
+
+    toast.error(message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div>
