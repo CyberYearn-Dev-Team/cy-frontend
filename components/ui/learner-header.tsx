@@ -113,7 +113,8 @@ if (theme) localStorage.setItem("theme", theme);
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex items-center h-16 px-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+    <header className="sticky top-0 z-20 flex items-center h-16 px-3 lg:px-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+
         <div className="flex w-full items-center justify-between">
           {/* Mobile sidebar toggle */}
           <button

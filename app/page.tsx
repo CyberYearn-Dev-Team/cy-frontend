@@ -7,6 +7,12 @@ import Footer from "@/components/ui/footer";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -33,9 +39,10 @@ const borderLight = "border-gray-200 dark:border-gray-800";
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
 
-  return (
-    // Applied dark mode background
+return (
+  <TooltipProvider>
     <div className={`min-h-screen ${bgLight}`}>
+
       {/* inporting header component */}
       <Header />
 
@@ -58,26 +65,40 @@ export default function Home() {
             exclusively for education.
           </p>
           <div className="flex sm:flex-row gap-4 justify-center w-full">
-            <Link href="/auth/register" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                // Applied theme colors to primary button
-                className={`w-full sm:w-auto bg-[${primary}] hover:bg-[${primaryDarker}] text-white px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer`}
-              >
-                Start Learning
-              </Button>
-            </Link>
-            <Link href="/auth/login" className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="lg"
-                // Applied theme colors to outline button
-                className={`w-full sm:w-auto border-[${primary}] text-${textDark} hover:bg-[${primary}]/10 dark:hover:bg-[${primary}]/[0.05] px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer`}
-              >
-                Sign In
-              </Button>
-            </Link>
-          </div>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Link href="/auth/register" className="w-full sm:w-auto">
+        <Button
+          size="lg"
+          className={`w-full sm:w-auto bg-[${primary}] hover:bg-[${primaryDarker}] text-white px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer`}
+        >
+          Start Learning
+        </Button>
+      </Link>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Register to begin your cybersecurity learning journey</p>
+    </TooltipContent>
+  </Tooltip>
+
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Link href="/auth/login" className="w-full sm:w-auto">
+        <Button
+          variant="outline"
+          size="lg"
+          className={`w-full sm:w-auto border-[${primary}] text-${textDark} hover:bg-[${primary}]/10 dark:hover:bg-[${primary}]/[0.05] px-8 py-6 text-[15px] sm:text-lg font-medium cursor-pointer`}
+        >
+          Sign In
+        </Button>
+      </Link>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Already a learner? Access your dashboard here</p>
+    </TooltipContent>
+  </Tooltip>
+</div>
+
         </div>
 
         {/*My Features Grid */}
@@ -201,6 +222,8 @@ export default function Home() {
 
       {/* inporting footer drom component */}
       <Footer />
-    </div>
-  );
+      </div>
+  </TooltipProvider>
+);
+
 }

@@ -9,9 +9,11 @@ import {
   BarChart3,
   Award,
   LogOut,
+  Shield,
   X,
   Trophy,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -21,6 +23,23 @@ interface SidebarProps {
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const basePath = "/learner-dashboard";
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch role on mount
+  useEffect(() => {
+    async function fetchUserRole() {
+      try {
+const res = await fetch("/api/v1/auth/me");
+        const data = await res.json();
+        if (data?.data?.role) {
+          setUserRole(data.data.role);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role:", err);
+      }
+    }
+    fetchUserRole();
+  }, []);
 
   const sidebarItems = [
     { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
@@ -30,6 +49,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
   ];
+
+  // Only show "Switch to Admin" if role is admin
+  if (userRole === "admin") {
+    sidebarItems.push({
+      name: "Switch to Admin",
+      icon: Shield,
+      href: `/admin-dashboard/overview`,
+    });
+  }
 
   const isActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`);

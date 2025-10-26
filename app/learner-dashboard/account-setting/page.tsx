@@ -66,7 +66,7 @@ export default function AccountSettingsPage() {
           lastLogin: u?.lastLogin || "",
         });
       } catch (err) {
-        console.error("❌ Failed to load user:", err);
+        console.error("Failed to load user:", err);
         toast.error("Unable to load user info");
       } finally {
         setLoading(false);
@@ -75,31 +75,66 @@ export default function AccountSettingsPage() {
     fetchUser();
   }, []);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+const handleSaveProfile = async () => {
+  setSaving(true);
+  try {
+    const res = await fetch("/api/v1/auth/me/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...profile,
+        profileImage, // include the image URL
+        passwords,
+      }),
+    });
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
-      setProfileImage(dataUrl);
-      toast.success("Profile photo updated (mock)");
-    };
-    reader.readAsDataURL(file);
-  };
+    const data = await res.json();
 
-  const handleSaveProfile = async () => {
-    setSaving(true);
-    try {
-      console.log("Saving profile:", profile);
-      console.log("Updating password:", passwords);
-      toast.success("Profile updated successfully (mock)");
-    } catch (err) {
-      toast.error("Failed to save profile");
-    } finally {
-      setSaving(false);
+    if (!res.ok) throw new Error(data.error || "Failed to update profile");
+
+    toast.success("Profile updated successfully!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to save profile");
+  } finally {
+    setSaving(false);
+  }
+};
+
+
+
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    toast.loading("Uploading image...");
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.error || "Upload failed");
+      return;
     }
-  };
+
+    setProfileImage(data.url);
+    toast.success("Profile photo uploaded successfully!");
+  } catch (err) {
+    console.error("Upload failed:", err);
+    toast.error("Error uploading image");
+  } finally {
+    toast.dismiss();
+  }
+};
+
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -203,10 +238,10 @@ export default function AccountSettingsPage() {
                     </span>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                      <Calendar className={`w-5 h-5 text-[${primary}]`} />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Member Since
                       </span>
                     </div>
@@ -217,7 +252,7 @@ export default function AccountSettingsPage() {
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  {/* <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       <span className="text-xs text-gray-600 dark:text-gray-400">
@@ -229,7 +264,7 @@ export default function AccountSettingsPage() {
                         ? new Date(profile.lastLogin).toLocaleString()
                         : "—"}
                     </p>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             </div>

@@ -13,26 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  User,
-  Mail,
-  AtSign,
-  Camera,
-  Save,
-  Calendar,
-  Clock,
-  CheckCircle,
-  Shield,
-} from "lucide-react";
+import { User, Mail, AtSign, Camera } from "lucide-react";
 
-// Theme Constants from stored code
+// Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#507800";
 
 export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [savingAvatar, setSavingAvatar] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
@@ -44,6 +34,7 @@ export default function ProfilePage() {
     lastLogin: "",
   });
 
+  // ✅ Fetch user data from backend
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -57,8 +48,10 @@ export default function ProfilePage() {
           createdAt: u?.createdAt || "",
           lastLogin: u?.lastLogin || "",
         });
+        setProfileImage(u?.avatar || null); // ✅ keep image persistent after refresh
       } catch (err) {
         console.error("Failed to load user:", err);
+        toast.error("Failed to load user profile");
       } finally {
         setLoading(false);
       }
@@ -66,26 +59,61 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
+  // Upload to Cloudflare (handled by your /api/upload route)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
-      setProfileImage(dataUrl);
-      console.log("🖼️ Uploaded avatar (dummy):", dataUrl);
-      toast.success("Profile photo updated (mock)");
-    };
-    reader.readAsDataURL(file);
-  };
+    setUploading(true);
+    toast.loading("Uploading image...");
 
-  const handleSaveProfile = async () => {
     try {
-      console.log("Saving profile (dummy):", profile);
-      toast.success("Profile saved successfully (mock)");
+      //Upload to Cloudflare
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok || !uploadData.url) {
+        throw new Error(uploadData.error || "Upload failed");
+      }
+
+      const imageUrl = uploadData.url;
+
+      //Save Cloudflare image URL in your DB
+const updateRes = await fetch("/api/v1/auth/me/update", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ avatar: imageUrl }),
+});
+
+
+      const text = await updateRes.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Non-JSON response:", text);
+        throw new Error("Unexpected server response");
+      }
+
+      if (!updateRes.ok) {
+        throw new Error(data.error || "Failed to save image URL");
+      }
+
+      setProfileImage(imageUrl);
+      toast.success("Profile photo updated successfully!");
     } catch (err) {
-      toast.error("Failed to save profile");
+      console.error("Upload failed:", err);
+      toast.error("Failed to update profile photo");
+    } finally {
+      toast.dismiss();
+      setUploading(false);
     }
   };
 
@@ -102,7 +130,7 @@ export default function ProfilePage() {
               {loading
                 ? "Loading..."
                 : profile.username
-                ? `Welcome, ${profile.username}! 👋`
+                ? `Hi, ${profile.username}!`
                 : "Your Profile"}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -111,9 +139,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Picture + Status */}
+            {/* Profile Picture */}
             <div className="lg:col-span-1">
-              {/* Profile Picture Card */}
               <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-gray-900 dark:text-gray-100">
@@ -126,7 +153,9 @@ export default function ProfilePage() {
                 <CardContent>
                   <div className="flex flex-col items-center">
                     <div className="relative mb-4">
-                      <div className={`w-32 h-32 rounded-full bg-[${primary}] flex items-center justify-center text-white text-4xl font-bold overflow-hidden`}>
+                      <div
+                        className={`w-32 h-32 rounded-full bg-[${primary}] flex items-center justify-center text-white text-4xl font-bold overflow-hidden`}
+                      >
                         {profileImage ? (
                           <img
                             src={profileImage}
@@ -156,6 +185,7 @@ export default function ProfilePage() {
                           accept="image/*"
                           onChange={handleImageUpload}
                           className="hidden"
+                          disabled={uploading}
                         />
                       </label>
                     </div>
@@ -165,8 +195,6 @@ export default function ProfilePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              
             </div>
 
             {/* Basic Info */}
@@ -182,14 +210,14 @@ export default function ProfilePage() {
                         Basic Information
                       </CardTitle>
                       <CardDescription className="text-gray-600 dark:text-gray-400">
-                        Update your personal account details
+                        Your personal account details
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {/* Username */}
+                    {/* Username (read-only) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Username
@@ -199,16 +227,13 @@ export default function ProfilePage() {
                         <input
                           type="text"
                           value={profile.username}
-                          onChange={(e) =>
-                            setProfile({ ...profile, username: e.target.value })
-                          }
-                          placeholder="username"
-                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] focus:border-transparent text-gray-900 dark:text-gray-100 transition`}
+                          disabled
+                          className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
                         />
                       </div>
                     </div>
 
-                    {/* Full Name */}
+                    {/* Full Name (read-only) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Full Name
@@ -218,16 +243,13 @@ export default function ProfilePage() {
                         <input
                           type="text"
                           value={profile.fullName}
-                          onChange={(e) =>
-                            setProfile({ ...profile, fullName: e.target.value })
-                          }
-                          placeholder="Enter your full name"
-                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] focus:border-transparent text-gray-900 dark:text-gray-100 transition`}
+                          disabled
+                          className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
                         />
                       </div>
                     </div>
 
-                    {/* Email */}
+                    {/* Email (read-only) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Email Address
@@ -241,17 +263,6 @@ export default function ProfilePage() {
                           className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
                         />
                       </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="flex items-center gap-3 pt-4">
-                      <button
-                        onClick={handleSaveProfile}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl cursor-pointer`}
-                      >
-                        <Save className="w-5 h-5" />
-                        Save Changes
-                      </button>
                     </div>
                   </div>
                 </CardContent>
