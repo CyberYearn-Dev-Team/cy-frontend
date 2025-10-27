@@ -150,10 +150,11 @@ export default function Navbar() {
 
       {/* Mobile Sliding Menu */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+  className={`fixed top-0 right-0 h-full z-50 transform transition-transform duration-300 ease-in-out
+    ${isOpen ? "translate-x-0" : "translate-x-full"}
+    w-full sm:max-w-sm`}
+>
+
         {/* Backdrop */}
         <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
