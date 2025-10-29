@@ -2,15 +2,29 @@
 
 import React, { useState } from "react";
 import {
-  Flag,
   Info,
-  History,
   Search,
   Filter,
-  X, // Added for closing audit log
 } from "lucide-react";
 import AdminSidebar from "@/components/ui/admin-sidebar";
 import AdminHeader from "@/components/ui/admin-header";
+import Nav from "@/components/ui/admin-nav";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// 🎨 Theme Colors
+const primary = "#72a210";
+const secondary = "#507800";
+const hover = "#5a850d";
+const bgLight = "bg-gray-50 dark:bg-gray-950";
+const bgCard = "bg-white dark:bg-gray-900";
+const textDark = "text-gray-900 dark:text-gray-100";
+const textMedium = "text-gray-600 dark:text-gray-400";
+const textLight = "text-gray-500 dark:text-gray-300";
 
 interface FeatureFlag {
   id: string;
@@ -23,18 +37,10 @@ interface FeatureFlag {
   modifiedBy: string;
 }
 
-interface AuditLog {
-  id: string;
-  flagName: string;
-  action: "enabled" | "disabled";
-  timestamp: string;
-  user: string;
-  previousValue: boolean;
-  newValue: boolean;
-}
-
 const FeatureFlagsPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const [flags, setFlags] = useState<FeatureFlag[]>([
     {
@@ -94,73 +100,11 @@ const FeatureFlagsPage: React.FC = () => {
     },
   ]);
 
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([
-    {
-      id: "1",
-      flagName: "Advanced Analytics",
-      action: "enabled",
-      timestamp: "2025-09-27 10:15:32",
-      user: "admin@example.com",
-      previousValue: false,
-      newValue: true,
-    },
-    {
-      id: "2",
-      flagName: "Leaderboard",
-      action: "disabled",
-      timestamp: "2025-09-28 14:23:18",
-      user: "admin@example.com",
-      previousValue: true,
-      newValue: false,
-    },
-    {
-        id: "3",
-        flagName: "Dark Mode",
-        action: "enabled",
-        timestamp: "2025-09-24 11:20:00",
-        user: "admin@example.com",
-        previousValue: false,
-        newValue: true,
-      },
-  ]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [showAuditLog, setShowAuditLog] = useState(false);
-
   const handleToggle = (flagId: string) => {
-    const currentTime = new Date()
-      .toISOString()
-      .slice(0, 16)
-      .replace("T", " ");
-
-    setFlags((prevFlags) =>
-      prevFlags.map((flag) => {
-        if (flag.id === flagId) {
-          const newLog: AuditLog = {
-            id: Date.now().toString(),
-            flagName: flag.name,
-            action: !flag.enabled ? "enabled" : "disabled",
-            timestamp:
-              currentTime +
-              ":" +
-              new Date().getSeconds().toString().padStart(2, "0"),
-            user: "admin@example.com",
-            previousValue: flag.enabled,
-            newValue: !flag.enabled,
-          };
-
-          setAuditLogs((prev) => [newLog, ...prev]);
-
-          return {
-            ...flag,
-            enabled: !flag.enabled,
-            lastModified: currentTime,
-            modifiedBy: "admin@example.com",
-          };
-        }
-        return flag;
-      })
+    setFlags((prev) =>
+      prev.map((flag) =>
+        flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag
+      )
     );
   };
 
@@ -176,9 +120,9 @@ const FeatureFlagsPage: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "core":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "beta":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "experimental":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
       default:
@@ -195,129 +139,85 @@ const FeatureFlagsPage: React.FC = () => {
       case "high":
         return "text-red-600 dark:text-red-400";
       default:
-        return "text-gray-600 dark:text-gray-400";
+        return textMedium;
     }
   };
 
-  const getLogActionColor = (action: string) => {
-    return action === "enabled" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
-  }
-
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={`flex h-screen ${bgLight}`}>
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
+          <div className="max-w-7xl mx-auto space-y-8">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                    Feature Flags
-                  </h1>
-                  {/* Button to toggle Audit Log */}
-                  <button
-                    onClick={() => setShowAuditLog(!showAuditLog)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm"
-                  >
-                    <History className="w-4 h-4" />
-                    {showAuditLog ? "Hide Audit Log" : "Show Audit Log"}
-                  </button>
-                </div>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage experimental features and beta functionality
+            <div className="mb-6 space-y-2">
+              <h1 className={`text-3xl font-bold ${textDark}`}>
+                Feature Flags
+              </h1>
+              <p className={`${textMedium}`}>
+                Manage experimental and beta features across your platform.
               </p>
             </div>
 
-            {/* Audit Log Panel */}
-            {showAuditLog && (
-              <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    <History className="w-5 h-5 text-indigo-600" /> Audit Log
-                  </h2>
-                  <button onClick={() => setShowAuditLog(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                      <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Timestamp</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Flag</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Action</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {auditLogs.slice(0, 10).map((log) => (
-                        <tr key={log.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{log.timestamp}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{log.flagName}</td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${getLogActionColor(log.action)}`}>
-                            {log.action.toUpperCase()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{log.user}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {auditLogs.length > 10 && (
-                    <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Showing last 10 logs.
-                    </div>
-                )}
+            {/* Search + Filter */}
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search feature flags..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[${primary}]`}
+                  style={{
+                    outline: "none",
+                    boxShadow: "none",
+                  }}
+                />
               </div>
-            )}
 
-
-            {/* Search and Filter */}
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search feature flags..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:border-indigo-500"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:border-indigo-500"
+              {/* Category Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`flex items-center justify-between w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ${bgCard} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
                   >
-                    <option value="all">All Categories</option>
-                    <option value="core">Core</option>
-                    <option value="beta">Beta</option>
-                    <option value="experimental">Experimental</option>
-                  </select>
-                </div>
-              </div>
+                    {selectedCategory === "all"
+                      ? "All Categories"
+                      : selectedCategory.charAt(0).toUpperCase() +
+                        selectedCategory.slice(1)}
+                    <Filter className="ml-2 w-4 h-4 text-gray-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {["all", "core", "beta", "experimental"].map((cat) => (
+                    <DropdownMenuItem
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                    >
+                      {cat === "all"
+                        ? "All Categories"
+                        : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
-            {/* Feature Flags List */}
-            <div className="space-y-4 mb-8">
+            {/* Flags List */}
+            <div className="space-y-4">
               {filteredFlags.map((flag) => (
                 <div
                   key={flag.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                  className={`${bgCard} rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <h3 className={`text-lg font-semibold ${textDark}`}>
                           {flag.name}
                         </h3>
                         <span
@@ -335,21 +235,24 @@ const FeatureFlagsPage: React.FC = () => {
                           {flag.impactLevel.toUpperCase()} IMPACT
                         </span>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-3">{flag.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span>Last modified: {flag.lastModified}</span>
-                        <span>•</span>
-                        <span>by {flag.modifiedBy}</span>
+                      <p className={`${textMedium} mb-3`}>
+                        {flag.description}
+                      </p>
+                      <div className={`text-sm ${textLight}`}>
+                        Last modified: {flag.lastModified} • {flag.modifiedBy}
                       </div>
                     </div>
-                    {/* Toggle Switch */}
+
+                    {/* Toggle */}
                     <button
                       onClick={() => handleToggle(flag.id)}
                       className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                        flag.enabled ? "bg-indigo-600" : "bg-gray-300 dark:bg-gray-600"
+                        flag.enabled
+                          ? "bg-[#72a210]"
+                          : "bg-gray-300 dark:bg-gray-600"
                       }`}
                     >
-                        <span className="sr-only">Toggle {flag.name}</span>
+                      <span className="sr-only">Toggle {flag.name}</span>
                       <span
                         className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                           flag.enabled ? "translate-x-7" : "translate-x-1"
@@ -361,22 +264,29 @@ const FeatureFlagsPage: React.FC = () => {
               ))}
             </div>
 
+{/* Info Banner */}
+<div
+  className={`border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 rounded-lg p-4 flex items-start gap-3`}
+>
+  <Info
+    className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+  />
+  <div className="text-sm">
+    <p className="font-medium mb-1 text-[#b45309] dark:text-[#fbbf24]">
+      About Feature Flags
+    </p>
+    <p className={`${textMedium}`}>
+      Feature flags allow you to safely test new features in
+      production. All changes are logged for auditability.
+    </p>
+  </div>
+</div>
 
-            {/* Info Banner */}
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-700 rounded-lg p-4 flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-900 dark:text-blue-200">
-                <p className="font-medium mb-1">About Feature Flags</p>
-                <p>
-                  Feature flags allow you to safely test new features in
-                  production. All changes are automatically logged and can be
-                  reviewed in the audit log. Experimental features may have
-                  stability issues and should be monitored closely.
-                </p>
-              </div>
-            </div>
           </div>
         </main>
+
+        {/* Mobile Nav */}
+        <Nav />
       </div>
     </div>
   );

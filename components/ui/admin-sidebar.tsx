@@ -33,12 +33,12 @@ export default function AdminSidebar({
 
   const sidebarItems = [
     { name: "Overview", icon: Home, href: `${basePath}/overview` },
-    { name: "User Management", icon: Users, href: `${basePath}/users` },
-    { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
-    { name: "Feature Flags", icon: ToggleLeft, href: `${basePath}/feature-flags` },
     { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
+    { name: "Feature Flags", icon: ToggleLeft, href: `${basePath}/feature-flags` },
+    { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
+    { name: "Platform Security", icon: Shield, href: `${basePath}/security` },
+    { name: "User Management", icon: Users, href: `${basePath}/users` },
     { name: "Platform Settings", icon: Settings, href: `${basePath}/settings` },
-    { name: "Security", icon: Shield, href: `${basePath}/security` },
     {
       name: "Switch to Learner",
       icon: GraduationCap,

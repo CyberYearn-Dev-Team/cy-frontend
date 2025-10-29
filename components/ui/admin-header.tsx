@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Menu, ChevronDown, LogOut, User, Settings, Moon, Sun } from "lucide-react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { Menu, Moon, Sun } from "lucide-react";
+import { getCurrentUser } from "@/lib/api/auth";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
 }
 
 export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Load theme from localStorage
   useEffect(() => {
@@ -22,7 +22,22 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
     }
   }, []);
 
-  // Handle theme toggle
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Theme toggle handler
   const toggleTheme = () => {
     if (darkMode) {
       document.documentElement.classList.remove("dark");
@@ -33,17 +48,6 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
     }
     setDarkMode(!darkMode);
   };
-
-  // Close dropdown if clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <header className="sticky top-0 z-20 flex items-center h-16 px-3 lg:px-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
@@ -63,7 +67,6 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
 
         {/* Right side controls */}
         <div className="flex items-center gap-4 ml-auto">
-
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -76,53 +79,23 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
             )}
           </button>
 
-          {/* User Profile aligned to end */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center space-x-2 focus:outline-none cursor-pointer"
-            >
-              <div className="w-8 h-8 bg-[#507800] rounded-full flex items-center justify-center text-white font-medium">
-                A
-              </div>
-              <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Admin User
-              </span>
-              <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
-                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Admin User</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">admin@email.com</p>
-                </div>
-
-                {/* Profile */}
-                <Link href="/admin-dashboard/profile">
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                    <User className="h-4 w-4 mr-2" />Admin Profile
-                  </button>
-                </Link>
-
-                {/* Account Settings */}
-                <Link href="/admin-dashboard/account-settings">
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                    <Settings className="h-4 w-4 mr-2" /> Platform Settings
-                  </button>
-                </Link>
-
-                {/* Logout */}
-                <Link href="/auth/login">
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer">
-                    <LogOut className="h-4 w-4 mr-2" /> Logout
-                  </button>
-                </Link>
-              </div>
-            )}
+          {/* User Avatar & Name */}
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[18px]">
+              {loading
+                ? "..."
+                : (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "A"}
+            </div>
+            <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
+              {loading
+                ? "Loading..."
+                : user?.data?.username ||
+                  user?.username ||
+                  user?.data?.email ||
+                  user?.email ||
+                  "Admin"}
+            </span>
           </div>
-
         </div>
       </div>
     </header>

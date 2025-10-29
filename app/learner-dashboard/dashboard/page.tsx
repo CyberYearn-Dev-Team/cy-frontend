@@ -725,7 +725,6 @@ export default function LearnerDashboard() {
           <LearnerFooter />
         </div>
       </div>
-      {/* REMOVED: MentorModal */}
     </div>
   );
 }

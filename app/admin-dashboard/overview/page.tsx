@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/ui/admin-sidebar";
 import AdminHeader from "@/components/ui/admin-header";
+import Nav from "@/components/ui/admin-nav";
 import {
   Activity,
   Users,
@@ -15,25 +16,25 @@ import {
   LucideIcon,
 } from "lucide-react";
 
-// ✅ Define types for metrics
+// 🎨 Theme Colors
+const primary = "#72a210";
+const secondary = "#507800";
+const bgLight = "bg-gray-50 dark:bg-gray-950";
+const bgCard = "bg-white dark:bg-gray-900";
+const textDark = "text-gray-900 dark:text-gray-100";
+const textMedium = "text-gray-600 dark:text-gray-400";
+const textLight = "text-gray-500 dark:text-gray-300";
+
+// Types
 interface ModuleCompletion {
   module: string;
   rate: number;
 }
-
-interface AuditLog {
-  id: number;
-  action: string;
-  user: string;
-  timestamp: string;
-}
-
 interface SystemHealth {
   apiUptime: number;
   errorCount: number;
   status: "healthy" | "warning" | "error" | "loading";
 }
-
 interface Metrics {
   totalRegistrations: number;
   wau: number;
@@ -42,52 +43,33 @@ interface Metrics {
   medianTimeToFirstContent: number;
   moduleCompletionRates: ModuleCompletion[];
   systemHealth: SystemHealth;
-  auditLogs: AuditLog[];
 }
 
-// ✅ StatCard props
+// 📊 StatCard (responsive layout)
 interface StatCardProps {
   icon: LucideIcon;
   title: string;
   value: string | number;
   subtitle?: string;
-  trend?: string;
-  trendUp?: boolean;
 }
-
-const StatCard: React.FC<StatCardProps> = ({
-  icon: Icon,
-  title,
-  value,
-  subtitle,
-  trend,
-  trendUp,
-}) => (
-  // Updated StatCard: uses white/gray-800 for card background, and primary colors for icon/trend
-  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-md transition-shadow">
-    <div className="flex items-center justify-between mb-4">
-      {/* Icon */}
-      <div className="p-3 bg-green-50 dark:bg-green-900/50 rounded-lg">
-        {/* Primary Color for Icon */}
-        <Icon className="w-6 h-6 text-[#72a210] dark:text-[#507800]" />
-      </div>
-      {trend && (
-        <span
-          className={`text-sm font-medium ${
-            trendUp
-              ? "text-green-600 dark:text-green-400"
-              : "text-red-600 dark:text-red-400"
-          }`}
-        >
-          {trendUp ? "↑" : "↓"} {trend}
-        </span>
-      )}
-    </div>
-    {/* Text colors adjusted for light/dark mode */}
-    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
-    <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-    {subtitle && <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>}
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle }) => (
+ <div
+  className={`${bgCard} border border-gray-100 dark:border-gray-800 shadow-sm rounded-2xl p-6 hover:shadow-md transition-all duration-300 flex sm:flex-row sm:items-center sm:justify-between gap-4`}
+>
+  <div className="flex-1">
+    <h3 className={`text-sm font-medium ${textLight}`}>{title}</h3>
+    <p className={`mt-1 text-3xl font-bold ${textDark}`}>{value}</p>
+    {subtitle && <p className={`mt-1 text-sm ${textMedium}`}>{subtitle}</p>}
   </div>
+
+  <div
+    className="p-3 bg-[#f4fce2] dark:bg-[#2b2e17] rounded-xl flex-shrink-0 flex items-center justify-center self-start sm:self-auto"
+  >
+    {/* Updated icon color to your brand green (#72a210) */}
+    <Icon className="w-6 h-6" style={{ color: "#72a210" }} />
+  </div>
+</div>
+
 );
 
 export default function AdminDashboardPage() {
@@ -104,42 +86,30 @@ export default function AdminDashboardPage() {
       errorCount: 0,
       status: "loading",
     },
-    auditLogs: [],
   });
 
-  // Fetch mock metrics (kept as is)
   useEffect(() => {
-    const fetchMetrics = async () => {
-      setTimeout(() => {
-        setMetrics({
-          totalRegistrations: 12847,
-          wau: 3456,
-          mau: 8923,
-          firstLessonCompletionRate: 78.5,
-          medianTimeToFirstContent: 4.2,
-          moduleCompletionRates: [
-            { module: "Introduction to AI", rate: 89.2 },
-            { module: "Python Basics", rate: 76.8 },
-            { module: "Machine Learning", rate: 68.4 },
-            { module: "Deep Learning", rate: 62.1 },
-            { module: "Advanced Topics", rate: 54.7 },
-          ],
-          systemHealth: {
-            apiUptime: 99.97,
-            errorCount: 23,
-            status: "healthy",
-          },
-          auditLogs: [
-            { id: 1, action: "User role updated", user: "admin@example.com", timestamp: "2 mins ago" },
-            { id: 2, action: "Module published", user: "content@example.com", timestamp: "15 mins ago" },
-            { id: 3, action: "Feature flag toggled", user: "admin@example.com", timestamp: "1 hour ago" },
-            { id: 4, action: "Bulk user import", user: "admin@example.com", timestamp: "2 hours ago" },
-            { id: 5, action: "Settings updated", user: "superadmin@example.com", timestamp: "3 hours ago" },
-          ],
-        });
-      }, 500);
-    };
-    fetchMetrics();
+    setTimeout(() => {
+      setMetrics({
+        totalRegistrations: 12847,
+        wau: 3456,
+        mau: 8923,
+        firstLessonCompletionRate: 78.5,
+        medianTimeToFirstContent: 4.2,
+        moduleCompletionRates: [
+          { module: "Introduction to AI", rate: 89.2 },
+          { module: "Python Basics", rate: 76.8 },
+          { module: "Machine Learning", rate: 68.4 },
+          { module: "Deep Learning", rate: 62.1 },
+          { module: "Advanced Topics", rate: 54.7 },
+        ],
+        systemHealth: {
+          apiUptime: 99.97,
+          errorCount: 23,
+          status: "healthy",
+        },
+      });
+    }, 500);
   }, []);
 
   const getStatusColor = (status: SystemHealth["status"]) => {
@@ -153,80 +123,52 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    // 1. Updated main container background
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden">
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-8 pb-30">
           {/* Header */}
-          <div className="mb-6">
-            {/* 2. Updated text colors */}
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Platform Overview</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Monitor key metrics and system health</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 className={`text-3xl font-bold tracking-tight ${textDark}`}>
+                Platform Overview
+              </h2>
+              <p className={`${textMedium} mt-1`}>
+                Monitor key performance metrics and system health in real time.
+              </p>
+            </div>
           </div>
 
-          {/* Metrics Grid (StatCard component already updated) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <StatCard
-              icon={Users}
-              title="Total Registrations"
-              value={metrics.totalRegistrations.toLocaleString()}
-              trend="12.5%"
-              trendUp
-            />
-            <StatCard
-              icon={TrendingUp}
-              title="Weekly Active Users"
-              value={metrics.wau.toLocaleString()}
-              subtitle={`MAU: ${metrics.mau.toLocaleString()}`}
-              trend="8.3%"
-              trendUp
-            />
-            <StatCard
-              icon={CheckCircle}
-              title="First Lesson Completion"
-              value={`${metrics.firstLessonCompletionRate}%`}
-              subtitle="Of new users"
-              trend="5.2%"
-              trendUp
-            />
-            <StatCard
-              icon={Clock}
-              title="Median Time to First Content"
-              value={`${metrics.medianTimeToFirstContent}m`}
-              subtitle="Minutes after signup"
-              trend="1.8m"
-              trendUp={false}
-            />
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatCard icon={Users} title="Total Registrations" value={metrics.totalRegistrations.toLocaleString()} />
+            <StatCard icon={TrendingUp} title="Weekly Active Users" value={metrics.wau.toLocaleString()} subtitle={`MAU: ${metrics.mau.toLocaleString()}`} />
+            <StatCard icon={CheckCircle} title="First Lesson Completion" value={`${metrics.firstLessonCompletionRate}%`} subtitle="Of new users" />
+            <StatCard icon={Clock} title="Median Time to First Content" value={`${metrics.medianTimeToFirstContent}m`} subtitle="Minutes after signup" />
           </div>
 
-          {/* Module Completion & System Health */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Module Completion + System Health */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {/* Module Completion */}
-            {/* 3. Updated block background and header text color */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Module Completion Rates
-                </h3>
+            <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-lg font-semibold ${textDark}`}>Module Completion Rates</h3>
                 <Activity className="w-5 h-5 text-gray-400 dark:text-gray-500" />
               </div>
-              <div className="space-y-4">
-                {metrics.moduleCompletionRates.map((module, index) => (
-                  <div key={index}>
+              <div className="space-y-5">
+                {metrics.moduleCompletionRates.map((module, i) => (
+                  <div key={i}>
                     <div className="flex items-center justify-between mb-1">
-                      {/* Text colors updated */}
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{module.module}</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{module.rate}%</span>
+                      <span className={`text-sm font-medium ${textMedium}`}>{module.module}</span>
+                      <span className={`text-sm font-semibold ${textDark}`}>{module.rate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      {/* Retained primary color for progress bar */}
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-[#72a210] h-2 rounded-full transition-all"
-                        style={{ width: `${module.rate}%` }}
+                        className="h-2 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${module.rate}%`, backgroundColor: primary }}
                       />
                     </div>
                   </div>
@@ -235,97 +177,63 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* System Health */}
-            {/* 4. Updated block background and header text color */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">System Health</h3>
+            <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-lg font-semibold ${textDark}`}>System Health</h3>
                 <div
                   className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                     metrics.systemHealth.status
                   )}`}
                 >
-                  {metrics.systemHealth.status === "healthy"
-                    ? "All Systems Operational"
-                    : "Issues Detected"}
+                  {metrics.systemHealth.status === "healthy" ? "Operational" : "Issues Detected"}
                 </div>
               </div>
-              <div className="space-y-4">
-                {/* Background color and text colors updated for health items */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+
+              <div className="space-y-5">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                   <div className="flex items-center">
-                    <Zap className="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />
+                    <Zap className="w-5 h-5 mr-3" style={{ color: primary }} />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">API Uptime</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Last 30 days</p>
+                      <p className={`text-sm font-medium ${textDark}`}>API Uptime</p>
+                      <p className={`text-xs ${textLight}`}>Last 30 days</p>
                     </div>
                   </div>
-                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">{metrics.systemHealth.apiUptime}%</span>
+                  <span className={`text-2xl font-bold`} style={{ color: primary }}>
+                    {metrics.systemHealth.apiUptime}%
+                  </span>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                   <div className="flex items-center">
                     <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Sentry Errors</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Last 24 hours</p>
+                      <p className={`text-sm font-medium ${textDark}`}>Sentry Errors</p>
+                      <p className={`text-xs ${textLight}`}>Last 24 hours</p>
                     </div>
                   </div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.systemHealth.errorCount}</span>
+                  <span className={`text-2xl font-bold ${textDark}`}>
+                    {metrics.systemHealth.errorCount}
+                  </span>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                   <div className="flex items-center">
-                    <Database className="w-5 h-5 text-[#72a210] dark:text-[#507800] mr-3" />
+                    <Database className="w-5 h-5 mr-3" style={{ color: primary }} />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Database Status</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Primary & replicas</p>
+                      <p className={`text-sm font-medium ${textDark}`}>Database Status</p>
+                      <p className={`text-xs ${textLight}`}>Primary & replicas</p>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-green-600 dark:text-green-400">Healthy</span>
+                  <span className={`text-sm font-semibold`} style={{ color: primary }}>
+                    Healthy
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Recent Audit Logs */}
-          {/* 5. Updated block background and header text color */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Audit Logs</h3>
-              {/* Retained primary color for 'View all' link */}
-              <a
-                href="/admin-dashboard/audit"
-                className="text-sm text-[#72a210] hover:text-[#507800] font-medium"
-              >
-                View all
-              </a>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                {/* Table border updated */}
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    {/* Header text colors updated */}
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Action</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">User</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.auditLogs.map((log) => (
-                    // Row border and hover background updated
-                    <tr key={log.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      {/* Cell text colors updated */}
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-100">{log.action}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300">{log.user}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{log.timestamp}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </main>
+
+        <Nav />
       </div>
     </div>
   );
