@@ -138,9 +138,11 @@ export default function AuditLogsPage() {
       const bValue = b[sortConfig.key];
 
       if (sortConfig.key === "timestamp") {
+        const aTime = aValue as Date;
+        const bTime = bValue as Date;
         return sortConfig.direction === "ascending"
-          ? aValue.getTime() - bValue.getTime()
-          : bValue.getTime() - aValue.getTime();
+          ? aTime.getTime() - bTime.getTime()
+          : bTime.getTime() - aTime.getTime();
       }
       if (sortConfig.key === "severity") {
         const aSeverity = aValue as AuditLog["severity"];
