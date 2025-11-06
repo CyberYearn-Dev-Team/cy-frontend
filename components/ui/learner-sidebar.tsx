@@ -9,6 +9,7 @@ import {
   BarChart3,
   Award,
   LogOut,
+  Settings,
   Shield,
   X,
   Trophy,
@@ -48,6 +49,7 @@ const res = await fetch("/api/v1/auth/me");
     { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
     { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
+    { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
   ];
 
   // Only show "Switch to Admin" if role is admin

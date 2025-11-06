@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, BookOpen, BarChart3, User } from "lucide-react";
+import { LayoutGrid, BookOpen, BarChart3, Award, User } from "lucide-react";
 
 export default function UserNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", href: "/learner-dashboard/dashboard", icon: LayoutGrid },
     { name: "Tracks", href: "/learner-dashboard/tracks", icon: BookOpen },
     { name: "Progress", href: "/learner-dashboard/progress", icon: BarChart3 },
+    { name: "Dashboard", href: "/learner-dashboard/dashboard", icon: LayoutGrid },
+    { name: "Achievements", href: "/learner-dashboard/achievements", icon: Award },
     { name: "Profile", href: "/learner-dashboard/profile", icon: User },
   ];
 
