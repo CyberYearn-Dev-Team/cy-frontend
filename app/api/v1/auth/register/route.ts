@@ -17,15 +17,30 @@ export async function POST(req: Request) {
       credentials: "include",
     });
 
-    const text = await backendRes.text();
     const contentType = backendRes.headers.get("content-type") || "application/json";
+    let responseData;
+    
+    try {
+      responseData = await backendRes.text();
+      // Try to parse as JSON, but fallback to text if it's not valid JSON
+      try {
+        responseData = JSON.parse(responseData);
+      } catch {
+        // If it's not JSON, use it as text
+      }
+    } catch (error) {
+      responseData = { message: 'Failed to process response' };
+    }
 
-    const res = new NextResponse(text, {
-      status: backendRes.status,
-      headers: {
-        "content-type": contentType,
-      },
-    });
+    const res = new NextResponse(
+      typeof responseData === 'string' ? responseData : JSON.stringify(responseData),
+      {
+        status: backendRes.status,
+        headers: {
+          "content-type": contentType,
+        },
+      }
+    );
 
     const setCookie = backendRes.headers.get("set-cookie");
     if (setCookie) {

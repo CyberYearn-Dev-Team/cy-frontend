@@ -52,14 +52,14 @@ const handleSubmit = async (e: React.FormEvent) => {
   setLoading(true);
 
   try {
-    // Password match validation
+    // Form validation
     if (form.password !== form.confirmPassword) {
       toast.error("Passwords do not match!");
       setLoading(false);
       return;
     }
 
-    // Password length and complexity validation
+    // Password validation
     const password = form.password;
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasNumber = /\d/.test(password);
@@ -76,16 +76,65 @@ const handleSubmit = async (e: React.FormEvent) => {
       return;
     }
 
-    await registerUser(form.email, form.password);
-    toast.success("Account created successfully!");
-    router.push("/learner-dashboard/dashboard");
+    // Prepare registration data
+    const registrationData = {
+      username: form.username,
+      email: form.email,
+      password: form.password,
+      role: "user"
+    };
+
+    // Call the register API
+    const response = await fetch('/api/v1/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(registrationData),
+    });
+
+    let errorMessage = 'Registration failed. Please try again.';
+    let data;
+    
+    try {
+      data = await response.json();
+    } catch (e) {
+      // If response is not JSON, try to get text
+      const text = await response.text().catch(() => '');
+      if (response.status === 409) {
+        errorMessage = 'This email is already registered or pending verification.';
+      }
+      throw new Error(text || errorMessage);
+    }
+
+    if (!response.ok) {
+      if (response.status === 409) {
+        errorMessage = data.message || 'This email is already registered or pending verification.';
+      } else {
+        errorMessage = data.message || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Store pending registration data if needed
+    if (data.pendingRegistration) {
+      localStorage.setItem('pendingRegistration', JSON.stringify(data.pendingRegistration));
+    }
+
+    // Show success message
+    toast.success("A verification email has been sent to your email address. Please check your inbox to verify your account.");
+    
+    // Reset form
+    setForm({
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    });
+    
   } catch (error: any) {
-    // Handle readable backend or generic errors
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Registration failed. Please try again.";
-    toast.error(message);
+    console.error('Registration error:', error);
+    toast.error(error.message || "Registration failed. Please try again.");
   } finally {
     setLoading(false);
   }
