@@ -28,21 +28,35 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Handle email submission
+    // Handle email submission
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Simulate backend call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast.success("A reset password link has been sent to your email.");
-
-      // Optional: Redirect automatically to reset password page
-      // router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
-    } catch {
-      toast.error("Failed to send reset link. Please try again.");
+      // Import the forgotPassword function dynamically to avoid SSR issues
+      const { forgotPassword } = await import('@/lib/api/auth');
+      
+      const response = await forgotPassword(email);
+      
+      // Show success message from the API
+      toast.success(response.message || "If an account with that email exists, a reset link has been sent.");
+      
+      // Clear the form
+      setEmail("");
+      
+    } catch (error) {
+      console.error("Password reset error:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to send reset link. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
