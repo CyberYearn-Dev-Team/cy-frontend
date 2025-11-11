@@ -77,16 +77,29 @@ export default function EmailVerificationClient() {
           console.log("Verification response:", data);
         }
 
-        toast.success(
-          "Your email has been successfully verified. Redirecting to your dashboard..."
-        );
-        localStorage.removeItem("pendingRegistration");
-
-        if (data.token) {
-          localStorage.setItem("token", data.token);
+        if (data.message === "Email already verified. Please log in.") {
+          toast.info(data.message);
+          router.push("/auth/login");
+          return;
         }
 
-        setTimeout(() => router.push("/learner-dashboard/dashboard"), 2000);
+        if (data.status === 200 && data.token) {
+          // Save token to localStorage
+          localStorage.setItem("token", data.token);
+          
+          // Remove pending registration
+          localStorage.removeItem("pendingRegistration");
+          
+          // Show success message
+          toast.success(data.message || "Account verified successfully!");
+          
+          // Redirect to dashboard
+          setTimeout(() => router.push("/learner-dashboard/dashboard"), 1000);
+        } else {
+          // Handle other successful responses without token
+          toast.success("Verification completed successfully!");
+          router.push("/auth/login");
+        }
       } else {
         const error = await response.json();
         throw new Error(error.message || "Verification failed");
