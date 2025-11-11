@@ -140,9 +140,26 @@ export default function EmailVerificationClient() {
 
   return (
     <div className={`min-h-screen flex flex-col ${bgLight}`}>
-      <Toaster position="top-center" />
+      {/* <Toaster position="top-center" /> */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
+{/* Logo */}
+          <Link href="/" className="flex justify-center mb-3">
+            <div className="flex items-center gap-2">
+              <img
+                src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
+                alt="Logo"
+                className="h-10 sm:h-10 md:h-12 w-auto block dark:hidden"
+              />
+              <img
+                src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
+                alt="Logo"
+                className="h-10 sm:h-10 md:h-12 w-auto hidden dark:block"
+              />
+            </div>
+          </Link>
+
+
           <div className={`p-8 ${cardBg} rounded-xl shadow-md`}>
             {isLoading ? (
               <div className="text-center py-8">
