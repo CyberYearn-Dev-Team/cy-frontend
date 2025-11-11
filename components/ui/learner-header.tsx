@@ -183,7 +183,7 @@ if (theme) localStorage.setItem("theme", theme);
                       setDropdownOpen(false);
                       setShowLogoutConfirm(true);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-200 dark:hover:bg-red-800 cursor-pointer"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </button>
@@ -212,13 +212,16 @@ if (theme) localStorage.setItem("theme", theme);
               >
                 Cancel
               </Button>
-              <Button
-                variant="destructive"
-                onClick={handleLogout}
-                className="w-28 bg-[#72a210] hover:bg-[#5d880c] cursor-pointer"
-              >
-                Logout
-              </Button>
+<Button
+  variant="destructive"
+  onClick={handleLogout}
+  className="w-28 bg-destructive hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90 text-white cursor-pointer"
+>
+  Logout
+</Button>
+
+
+
             </div>
           </div>
         </div>
