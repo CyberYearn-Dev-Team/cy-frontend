@@ -86,7 +86,7 @@ export default function EmailVerificationClient() {
           localStorage.setItem("token", data.token);
         }
 
-        setTimeout(() => router.push("/dashboard"), 2000);
+        setTimeout(() => router.push("/learner-dashboard/dashboard"), 2000);
       } else {
         const error = await response.json();
         throw new Error(error.message || "Verification failed");
@@ -140,6 +140,8 @@ export default function EmailVerificationClient() {
     }
   };
 
+
+  
   return (
     <div className={`min-h-screen flex flex-col ${bgLight}`}>
       {/* <Toaster position="top-center" /> */}
