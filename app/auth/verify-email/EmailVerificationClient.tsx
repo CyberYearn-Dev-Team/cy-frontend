@@ -62,11 +62,12 @@ export default function EmailVerificationClient() {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://cy-backend.onrender.com/api/v1";
+      
+      console.log("VERIFY API URL:", `${apiUrl}/auth/verify-complete`);
       const response = await fetch(`${apiUrl}/auth/verify-complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, token }),
-        credentials: "include",
+        body: JSON.stringify({ email, token })
       });
 
       if (response.ok) {
@@ -110,11 +111,12 @@ export default function EmailVerificationClient() {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL ||
         "https://cy-backend.onrender.com/api/v1";
+      
+      console.log("RESEND API URL:", `${apiUrl}/auth/resend-verification`);
       const response = await fetch(`${apiUrl}/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-        credentials: "include",
+        body: JSON.stringify({ email })
       });
 
       if (!response.ok) {
@@ -221,7 +223,7 @@ export default function EmailVerificationClient() {
                     href="/auth/login"
                     className="text-[#72a210] hover:underline font-medium text-sm"
                   >
-                    ← Back to Login
+                    Back to Login
                   </Link>
                 </div>
               </div>
