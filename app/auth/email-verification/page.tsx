@@ -17,6 +17,8 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-300";
 const textLight = "text-gray-500 dark:text-gray-400";
 
+
+export const dynamic = "force-dynamic";
 export default function EmailVerificationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
