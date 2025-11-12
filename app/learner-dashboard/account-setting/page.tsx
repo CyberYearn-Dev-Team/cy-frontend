@@ -180,12 +180,8 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           />
                         ) : (
                           <span>
-                            {profile.fullName
-                              ? profile.fullName
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()
+                            {profile.username
+                              ? profile.username[0].toUpperCase()
                               : "U"}
                           </span>
                         )}
@@ -219,10 +215,15 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <CheckCircle className={`w-5 h-5 text-[${primary}]`} />
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Email Verified
+                      User Email 
+                    </span>
+                  </div>
+                   <span className="px-2 py-1 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
+                      Verified
                     </span>
                   </div>
 
@@ -308,7 +309,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </div>
 
                     {/* Full Name */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Full Name
                       </label>
@@ -323,7 +324,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Email (read-only) */}
                     <div>

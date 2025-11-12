@@ -130,7 +130,7 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
               {loading
                 ? "Loading..."
                 : profile.username
-                ? `Hi, ${profile.username}!`
+                ? `Hi, ${profile.username}`
                 : "Your Profile"}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -164,12 +164,8 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                           />
                         ) : (
                           <span>
-                            {profile.fullName
-                              ? profile.fullName
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()
+                            {profile.username
+                              ? profile.username[0].toUpperCase()
                               : "U"}
                           </span>
                         )}
@@ -234,7 +230,7 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                     </div>
 
                     {/* Full Name (read-only) */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Full Name
                       </label>
@@ -247,7 +243,7 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                           className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Email (read-only) */}
                     <div>
