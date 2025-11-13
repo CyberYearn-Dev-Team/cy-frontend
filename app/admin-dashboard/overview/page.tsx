@@ -1,20 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getCurrentUser } from "@/lib/api/auth";
 import AdminSidebar from "@/components/ui/admin-sidebar";
 import AdminHeader from "@/components/ui/admin-header";
 import Nav from "@/components/ui/admin-nav";
-import {
-  Activity,
-  Users,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Zap,
-  Database,
-  LucideIcon,
-} from "lucide-react";
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -24,6 +15,19 @@ const bgCard = "bg-white dark:bg-gray-900";
 const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
+
+import {
+  Activity,
+  Users,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Zap,
+  Database,
+  Loader2,
+  type LucideIcon,
+} from "lucide-react";
 
 // Types
 interface ModuleCompletion {

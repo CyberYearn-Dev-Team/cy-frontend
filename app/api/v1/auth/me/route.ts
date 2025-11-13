@@ -4,12 +4,28 @@ const BACKEND_BASE = "https://cy-backend.onrender.com/api/v1";
 
 export async function GET(req: Request) {
   try {
-    const cookie = (req.headers.get("cookie") || "");
+    const cookie = req.headers.get("cookie") || "";
+    const authHeader = req.headers.get("authorization");
+    
+    console.log("🔍 [auth/me] Headers received:", {
+      cookie: cookie ? '***cookie present***' : 'no cookie',
+      authorization: authHeader ? '***auth header present***' : 'no auth header'
+    });
+
+    const headers: HeadersInit = {
+      'Cookie': cookie,
+      'Content-Type': 'application/json',
+    };
+
+    // Add Authorization header if present
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
 
     const backendRes = await fetch(`${BACKEND_BASE}/auth/me`, {
       method: "GET",
-      headers: { cookie },
-      credentials: "include",
+      headers,
+      credentials: 'include',
     });
 
     const text = await backendRes.text();

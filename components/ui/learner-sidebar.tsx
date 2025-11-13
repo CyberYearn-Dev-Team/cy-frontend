@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  UserCog,
   X,
   Trophy,
 } from "lucide-react";
@@ -27,20 +28,31 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   // Fetch role on mount
-  useEffect(() => {
-    async function fetchUserRole() {
-      try {
-const res = await fetch("/api/v1/auth/me");
-        const data = await res.json();
-        if (data?.data?.role) {
-          setUserRole(data.data.role);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user role:", err);
+useEffect(() => {
+  async function fetchUserRole() {
+    try {
+      const res = await fetch("https://cy-backend.onrender.com/api/v1/auth/me", {
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      // Handle both possible formats (roles array or single role)
+      let role =
+        Array.isArray(data?.data?.roles) && data.data.roles.length > 0
+          ? data.data.roles[0]
+          : data?.data?.role;
+
+      if (role) {
+        setUserRole(role); // Keep original case, we'll handle case in comparison
       }
+    } catch (err) {
+      console.error("Failed to fetch user role:", err);
     }
-    fetchUserRole();
-  }, []);
+  }
+
+  fetchUserRole();
+}, []);
+
 
   const sidebarItems = [
     { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
@@ -53,11 +65,11 @@ const res = await fetch("/api/v1/auth/me");
   ];
 
   // Only show "Switch to Admin" if role is admin
-  if (userRole === "admin") {
+  if (userRole && userRole.toUpperCase() === 'ADMIN') {
     sidebarItems.push({
       name: "Switch to Admin",
-      icon: Shield,
-      href: `/admin-dashboard/overview`,
+      icon: UserCog,
+      href: "/admin-dashboard/overview",
     });
   }
 
