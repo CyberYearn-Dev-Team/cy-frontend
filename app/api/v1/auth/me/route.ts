@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       headers['Authorization'] = authHeader;
     }
 
-    const backendRes = await fetch(`${BACKEND_BASE}/auth/me`, {
+    const backendRes = await fetch(`${BACKEND_BASE}/me`, {
       method: "GET",
       headers,
       credentials: 'include',
@@ -32,8 +32,8 @@ export async function GET(req: Request) {
     const contentType = backendRes.headers.get("content-type") || "application/json";
 
     // Debug logging
-    console.log("🔍 [auth/me] Backend response status:", backendRes.status);
-    console.log("🔍 [auth/me] Backend response text:", text);
+    console.log("🔍 [/me] Backend response status:", backendRes.status);
+    console.log("🔍 [/me] Backend response text:", text);
 
     return new NextResponse(text, {
       status: backendRes.status,

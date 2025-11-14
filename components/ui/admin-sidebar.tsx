@@ -38,7 +38,6 @@ export default function AdminSidebar({
     { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
     { name: "Platform Security", icon: Shield, href: `${basePath}/security` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
-    { name: "Platform Settings", icon: Settings, href: `${basePath}/settings` },
     {
       name: "Switch to Learner",
       icon: GraduationCap,

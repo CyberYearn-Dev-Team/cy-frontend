@@ -59,7 +59,7 @@ const FeatureFlagsPage: React.FC = () => {
       name: "Advanced Analytics",
       description:
         "Unlock detailed analytics dashboard with custom reports and data export",
-      enabled: true,
+      enabled: false,
       category: "beta",
       impactLevel: "low",
       lastModified: "2025-09-27 10:15",
@@ -81,21 +81,10 @@ const FeatureFlagsPage: React.FC = () => {
       name: "Real-time Collaboration",
       description:
         "Allow multiple users to collaborate on documents in real-time",
-      enabled: true,
+      enabled: false,
       category: "beta",
       impactLevel: "high",
       lastModified: "2025-09-25 09:30",
-      modifiedBy: "admin@example.com",
-    },
-    {
-      id: "dark_mode",
-      name: "Dark Mode",
-      description:
-        "System-wide dark theme with automatic switching based on user preference",
-      enabled: true,
-      category: "core",
-      impactLevel: "low",
-      lastModified: "2025-09-24 11:20",
       modifiedBy: "admin@example.com",
     },
   ]);
@@ -193,7 +182,7 @@ const FeatureFlagsPage: React.FC = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {["all", "core", "beta", "experimental"].map((cat) => (
+                  {["all", "beta", "experimental"].map((cat) => (
                     <DropdownMenuItem
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -206,6 +195,8 @@ const FeatureFlagsPage: React.FC = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
+
 
             {/* Flags List */}
             <div className="space-y-4">
@@ -246,7 +237,7 @@ const FeatureFlagsPage: React.FC = () => {
                     {/* Toggle */}
                     <button
                       onClick={() => handleToggle(flag.id)}
-                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors cursor-pointer ${
                         flag.enabled
                           ? "bg-[#72a210]"
                           : "bg-gray-300 dark:bg-gray-600"
@@ -263,6 +254,8 @@ const FeatureFlagsPage: React.FC = () => {
                 </div>
               ))}
             </div>
+
+
 
 {/* Info Banner */}
 <div

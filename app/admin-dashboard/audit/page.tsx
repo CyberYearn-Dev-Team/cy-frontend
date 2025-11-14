@@ -29,6 +29,8 @@ import Nav from "@/components/ui/admin-nav";
 
 interface AuditLog {
   id: string;
+  // NOTE: This will likely be a string from the API (e.g., ISO 8601).
+  // You will need to convert it to a Date object when fetched.
   timestamp: Date;
   actor: string;
   actorRole: "admin" | "instructor" | "system";
@@ -58,30 +60,9 @@ const severityOrder: Record<AuditLog["severity"], number> = {
   low: 1,
 };
 
-const mockLogs: AuditLog[] = [
-  {
-    id: "1",
-    timestamp: new Date("2025-10-01T14:30:00"),
-    actor: "john.doe@example.com",
-    actorRole: "admin",
-    action: "role_change",
-    actionLabel: "Role Changed",
-    details: "Changed role from Instructor to Admin",
-    ipAddress: "192.168.1.100",
-    severity: "high",
-  },
-  {
-    id: "2",
-    timestamp: new Date("2025-10-01T13:15:00"),
-    actor: "admin@system.com",
-    actorRole: "system",
-    action: "feature_flag_toggle",
-    actionLabel: "Feature Flag Toggled",
-    details: "Enabled feature flag: advanced_analytics",
-    ipAddress: "10.0.0.1",
-    severity: "medium",
-  },
-];
+// --- MOCKED DATA REMOVED ---
+// The original mockLogs array has been removed.
+// --- MOCKED DATA REMOVED ---
 
 type SortKey = keyof AuditLog | "actionLabel" | "actorRole";
 type SortDirection = "ascending" | "descending";
@@ -101,7 +82,14 @@ type SeverityFilter = "all" | "low" | "medium" | "high" | "critical";
 
 export default function AuditLogsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [logs] = useState<AuditLog[]>(mockLogs);
+  
+  // 🎯 KEY CHANGE: Initial state is now an empty array.
+  // The 'logs' state must be updated via an API call.
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  // State for tracking loading and error (highly recommended for real data)
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [actionFilter, setActionFilter] = useState<ActionFilter>("all");
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
@@ -113,6 +101,9 @@ export default function AuditLogsPage() {
     direction: "descending",
   });
 
+  // NOTE: In a production app with a large number of logs, you should request
+  // filtered/sorted data from the **backend**. The current useMemo approach
+  // is fine for a few hundred logs, but not thousands.
   const sortedLogs = useMemo(() => {
     let filtered = logs.filter((log) => {
       const matchesSearch =
@@ -134,8 +125,8 @@ export default function AuditLogsPage() {
     });
 
     filtered.sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+      const aValue = a[sortConfig.key as keyof AuditLog];
+      const bValue = b[sortConfig.key as keyof AuditLog];
 
       if (sortConfig.key === "timestamp") {
         const aTime = aValue as Date;
@@ -157,6 +148,10 @@ export default function AuditLogsPage() {
     return filtered;
   }, [logs, searchTerm, actionFilter, severityFilter, startDate, endDate, sortConfig]);
 
+  // --- RENDERING SECTION ---
+  
+  // ... (rest of the component JSX remains the same)
+  
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -319,61 +314,75 @@ export default function AuditLogsPage() {
             <div
               className={`${bgCard} rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-800`}
             >
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-3 text-left">Time</th>
-                      <th className="px-6 py-3 text-left">Actor</th>
-                      <th className="px-6 py-3 text-left">Action</th>
-                      <th className="px-6 py-3 text-left">Details</th>
-                      <th className="px-6 py-3 text-left">IP</th>
-                      <th className="px-6 py-3 text-left">Severity</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {sortedLogs.map((log) => (
-                      <tr
-                        key={log.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/40"
-                      >
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {log.timestamp.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
-                          {log.actor}
-                        </td>
-                        <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
-                          {log.actionLabel}
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {log.details}
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {log.ipAddress}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                              log.severity === "critical"
-                                ? "bg-red-100 text-red-700"
-                                : log.severity === "high"
-                                ? "bg-orange-100 text-orange-700"
-                                : log.severity === "medium"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {log.severity.charAt(0).toUpperCase() +
-                              log.severity.slice(1)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {sortedLogs.length === 0 && (
+              {/* Add loading/error indicators here */}
+              {isLoading && (
+                  <div className="text-center py-10 text-lg text-gray-500 dark:text-gray-400">
+                      Loading audit logs...
+                  </div>
+              )}
+              {error && (
+                  <div className="text-center py-10 text-lg text-red-600 dark:text-red-400">
+                      Error fetching logs: {error}
+                  </div>
+              )}
+              
+              {!isLoading && !error && (
+                  <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                          <thead className="bg-gray-100 dark:bg-gray-700">
+                              <tr>
+                                  <th className="px-6 py-3 text-left">Time</th>
+                                  <th className="px-6 py-3 text-left">Actor</th>
+                                  <th className="px-6 py-3 text-left">Action</th>
+                                  <th className="px-6 py-3 text-left">Details</th>
+                                  <th className="px-6 py-3 text-left">IP</th>
+                                  <th className="px-6 py-3 text-left">Severity</th>
+                              </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                              {sortedLogs.map((log) => (
+                                  <tr
+                                      key={log.id}
+                                      className="hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                                  >
+                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                                          {log.timestamp.toLocaleString()}
+                                      </td>
+                                      <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
+                                          {log.actor}
+                                      </td>
+                                      <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
+                                          {log.actionLabel}
+                                      </td>
+                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                                          {log.details}
+                                      </td>
+                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                                          {log.ipAddress}
+                                      </td>
+                                      <td className="px-6 py-4">
+                                          <span
+                                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                                                  log.severity === "critical"
+                                                      ? "bg-red-100 text-red-700"
+                                                      : log.severity === "high"
+                                                          ? "bg-orange-100 text-orange-700"
+                                                          : log.severity === "medium"
+                                                              ? "bg-yellow-100 text-yellow-700"
+                                                              : "bg-green-100 text-green-700"
+                                              }`}
+                                          >
+                                              {log.severity.charAt(0).toUpperCase() +
+                                                  log.severity.slice(1)}
+                                          </span>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      </table>
+                  </div>
+              )}
+              {sortedLogs.length === 0 && !isLoading && !error && (
                 <div className="text-center py-10 text-gray-500 dark:text-gray-400">
                   No logs found.
                 </div>

@@ -6,7 +6,8 @@ import {
   LayoutGrid,
   BarChart3,
   Flag,
-  ShieldCheck,
+  Activity,
+  ToggleLeft,
   Users,
 } from "lucide-react";
 
@@ -15,8 +16,9 @@ export default function UserNav() {
 
   const navItems = [
     { name: "Overview", href: "/admin-dashboard/overview", icon: LayoutGrid },
+    { name: "Feature Flags", href: "/admin-dashboard/feature-flags", icon: ToggleLeft },
     { name: "Metrics", href: "/admin-dashboard/metrics", icon: BarChart3 },
-    { name: "Feature Flags", href: "/admin-dashboard/feature-flags", icon: Flag },
+    { name: "Audit Logs", href: "/admin-dashboard/audit", icon: Activity },
     { name: "All Users", href: "/admin-dashboard/users", icon: Users },
   ];
 

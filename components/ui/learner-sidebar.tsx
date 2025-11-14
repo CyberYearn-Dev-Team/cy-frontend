@@ -31,7 +31,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
 useEffect(() => {
   async function fetchUserRole() {
     try {
-      const res = await fetch("https://cy-backend.onrender.com/api/v1/auth/me", {
+      const res = await fetch("https://cy-backend.onrender.com/api/v1/me", {
         credentials: "include",
       });
       const data = await res.json();
