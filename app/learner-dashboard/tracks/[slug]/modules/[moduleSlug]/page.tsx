@@ -7,8 +7,6 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 
-// import Breadcrumb from "@/components/ui/breadcrumb";
-// import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -17,8 +15,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-
 
 // Theme Constants
 const primary = "#72a210";
@@ -35,6 +31,7 @@ interface Lesson {
   title: string;
   slug: string;
   description: string;
+  content: string;
   estimated_time: string;
   order?: number;
 }
@@ -45,6 +42,20 @@ interface Module {
   slug: string;
   description: string;
   lessons: Lesson[];
+}
+
+// Function to truncate HTML content to a word limit
+function truncateHTMLContent(html: string, wordLimit: number) {
+  // Remove HTML tags temporarily to count words
+  const text = html.replace(/<[^>]+>/g, '');
+  const words = text.split(/\s+/).filter(Boolean);
+
+  if (words.length <= wordLimit) return html;
+
+  // Take only the first `wordLimit` words
+  const truncatedText = words.slice(0, wordLimit).join(' ') + '...';
+
+  return truncatedText;
 }
 
 export default function ModuleDetailPage() {
@@ -74,7 +85,6 @@ export default function ModuleDetailPage() {
   }, [slug, moduleSlug]);
 
   return (
-    // Applied dark mode background
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -82,27 +92,27 @@ export default function ModuleDetailPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
-         {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/learner-dashboard/tracks">
-              Learning Tracks
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
-              Track
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Module</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
- <br />
+          {/* Breadcrumb */}
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/learner-dashboard/tracks">
+                  Learning Tracks
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
+                  Track
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Module</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <br />
           {loading ? (
             <p className={textLight}>Loading module...</p>
           ) : !module ? (
@@ -114,12 +124,14 @@ export default function ModuleDetailPage() {
                 <h1 className={`text-2xl font-bold ${textDark} mb-2`}>
                   {module.title}
                 </h1>
-                <p className={textMedium}>{module.description}</p>
+                <div
+                  className={`${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+                  dangerouslySetInnerHTML={{ __html: module.description }}
+                />
               </div>
 
               {/* Lessons List */}
-              {/* Applied card background and padding for consistency */}
-                <div className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}>
+              <div className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}>
                 <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
                   Lessons
                 </h2>
@@ -130,22 +142,21 @@ export default function ModuleDetailPage() {
                     {module.lessons.map((lesson, index) => (
                       <div
                         key={lesson.id}
-                        // Applied dark mode background/border for each lesson card
                         className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
                       >
                         <div className={`w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 ${textMedium}`}>
-                          <span className="text-sm font-medium">
-                            {index + 1}
-                          </span>
+                          <span className="text-sm font-medium">{index + 1}</span>
                         </div>
 
                         <div className="flex-1">
-                          <h3 className={`font-semibold ${textDark}`}>
+                          <h3 className={`font-semibold ${textDark} mb-2`}>
                             {lesson.title}
                           </h3>
-                          <p className={`text-sm ${textMedium}`}>
-                            {lesson.description}
-                          </p>
+                          <div
+                            className={`text-sm ${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+                            dangerouslySetInnerHTML={{ __html: truncateHTMLContent(lesson.content, 50) }}
+                          />
+
                           <span className={`text-xs ${textLight}`}>
                             {lesson.estimated_time}
                           </span>
@@ -153,7 +164,6 @@ export default function ModuleDetailPage() {
 
                         <Link
                           href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.slug}`}
-                          // Applied theme color to button
                           className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
                         >
                           Start Lesson
@@ -167,9 +177,8 @@ export default function ModuleDetailPage() {
           )}
         </main>
 
-
-         {/* Bottom Navigation */}
-                <Nav />
+        {/* Bottom Navigation */}
+        <Nav />
       </div>
     </div>
   );

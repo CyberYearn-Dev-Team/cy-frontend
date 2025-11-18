@@ -114,19 +114,6 @@ export default function TrackDetailPage() {
     </BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>
-          {/* <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/learner-dashboard/tracks">
-                  Tracks
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Result</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb> */}
           <br />
           {loading ? (
             <p className={textLight}>Loading track...</p>
@@ -166,14 +153,12 @@ export default function TrackDetailPage() {
   {track.title}
 </h1>
 
-                    <p className={`${textMedium}`}>{track.description}</p>
+                    <div 
+                      className={`${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+                      dangerouslySetInnerHTML={{ __html: track.description }}
+                    />
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <span
-                        className={`px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 ${textMedium} text-sm capitalize`}
-                      >
-                        {track.level}
-                      </span>
                       <div
                         className={`flex items-center gap-1 text-sm ${textLight}`}
                       >
@@ -251,11 +236,10 @@ export default function TrackDetailPage() {
                                 </span>
                               )}
                             </div>
-                            <p
-                              className={`text-sm ${textMedium} mb-2 line-clamp-3`}
-                            >
-                              {module.description}
-                            </p>
+                            <div
+                              className={`text-sm ${textMedium} mb-2 line-clamp-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+                              dangerouslySetInnerHTML={{ __html: module.description }}
+                            />
 
                             <div
                               className={`flex items-center gap-4 text-xs ${textLight}`}
@@ -269,15 +253,6 @@ export default function TrackDetailPage() {
                                 <span>{module.xpReward} XP</span>
                               )}
                             </div>
-
-                            {module.progress && module.progress > 0 && (
-                              <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 h-1 rounded-full">
-                                <div
-                                  className={`bg-[${primary}] h-1 rounded-full`}
-                                  style={{ width: `${module.progress}%` }}
-                                />
-                              </div>
-                            )}
                           </div>
 
                           <Link

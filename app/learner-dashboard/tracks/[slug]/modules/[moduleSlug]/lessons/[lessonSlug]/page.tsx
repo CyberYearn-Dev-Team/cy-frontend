@@ -148,7 +148,9 @@ export default function LessonDetailPage() {
                 <p className={`text-sm ${textLight} mb-4`}>
                   Estimated time: {lesson.estimated_time}
                 </p>
-                <div className="prose prose-slate lg:prose-lg max-w-none dark:prose-invert">
+                <div
+                  className={`${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+                >
                   <div
                     dangerouslySetInnerHTML={{ __html: contentHtml }}
                   />

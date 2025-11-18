@@ -121,7 +121,10 @@ const TrackCard = ({
           <span className="text-xs text-gray-500">{modules} Modules</span>
         </div>
 
-        <p className={`text-sm ${textMedium} line-clamp-3`}>{description}</p>
+        <div 
+          className={`text-sm ${textMedium} line-clamp-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
 
         <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
           <div className="flex items-center gap-1">

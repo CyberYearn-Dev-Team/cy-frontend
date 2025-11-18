@@ -263,7 +263,7 @@ export default function QuizzesPage() {
                   {currentQuiz?.title ?? "Untitled Quiz"}
                 </h1>
                 <p className={`${textMedium} text-sm mb-3`}>
-                  Test your understanding of password manager setup and security best practices.
+                  {currentQuiz?.description ?? "Untitled Quiz"}
                 </p>
                 
                 {/* Progress Bar and Text */}
@@ -400,5 +400,4 @@ export default function QuizzesPage() {
       </div>
     </div>
   );
-  // --- END OF MODIFIED JSX ---
 }

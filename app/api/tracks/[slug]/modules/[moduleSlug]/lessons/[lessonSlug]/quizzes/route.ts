@@ -61,13 +61,15 @@ export async function GET(
       description: quiz.description,
       passing_score: quiz.passing_score,
       // normalize question into array for frontend
-      questions: [
-        {
-          question_text: quiz.question_text,
-          options: parsedOptions,
-          answer: quiz.answer,
-        },
-      ],
+     questions: [
+  {
+    question_text: quiz.question_text,
+    options: parsedOptions,
+    answer: quiz.answer,
+    hint: quiz.hint || quiz.explanation || quiz.tip || "", // Add fallback if needed
+  },
+],
+
     };
   })
   .filter(Boolean);
