@@ -37,14 +37,12 @@ useEffect(() => {
       const data = await res.json();
 
       // Handle both possible formats (roles array or single role)
-      let role =
-        Array.isArray(data?.data?.roles) && data.data.roles.length > 0
-          ? data.data.roles[0]
-          : data?.data?.role;
+      let roles = Array.isArray(data?.data?.roles) ? data.data.roles : [];
 
-      if (role) {
-        setUserRole(role); // Keep original case, we'll handle case in comparison
-      }
+if (roles.length > 0) {
+  setUserRole(roles.map((r: string) => r.toUpperCase())); // store ALL roles in uppercase
+}
+
     } catch (err) {
       console.error("Failed to fetch user role:", err);
     }
@@ -65,7 +63,7 @@ useEffect(() => {
   ];
 
   // Only show "Switch to Admin" if role is admin
-  if (userRole && userRole.toUpperCase() === 'ADMIN') {
+if (userRole && userRole.includes("ADMIN")) {
     sidebarItems.push({
       name: "Switch to Admin",
       icon: UserCog,

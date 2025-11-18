@@ -38,10 +38,9 @@ export default function AccountSettingsPage() {
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
-    fullName: "",
     email: "",
     username: "",
-    role: "Learner",
+    roles: [],
     createdAt: "",
     lastLogin: "",
   });
@@ -58,13 +57,13 @@ export default function AccountSettingsPage() {
         const res = await getCurrentUser();
         const u = res?.data || res;
         setProfile({
-          fullName: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
-          email: u?.email || "",
-          username: u?.username || "",
-          role: u?.role || "Learner",
-          createdAt: u?.createdAt || "",
-          lastLogin: u?.lastLogin || "",
-        });
+  email: u?.email || "",
+  username: u?.username || "",
+  roles: u?.roles || [],      // <-- FIX HERE
+  createdAt: u?.createdAt || "",
+  lastLogin: u?.lastLogin || "",
+});
+
       } catch (err) {
         console.error("Failed to load user:", err);
         toast.error("Unable to load user info");
@@ -235,7 +234,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       </span>
                     </div>
                     <span className="px-2 py-1 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
-                      {profile.role}
+                      {profile.roles?.length > 0 ? profile.roles.join(", ") : "No roles"}
                     </span>
                   </div>
 
@@ -252,20 +251,6 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         : "—"}
                     </p>
                   </div>
-
-                  {/* <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Last Login
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 ml-6">
-                      {profile.lastLogin
-                        ? new Date(profile.lastLogin).toLocaleString()
-                        : "—"}
-                    </p>
-                  </div> */}
                 </CardContent>
               </Card>
             </div>
