@@ -43,10 +43,10 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-300";
 
 export default function QuizResultsPage() {
-  const { slug, moduleSlug, lessonSlug } = useParams<{
+  const { slug, moduleSlug, lessonId } = useParams<{
     slug: string;
     moduleSlug: string;
-    lessonSlug: string;
+    lessonId: string;
   }>();
 
   const router = useRouter();
@@ -113,7 +113,7 @@ export default function QuizResultsPage() {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink
-                    href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}
+                    href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`}
                   >
                     Lesson
                   </BreadcrumbLink>
@@ -121,7 +121,7 @@ export default function QuizResultsPage() {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink
-                    href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`}
+                    href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
                   >
                     Quizzes
                   </BreadcrumbLink>
@@ -194,7 +194,7 @@ export default function QuizResultsPage() {
           className={`w-full text-base py-5 sm:py-5 sm:w-auto flex-1 cursor-pointer border-gray-300 dark:border-gray-700 ${cardBg} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-800`}
           onClick={() =>
             router.push(
-              `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`
+              `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`
             )
           }
         >

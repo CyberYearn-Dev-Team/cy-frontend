@@ -31,7 +31,6 @@ interface Lesson {
   title: string;
   slug: string;
   description: string;
-  content: string;
   estimated_time: string;
   order?: number;
 }
@@ -46,6 +45,7 @@ interface Module {
 
 // Function to truncate HTML content to a word limit
 function truncateHTMLContent(html: string, wordLimit: number) {
+  if (!html) return '';
   // Remove HTML tags temporarily to count words
   const text = html.replace(/<[^>]+>/g, '');
   const words = text.split(/\s+/).filter(Boolean);
@@ -130,6 +130,7 @@ export default function ModuleDetailPage() {
                 />
               </div>
 
+
               {/* Lessons List */}
               <div className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}>
                 <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
@@ -152,10 +153,9 @@ export default function ModuleDetailPage() {
                           <h3 className={`font-semibold ${textDark} mb-2`}>
                             {lesson.title}
                           </h3>
-                          <div
-                            className={`text-sm ${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
-                            dangerouslySetInnerHTML={{ __html: truncateHTMLContent(lesson.content, 50) }}
-                          />
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <div dangerouslySetInnerHTML={{ __html: truncateHTMLContent(lesson.description, 50) }} />
+                          </div>
 
                           <span className={`text-xs ${textLight}`}>
                             {lesson.estimated_time}
@@ -163,7 +163,7 @@ export default function ModuleDetailPage() {
                         </div>
 
                         <Link
-                          href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.slug}`}
+                            href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`}
                           className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
                         >
                           Start Lesson

@@ -2,23 +2,18 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: {
-    params: Promise<{ slug: string; moduleSlug: string; lessonSlug: string }>;
-  }
+  context: { params: Promise<{ slug: string; moduleSlug: string; lessonId: string }> }
 ): Promise<NextResponse> {
-  const { lessonSlug } = await context.params;
+  // ✅ Await the params before destructuring
+  const { slug, moduleSlug, lessonId } = await context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
-    const encoded = encodeURIComponent(lessonSlug);
 
-    // Fetch lesson and its linked quizzes
     const directusRes = await fetch(
-      `${base}/items/lessons?filter[slug][_eq]=${encoded}&fields=*,quizzes.quizzes_id.*`,
+      `${base}/items/lessons?filter[id][_eq]=${lessonId}&fields=*,quizzes.quizzes_id.*`,
       {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         cache: "no-store",
       }
     );
@@ -38,22 +33,15 @@ export async function GET(
 
     const lesson = json.data[0];
 
-    // ✅ Flatten quizzes (just like modules in your working route)
     const flatQuizzes = (lesson.quizzes || [])
       .map((q: any) => q.quizzes_id)
       .filter((q: any) => q !== null);
 
     return NextResponse.json({
-      lesson: {
-        ...lesson,
-        quizzes: flatQuizzes,
-      },
+      lesson: { ...lesson, quizzes: flatQuizzes },
     });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { lesson: null, error: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ lesson: null, error: "Server error" }, { status: 500 });
   }
 }

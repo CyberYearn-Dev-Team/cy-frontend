@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import {
+  startLesson,
+  trackTime,
+  completeLesson,
+} from "@/lib/services/progressService";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
@@ -29,35 +34,33 @@ interface Lesson {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  description: string;
   estimated_time: string;
   order?: number;
 }
 
 export default function LessonDetailPage() {
-  const { slug, moduleSlug, lessonSlug } = useParams<{
+  const { slug, moduleSlug, lessonId } = useParams<{
     slug: string;
     moduleSlug: string;
-    lessonSlug: string;
+    lessonId: string; // Changed from lessonSlug to lessonId to reflect UUID usage
   }>();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const totalTimeRef = useRef(0);
 
-  function decodeHtml(input: string) {
-    if (typeof window === "undefined") return input;
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = input;
-    return textarea.value;
-  }
-
-  // Fetch Lesson
+  // Track lesson start and fetch lesson data
   useEffect(() => {
+    // Call startLesson when the component mounts
+    startLesson(lessonId as string).catch(console.error);
+
     async function fetchLesson() {
       try {
         const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`
+          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`
         );
         const data = await res.json();
         setLesson(data.lesson);
@@ -68,11 +71,11 @@ export default function LessonDetailPage() {
       }
     }
     fetchLesson();
-  }, [slug, moduleSlug, lessonSlug]);
+  }, [slug, moduleSlug, lessonId]);
 
   // Make in-content links clickable
   useEffect(() => {
-    if (!lesson?.content) return;
+    if (!lesson?.description) return;
     const container = document.querySelector(".prose");
     if (!container) return;
 
@@ -89,10 +92,42 @@ export default function LessonDetailPage() {
     });
   }, [lesson]);
 
-  const contentHtml = useMemo(
-    () => decodeHtml(lesson?.content || ""),
-    [lesson?.content]
-  );
+  // Track time spent on lesson
+  useEffect(() => {
+    if (!lessonId) return;
+
+    const TRACKING_INTERVAL = 15000; // 15 seconds
+
+    const intervalId = setInterval(() => {
+      totalTimeRef.current += 15; // Increment total time by 15 seconds
+      trackTime(lessonId as string, 15).catch((error) => {
+        console.error("Error tracking lesson time:", error);
+      });
+    }, TRACKING_INTERVAL);
+
+    // Clean up interval on unmount
+    return () => {
+      clearInterval(intervalId);
+      // Send final time update before unmounting
+      trackTime(lessonId as string, 15).catch(console.error);
+    };
+  }, [lessonId]);
+
+  const handleCompleteLesson = async () => {
+    if (!lessonId) return;
+
+    try {
+      setIsCompleting(true);
+      await completeLesson(lessonId as string, totalTimeRef.current);
+      // Optional: Add any success feedback here
+    } catch (error) {
+      console.error("Error completing lesson:", error);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const contentHtml = lesson?.description || "";
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -148,14 +183,22 @@ export default function LessonDetailPage() {
                 <p className={`text-sm ${textLight} mb-4`}>
                   Estimated time: {lesson.estimated_time}
                 </p>
-                <div
-                  className={`${textMedium} [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
-                >
-                  <div
-                    dangerouslySetInnerHTML={{ __html: contentHtml }}
-                  />
+                <div className="prose dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                </div>
+
+                {/* Completion Button */}
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={handleCompleteLesson}
+                    disabled={isCompleting}
+                    className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center cursor-pointer`}
+                  >
+                    {isCompleting ? "Completing..." : "Mark as Completed"}
+                  </button>
                 </div>
               </div>
+
 
               {/* --- QUIZ SECTION --- */}
               <div
@@ -165,7 +208,7 @@ export default function LessonDetailPage() {
                   Test your knowledge before proceeding to labs.
                 </p>
                 <Link
-                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`}
+                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
                   className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
                 >
                   Take Quiz for this Lesson

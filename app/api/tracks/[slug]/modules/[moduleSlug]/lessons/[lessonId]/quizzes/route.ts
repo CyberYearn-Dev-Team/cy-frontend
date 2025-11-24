@@ -2,27 +2,20 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: {
-    params: Promise<{
-      slug: string;
-      moduleSlug: string;
-      lessonSlug: string;
-    }>;
-  }
+  context: { params: { slug: string; moduleSlug: string; lessonId: string } }
 ): Promise<NextResponse> {
-  const { lessonSlug } = await context.params;
+  const { lessonId } = context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
-    const encoded = encodeURIComponent(lessonSlug);
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
 
-    // ✅ Fetch lesson and its linked quizzes (field = quizzes)
+    // Fetch lesson and its linked quizzes using UUID
     const directusRes = await fetch(
-      `${base}/items/lessons?filter[slug][_eq]=${encoded}&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
+      `${base}/items/lessons?filter[id][_eq]=${lessonId}&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
       { headers, cache: "no-store" }
     );
 

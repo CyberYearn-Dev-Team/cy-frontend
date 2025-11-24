@@ -49,10 +49,10 @@ interface Quiz {
 
 export default function QuizzesPage() {
   const router = useRouter();
-  const { slug, moduleSlug, lessonSlug, labSlug } = useParams<{
+  const { slug, moduleSlug, lessonId, labSlug } = useParams<{
     slug: string;
     moduleSlug: string;
-    lessonSlug: string;
+    lessonId: string;
     labSlug: string;
   }>();
 
@@ -68,7 +68,7 @@ export default function QuizzesPage() {
     async function fetchQuizzes() {
       try {
         const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes`
+          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`
         );
         if (!res.ok) {
           // ... (error handling remains the same)
@@ -127,7 +127,7 @@ export default function QuizzesPage() {
       }
     }
     fetchQuizzes();
-  }, [slug, moduleSlug, lessonSlug, labSlug]);
+  }, [slug, moduleSlug, lessonId, labSlug]);
 
   const currentQuiz = quizzes[currentQuizIndex];
   const currentQuestion = currentQuiz?.questions[currentQuestionIndex];
@@ -175,7 +175,7 @@ export default function QuizzesPage() {
     }
     
     router.push(
-      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
+      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
         JSON.stringify(allQuestions)
       )}`
     );
@@ -220,7 +220,7 @@ export default function QuizzesPage() {
             <BreadcrumbSeparator />
             <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}>Module</BreadcrumbLink></BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonSlug}`}>Lesson</BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbItem><BreadcrumbLink href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`}>Lesson</BreadcrumbLink></BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem><BreadcrumbPage>Quizzes</BreadcrumbPage></BreadcrumbItem>
           </BreadcrumbList>
@@ -262,9 +262,8 @@ export default function QuizzesPage() {
                 <h1 className={`text-xl font-bold ${textDark} mb-1`}>
                   {currentQuiz?.title ?? "Untitled Quiz"}
                 </h1>
-                <p className={`${textMedium} text-sm mb-3`}>
-                  {currentQuiz?.description ?? "Untitled Quiz"}
-                </p>
+                <div className="prose dark:prose-invert max-w-none mb-3" dangerouslySetInnerHTML={{ __html: currentQuiz?.description || "" }} />
+
                 
                 {/* Progress Bar and Text */}
                 <div className="flex justify-between items-center mb-2">
