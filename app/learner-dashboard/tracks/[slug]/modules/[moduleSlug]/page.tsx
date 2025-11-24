@@ -163,11 +163,15 @@ export default function ModuleDetailPage() {
                         </div>
 
                         <Link
-                            href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`}
-                          className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
-                        >
-                          Start Lesson
-                        </Link>
+  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`}
+  className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center"
+  style={{ backgroundColor: primary }}
+  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = primaryDarker)}
+  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primary)}
+>
+  Start Lesson
+</Link>
+
                       </div>
                     ))}
                   </div>
