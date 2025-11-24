@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { slug: string; moduleSlug: string; lessonId: string } }
+  context: {
+    params: Promise<{ slug: string; moduleSlug: string; lessonId: string }>;
+  }
 ): Promise<NextResponse> {
-  const { lessonId } = context.params;
+  const { lessonId } = await context.params;
 
   try {
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
@@ -13,7 +15,6 @@ export async function GET(
       "Content-Type": "application/json",
     };
 
-    // Fetch lesson and its linked quizzes using UUID
     const directusRes = await fetch(
       `${base}/items/lessons?filter[id][_eq]=${lessonId}&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
       { headers, cache: "no-store" }
@@ -34,39 +35,34 @@ export async function GET(
 
     const lesson = json.data[0];
 
-    // ✅ Flatten quizzes like in your lab API
-  const flatQuizzes = (lesson.quizzes || [])
-  .map((q: any) => {
-    const quiz = q.quizzes_id;
-    if (!quiz) return null;
+    const flatQuizzes = (lesson.quizzes || [])
+      .map((q: any) => {
+        const quiz = q.quizzes_id;
+        if (!quiz) return null;
 
-    // Parse options safely (they're stored as a JSON string in Directus)
-    let parsedOptions: string[] = [];
-    try {
-      parsedOptions = JSON.parse(quiz.options);
-    } catch {
-      parsedOptions = [];
-    }
+        let parsedOptions: string[] = [];
+        try {
+          parsedOptions = JSON.parse(quiz.options);
+        } catch {
+          parsedOptions = [];
+        }
 
-    return {
-      id: quiz.id,
-      title: quiz.title,
-      description: quiz.description,
-      passing_score: quiz.passing_score,
-      // normalize question into array for frontend
-     questions: [
-  {
-    question_text: quiz.question_text,
-    options: parsedOptions,
-    answer: quiz.answer,
-    hint: quiz.hint || quiz.explanation || quiz.tip || "", // Add fallback if needed
-  },
-],
-
-    };
-  })
-  .filter(Boolean);
-
+        return {
+          id: quiz.id,
+          title: quiz.title,
+          description: quiz.description,
+          passing_score: quiz.passing_score,
+          questions: [
+            {
+              question_text: quiz.question_text,
+              options: parsedOptions,
+              answer: quiz.answer,
+              hint: quiz.hint || quiz.explanation || quiz.tip || "",
+            },
+          ],
+        };
+      })
+      .filter(Boolean);
 
     return NextResponse.json({ quizzes: flatQuizzes });
   } catch (err) {
