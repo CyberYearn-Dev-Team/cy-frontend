@@ -267,37 +267,36 @@ export default function TracksPage() {
                 </div>
 
                 {/* Topic Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowTopicDropdown((prev) => !prev)}
-                    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
-                  >
-                    {selectedTopic}
-                    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
-                  </button>
-                  {showTopicDropdown && (
-                    <div
-                      className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}
-                    >
-                      {topics.map((topic) => (
-                        <button
-                          key={topic}
-                          onClick={() => {
-                            setSelectedTopic(topic);
-                            setShowTopicDropdown(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
-                            selectedTopic === topic
-                              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
-                              : textMedium
-                          }`}
-                        >
-                          {topic}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+<div className="relative">
+  <button
+    onClick={() => setShowTopicDropdown((prev) => !prev)}
+    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+  >
+    <span className="block w-32 truncate">{selectedTopic}</span>
+    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
+  </button>
+  {showTopicDropdown && (
+    <div className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}>
+      {topics.map((topic) => (
+        <button
+          key={topic}
+          onClick={() => {
+            setSelectedTopic(topic);
+            setShowTopicDropdown(false);
+          }}
+          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
+            selectedTopic === topic
+              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
+              : textMedium
+          }`}
+        >
+          <span className="block w-36 truncate">{topic}</span>
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
               </div>
             </div>
 
