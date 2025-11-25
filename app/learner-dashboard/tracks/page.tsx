@@ -25,12 +25,7 @@ type TrackLevel =
   | "beginner"
   | "fundamentals"
   | "intermediate"
-  | "network"
   | "advanced"
-  | "penetration"
-  | "phishing"
-  | "web"
-  | "osint";
 
 interface Track {
   slug: string;
@@ -237,7 +232,7 @@ export default function TracksPage() {
                 </span>
               </div>
 
-              <div className="flex sm:flex-row sm:justify-between gap-2">
+<div className="flex justify-between gap-2 sm:flex-row">
                 {/* Level Dropdown */}
                 <div className="relative">
                   <button
