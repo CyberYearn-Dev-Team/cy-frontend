@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { getCurrentUser } from "@/lib/api/auth";
 import {
   BookOpen,
   FlaskConical,
@@ -17,6 +18,8 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  Award,
+  Flame,
   X,
   BookAIcon,
 } from "lucide-react";
@@ -26,6 +29,7 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
+import { getRewards } from "@/lib/services/gamificationService";
 
 // Theme Colors
 const primary = "#72a210";
@@ -162,6 +166,47 @@ const EmptyState = ({
 
 // Dashboard
 export default function LearnerDashboard() {
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [badgesCount, setBadgesCount] = useState(0);
+
+  useEffect(() => {
+    async function loadGamification() {
+      try {
+        const currentUser = await getCurrentUser();
+        const email = currentUser?.email || "";
+
+        if (!email) {
+          console.warn("No user email found — skipping gamification fetch");
+          return;
+        }
+
+      const res = await getRewards(email);
+
+      if (res?.data) {
+        const totalXp = res.data.totalXp || 0;
+        setXp(totalXp);
+
+        // LEVEL: every 100 XP = 1 level
+        setLevel(Math.floor(totalXp / 100));
+
+        // STREAK (current days)
+        setStreak(res.data.streak?.currentDays || 0);
+
+        // BADGES (count of unlocked badges)
+        setBadgesCount(res.data.badges?.length || 0);
+      }
+    } catch (err) {
+      console.error("Gamification error:", err);
+    }
+  }
+
+  loadGamification();
+}, []);
+
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // REMOVED: const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -271,12 +316,15 @@ export default function LearnerDashboard() {
                   <Card>
                     <CardContent>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex flex-col gap-4">
                           <p className={`text-sm font-medium ${textMedium}`}>
-                            Current XP
+                            Total XP
                           </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>0</p>
+                          <p className={`text-2xl font-bold ${textDark}`}>
+                            {xp}
+                          </p>
                         </div>
+
                         <Zap className={`h-8 w-8 text-[${primary}]`} />
                       </div>
                     </CardContent>
@@ -284,39 +332,47 @@ export default function LearnerDashboard() {
                   <Card>
                     <CardContent>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex flex-col gap-4">
                           <p className={`text-sm font-medium ${textMedium}`}>
                             Level
                           </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>0</p>
+                          <p className={`text-2xl font-bold ${textDark}`}>
+                            {level}
+                          </p>
                         </div>
-                        <Trophy className={`h-8 w-8 text-[${primary}]`} />
+<Star className={`h-8 w-8 text-[${primary}]`} />
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex flex-col gap-4">
                           <p className={`text-sm font-medium ${textMedium}`}>
-                            Day Streak
+                            Streak
                           </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>0</p>
+                          <p className={`text-2xl font-bold ${textDark}`}>
+                            {streak}
+                          </p>
                         </div>
-                        <Target className={`h-8 w-8 text-[${secondary}]`} />
+                        {/* <Target className={`h-8 w-8 text-[${secondary}]`} /> */}
+                        <Flame className={`h-8 w-8 text-[${secondary}]`} />
                       </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex flex-col gap-4">
                           <p className={`text-sm font-medium ${textMedium}`}>
-                            Rate
+                            Badges
                           </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>0%</p>
+                          <p className={`text-2xl font-bold ${textDark}`}>
+                            {badgesCount}
+                          </p>
                         </div>
-                        <TrendingUp className={`h-8 w-8 text-[${primary}]`} />
+                        {/* <TrendingUp className={`h-8 w-8 text-[${primary}]`} /> */}
+                        <Award className={`h-8 w-8 text-[${primary}]`} />
                       </div>
                     </CardContent>
                   </Card>
@@ -721,7 +777,7 @@ export default function LearnerDashboard() {
             </div>
           </main>
 
-       <Nav/>
+          <Nav />
           <LearnerFooter />
         </div>
       </div>

@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
       const response = await forgotPassword(email);
       
       // Show success message from the API
-      toast.success(response.message || "If an account with that email exists, a reset link has been sent.");
+      toast.success(response.message || "A reset link has been sent to your email.");
       
       // Clear the form
       setEmail("");

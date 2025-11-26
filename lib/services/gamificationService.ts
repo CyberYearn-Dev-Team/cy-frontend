@@ -1,5 +1,9 @@
-export async function getRewards() {
-  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/me/gamification`, {
-    credentials: "include"
-  }).then(res => res.json());
+export async function getRewards(email: string) {
+  return fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/me/gamification?email=${encodeURIComponent(email)}`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  ).then(res => res.json());
 }

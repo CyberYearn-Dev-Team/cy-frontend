@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   startLesson,
   trackTime,
@@ -11,6 +11,7 @@ import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
+import { toast } from "sonner";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -23,11 +24,11 @@ import {
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#5c880d";
-const bgLight = "bg-gray-100 dark:bg-gray-950"; // Main page background
-const cardBg = "bg-white dark:bg-gray-900"; // Card background
-const textDark = "text-gray-900 dark:text-gray-100"; // Headings/Strong text
-const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
-const textLight = "text-gray-500 dark:text-gray-400"; // Placeholder/Subtle text
+const bgLight = "bg-gray-100 dark:bg-gray-950";
+const cardBg = "bg-white dark:bg-gray-900";
+const textDark = "text-gray-900 dark:text-gray-100";
+const textMedium = "text-gray-600 dark:text-gray-300";
+const textLight = "text-gray-500 dark:text-gray-400";
 
 // Interfaces
 interface Lesson {
@@ -43,19 +44,71 @@ export default function LessonDetailPage() {
   const { slug, moduleSlug, lessonId } = useParams<{
     slug: string;
     moduleSlug: string;
-    lessonId: string; // Changed from lessonSlug to lessonId to reflect UUID usage
+    lessonId: string;
   }>();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const totalTimeRef = useRef(0);
 
-  // Track lesson start and fetch lesson data
+  // Check lesson progress on load
   useEffect(() => {
-    // Call startLesson when the component mounts
+    async function checkLessonProgress() {
+      try {
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          console.error('NEXT_PUBLIC_API_URL is not defined');
+          return;
+        }
+
+        // Ensure the URL is properly formatted
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL.endsWith('/')
+          ? process.env.NEXT_PUBLIC_API_URL.slice(0, -1)
+          : process.env.NEXT_PUBLIC_API_URL;
+
+        const url = `${apiUrl}/me/progress?lessonId=${lessonId}`;
+        console.log('Fetching from URL:', url);
+        
+        const res = await fetch(url, { 
+          credentials: "include",
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Failed to fetch progress:', {
+            status: res.status,
+            statusText: res.statusText,
+            error: errorText
+          });
+          return;
+        }
+
+        const data = await res.json();
+        console.log('Progress check response:', data);
+
+        // Handle different possible response structures
+        const status = data?.data?.status || data?.status;
+        console.log('Extracted status:', status);
+
+        if (status && status.toUpperCase() === 'COMPLETED') {
+          console.log('Setting lesson as completed');
+          setIsCompleted(true);
+        } else {
+          console.log('Lesson is not completed yet');
+          setIsCompleted(false);
+        }
+      } catch (error) {
+        console.error('Error checking lesson progress:', error);
+      }
+    }
+
     startLesson(lessonId as string).catch(console.error);
+    checkLessonProgress();
 
     async function fetchLesson() {
       try {
@@ -70,10 +123,11 @@ export default function LessonDetailPage() {
         setLoading(false);
       }
     }
+
     fetchLesson();
   }, [slug, moduleSlug, lessonId]);
 
-  // Make in-content links clickable
+  // Make links clickable inside lesson content
   useEffect(() => {
     if (!lesson?.description) return;
     const container = document.querySelector(".prose");
@@ -84,46 +138,51 @@ export default function LessonDetailPage() {
       const el = link as HTMLAnchorElement;
       if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
         el.setAttribute("href", el.textContent.trim());
-        el.setAttribute("target", "_blank");
-        el.setAttribute("rel", "noopener noreferrer");
       }
       el.setAttribute("target", "_blank");
       el.setAttribute("rel", "noopener noreferrer");
     });
   }, [lesson]);
 
-  // Track time spent on lesson
+  // Track time on lesson
   useEffect(() => {
     if (!lessonId) return;
 
-    const TRACKING_INTERVAL = 15000; // 15 seconds
+    const TRACKING_INTERVAL = 15000;
 
     const intervalId = setInterval(() => {
-      totalTimeRef.current += 15; // Increment total time by 15 seconds
-      trackTime(lessonId as string, 15).catch((error) => {
-        console.error("Error tracking lesson time:", error);
-      });
+      totalTimeRef.current += 15;
+      trackTime(lessonId as string, 15).catch(console.error);
     }, TRACKING_INTERVAL);
 
-    // Clean up interval on unmount
     return () => {
       clearInterval(intervalId);
-      // Send final time update before unmounting
       trackTime(lessonId as string, 15).catch(console.error);
     };
   }, [lessonId]);
 
-  const handleCompleteLesson = async () => {
-    if (!lessonId) return;
-
+  const handleComplete = async () => {
     try {
-      setIsCompleting(true);
-      await completeLesson(lessonId as string, totalTimeRef.current);
-      // Optional: Add any success feedback here
+      const response = await completeLesson(lessonId as string);
+      console.log('Complete lesson response:', response);
+
+      // Check for success in different possible response structures
+      const isSuccess = 
+        response?.status === 200 || 
+        response?.satus === 200 ||
+        response?.data?.status?.toUpperCase() === "COMPLETED" ||
+        response?.status?.toUpperCase() === "COMPLETED";
+
+      if (isSuccess) {
+        setIsCompleted(true);
+        toast.success("Lesson completed! Now take the quiz.");
+      } else {
+        console.error('Unexpected response format:', response);
+        toast.error("Failed to complete lesson: Unexpected response format");
+      }
     } catch (error) {
-      console.error("Error completing lesson:", error);
-    } finally {
-      setIsCompleting(false);
+      console.error('Error completing lesson:', error);
+      toast.error("Failed to complete lesson. Please try again.");
     }
   };
 
@@ -131,15 +190,12 @@ export default function LessonDetailPage() {
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
-      {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
-          {/* Breadcrumb */}
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -147,12 +203,14 @@ export default function LessonDetailPage() {
                   Learning Tracks
                 </BreadcrumbLink>
               </BreadcrumbItem>
+
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
                   Track
                 </BreadcrumbLink>
               </BreadcrumbItem>
+
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink
@@ -161,6 +219,7 @@ export default function LessonDetailPage() {
                   Module
                 </BreadcrumbLink>
               </BreadcrumbItem>
+
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>Lesson</BreadcrumbPage>
@@ -175,38 +234,44 @@ export default function LessonDetailPage() {
             <p className={textLight}>Lesson not found.</p>
           ) : (
             <div className="space-y-6">
-              {/* Lesson Info */}
+              {/* Lesson Content */}
               <div className={`${cardBg} shadow rounded-lg p-6`}>
                 <h1 className={`text-2xl font-bold ${textDark} mb-2`}>
                   {lesson.title}
                 </h1>
+
                 <p className={`text-sm ${textLight} mb-4`}>
                   Estimated time: {lesson.estimated_time}
                 </p>
+
                 <div className="prose dark:prose-invert max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
                 </div>
 
                 {/* Completion Button */}
-                <div className="flex justify-end mt-6">
+                <div className="flex justify-end pt-4">
                   <button
-                    onClick={handleCompleteLesson}
-                    disabled={isCompleting}
-                    className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center cursor-pointer`}
+                    onClick={handleComplete}
+                    disabled={isCompleted}
+                    className={`px-4 py-2 rounded-lg w-full sm:w-auto text-white transition-all ${
+                      isCompleted
+                        ? "opacity-50 cursor-not-allowed bg-green-600"
+                        : "bg-[#72a210] hover:bg-[#5c880d] cursor-pointer"
+                    }`}
                   >
-                    {isCompleting ? "Completing..." : "Mark as Completed"}
+                    {isCompleted ? "Completed ✓" : "Mark as Complete"}
                   </button>
                 </div>
               </div>
 
-
-              {/* --- QUIZ SECTION --- */}
+              {/* QUIZ SECTION */}
               <div
                 className={`${cardBg} shadow rounded-lg p-3 sm:p-6 flex flex-col sm:flex-row justify-between items-center`}
               >
                 <p className={`${textMedium} mb-3 sm:mb-0 sm:p-[10px]`}>
                   Test your knowledge before proceeding to labs.
                 </p>
+
                 <Link
                   href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
                   className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
@@ -218,7 +283,6 @@ export default function LessonDetailPage() {
           )}
         </main>
 
-        {/* Bottom Navigation */}
         <Nav />
       </div>
     </div>
