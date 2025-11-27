@@ -56,56 +56,58 @@ export default function LessonDetailPage() {
   // Check lesson progress on load
   useEffect(() => {
     async function checkLessonProgress() {
-      try {
-        if (!process.env.NEXT_PUBLIC_API_URL) {
-          console.error('NEXT_PUBLIC_API_URL is not defined');
-          return;
-        }
-
-        // Ensure the URL is properly formatted
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL.endsWith('/')
-          ? process.env.NEXT_PUBLIC_API_URL.slice(0, -1)
-          : process.env.NEXT_PUBLIC_API_URL;
-
-        const url = `${apiUrl}/me/progress?lessonId=${lessonId}`;
-        console.log('Fetching from URL:', url);
-        
-        const res = await fetch(url, { 
-          credentials: "include",
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error('Failed to fetch progress:', {
-            status: res.status,
-            statusText: res.statusText,
-            error: errorText
-          });
-          return;
-        }
-
-        const data = await res.json();
-        console.log('Progress check response:', data);
-
-        // Handle different possible response structures
-        const status = data?.data?.status || data?.status;
-        console.log('Extracted status:', status);
-
-        if (status && status.toUpperCase() === 'COMPLETED') {
-          console.log('Setting lesson as completed');
-          setIsCompleted(true);
-        } else {
-          console.log('Lesson is not completed yet');
-          setIsCompleted(false);
-        }
-      } catch (error) {
-        console.error('Error checking lesson progress:', error);
-      }
+  try {
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      console.error("NEXT_PUBLIC_API_URL is not defined");
+      return;
     }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL.endsWith("/")
+      ? process.env.NEXT_PUBLIC_API_URL.slice(0, -1)
+      : process.env.NEXT_PUBLIC_API_URL;
+
+    const url = `${apiUrl}/me/progress`;
+    console.log("Fetching from URL:", url);
+
+    const res = await fetch(url, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Failed to fetch progress:", {
+        status: res.status,
+        statusText: res.statusText,
+        error: errorText,
+      });
+      return;
+    }
+
+    const data = await res.json();
+    console.log("Progress response:", data);
+
+    const progressList = data?.data || [];
+
+    const progressForLesson = progressList.find(
+      (p: any) => p.lessonId === lessonId
+    );
+
+    if (progressForLesson?.status === "COMPLETED") {
+      console.log("Lesson is completed");
+      setIsCompleted(true);
+    } else {
+      console.log("Lesson is not completed");
+      setIsCompleted(false);
+    }
+  } catch (error) {
+    console.error("Error checking lesson progress:", error);
+  }
+}
+
 
     startLesson(lessonId as string).catch(console.error);
     checkLessonProgress();

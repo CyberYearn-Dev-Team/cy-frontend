@@ -190,6 +190,8 @@ export default function LearnerDashboard() {
 
         // LEVEL: every 100 XP = 1 level
         setLevel(Math.floor(totalXp / 100));
+// setLevel(parseFloat((totalXp / 100).toFixed(2)));
+
 
         // STREAK (current days)
         setStreak(res.data.streak?.currentDays || 0);
@@ -334,7 +336,7 @@ export default function LearnerDashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-4">
                           <p className={`text-sm font-medium ${textMedium}`}>
-                            Level
+                            Level (XP)
                           </p>
                           <p className={`text-2xl font-bold ${textDark}`}>
                             {level}

@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FileText, Clock, RefreshCw } from "lucide-react"; // Import Clock and RefreshCw
+import { submitQuiz } from "@/lib/services/quizService";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -102,7 +103,7 @@ export default function QuizzesPage() {
         };
 
         const mapped: Quiz[] = (data.quizzes || []).map((q: any, idx: number) => ({
-          id: idx + 1,
+  id: q.id, // ✅ Keep Directus UUID
           title: q.title ?? "Untitled Quiz",
           description: q.description ?? "",
           questions: Array.isArray(q.questions)
@@ -141,7 +142,7 @@ export default function QuizzesPage() {
     setAnswers((prev) => ({ ...prev, [key]: option }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
 
     const allQuestions = quizzes.flatMap((quiz) =>
@@ -151,29 +152,39 @@ export default function QuizzesPage() {
         options: q.options,
         answer: q.answer,
         selected: answers[`${quiz.id}-${idx}`] || "",
-        // --- CHANGE START ---
-        // Pass the hint along to the results page
         hint: q.hint,
-        // --- CHANGE END ---
       }))
     );
-    
-    // ... (rest of the handleSubmit function remains the same)
+
     const correctCount = allQuestions.filter(q => q.selected === q.answer).length;
     const totalQuestions = allQuestions.length;
     const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
-    const passingScore = currentQuiz?.passing_score ?? 0;
+    const passingScore = currentQuiz?.passing_score ?? 70; // Default to 70% if not specified
     const passed = score >= passingScore;
     const xp = correctCount * 10;
-    
-    if (score === 100) {
+    const allCorrect = correctCount === totalQuestions;
+
+    // Show appropriate toast message
+    if (allCorrect) {
       toast.success("Perfect score! You aced the quiz!");
-    } else if (passed && score < 100) {
-      toast.warning("Good job! You passed, but there’s room for improvement.");
+      
+      // Only submit to backend if all answers are correct
+      try {
+        const result = await submitQuiz(quizzes[0].id.toString(), 100, true);
+        if (result.xp) {
+          toast.success(`+${result.xp} XP earned!`, { duration: 5000 });
+        }
+      } catch (error) {
+        console.error("Failed to submit quiz results:", error);
+        toast.error("Failed to save your perfect score. Your progress has been saved locally.");
+      }
+    } else if (passed) {
+      toast.warning("Good job! You passed, but there's room for improvement.");
     } else {
-      toast.error("Quiz attempt failed, try again.");
+      toast.error("Quiz attempt failed. Review your answers and try again.");
     }
     
+    // Always redirect to results page
     router.push(
       `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
         JSON.stringify(allQuestions)
