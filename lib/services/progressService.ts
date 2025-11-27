@@ -27,7 +27,7 @@ export async function trackTime(lessonId: string, delta: number) {
 export async function completeLesson(lessonId: string) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me/progress`, {
-      method: "POST",
+      method: "GET",
       credentials: "include",
       headers: {
         "Content-Type": "application/json"
