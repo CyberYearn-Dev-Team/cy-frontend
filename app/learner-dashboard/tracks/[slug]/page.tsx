@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { getProgressSummary } from "@/lib/services/progressSummary";
+import { toast } from "sonner";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -42,6 +44,13 @@ interface Module {
   order?: number;
 }
 
+interface ProgressRow {
+  trackId: number;
+  title: string;
+  progress: number;
+  // Add other properties that might exist on the progress row
+}
+
 interface Track {
   id: number;
   title: string;
@@ -55,9 +64,11 @@ interface Track {
   badges?: string[];
   prerequisites?: string[];
   modules: Module[];
+  progress?: number; // 0-100, represents overall track completion percentage
 }
 
 export default function TrackDetailPage() {
+  const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
   const [track, setTrack] = useState<Track | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,13 +78,45 @@ export default function TrackDetailPage() {
   const validModules = (track?.modules || []).filter(
     (m) => m != null
   ) as Module[];
-  const moduleCount = validModules.length;
-  const totalProgressSum = validModules.reduce(
-    (sum, m) => sum + (m?.progress ?? 0),
-    0
-  );
-  const overallPercent =
-    moduleCount > 0 ? Math.round(totalProgressSum / moduleCount) : 0;
+  
+const moduleCount = validModules.length;
+const overallPercent = track?.progress ?? 0;
+
+// Calculate total progress sum from all modules
+const totalProgressSum = validModules.reduce(
+  (sum, module) => sum + (module.progress || 0),
+  0
+);
+
+
+useEffect(() => {
+  async function loadProgress() {
+    if (!track?.title) return;
+
+    try {
+      const progressList = await getProgressSummary() as ProgressRow[];
+
+      const progressRow = progressList.find(
+        (p: ProgressRow) => p.title === track.title
+      );
+
+      if (!progressRow) return;
+
+      setTrack(prev => prev ? {
+        ...prev,
+        progress: progressRow.progress
+      } : prev);
+    } catch (error) {
+      console.error("progress error", error);
+    }
+  }
+
+  loadProgress();
+}, [track?.title]);
+
+
+
+
 
   useEffect(() => {
     async function fetchTrack() {
@@ -89,6 +132,25 @@ export default function TrackDetailPage() {
     }
     fetchTrack();
   }, [slug]);
+
+// ALL about api call to stert module 
+async function startModule(moduleId: string) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modules/${moduleId}/start`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+    console.log("Start response:", data);
+
+  } catch (err) {
+    console.error("Start module error:", err);
+  }
+}
+
+
 
   return (
     // Applied dark mode background
@@ -255,16 +317,29 @@ export default function TrackDetailPage() {
                             </div>
                           </div>
 
-                          <Link
-                            href={`/learner-dashboard/tracks/${track.slug}/modules/${module.slug}`}
-                            className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
-                          >
-                            {module.status === "Completed"
-                              ? "Review"
-                              : module.status === "In Progress"
-                              ? "Continue"
-                              : "Start Module"}
-                          </Link>
+
+<button
+  onClick={async () => {
+    try {
+      await startModule(module.id.toString());
+      toast.success(`Starting module: ${module.title}`);
+    } catch (error) {
+      console.error(error);
+    }
+
+    router.push(`/learner-dashboard/tracks/${track.slug}/modules/${module.slug}`);
+  }}
+  className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center cursor-pointer`}
+>
+  {module.status === "Completed"
+    ? "Review"
+    : module.status === "In Progress"
+    ? "Continue"
+    : "Start Module"}
+</button>
+
+
+
                         </div>
                       ))}
                     </div>

@@ -332,3 +332,366 @@ export default function LeaderboardPage() {
     </div>
   );
 }
+
+
+
+
+
+// "use client";
+
+// import React, { useState, useMemo, useEffect } from "react";
+// import {
+//   FaSortAlphaDown,
+//   FaSortAlphaUp,
+//   FaSortNumericDown,
+//   FaSortNumericUp,
+// } from "react-icons/fa";
+// import Sidebar from "@/components/ui/learner-sidebar";
+// import Header from "@/components/ui/learner-header";
+// import Nav from "@/components/ui/learner-nav";
+// import LearnerFooter from "@/components/ui/learner-footer";
+
+// interface Learner {
+//   id: number;
+//   name: string;
+//   xp: number;
+//   rank: number;
+//   joined: string;
+// }
+
+// type SortKey = keyof Learner;
+// type SortDirection = "asc" | "desc";
+
+// function getInitials(name: string) {
+//   const parts = name.trim().split(" ");
+//   return parts.length === 1
+//     ? parts[0][0].toUpperCase()
+//     : (parts[0][0] + parts[1][0]).toUpperCase();
+// }
+
+// const trophyImages: Record<number, string> = {
+//   1: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%201.png",
+//   2: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%202.png",
+//   3: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%203.png",
+// };
+
+// export default function LeaderboardPage() {
+//   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const [filter, setFilter] = useState("all");
+//   const [sortKey, setSortKey] = useState<SortKey>("rank");
+//   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+//   // ✨ STATE THAT WILL HOLD REAL API DATA
+//   const [topLearners, setTopLearners] = useState<Learner[]>([]);
+//   const [allLearners, setAllLearners] = useState<Learner[]>([]);
+
+//   // 🚀 Fetch Users From Backend
+//   useEffect(() => {
+//     async function fetchUsers() {
+//       try {
+//         const res = await fetch(
+//           `${process.env.NEXT_PUBLIC_API_URL}/admin/users`
+//         );
+
+//         const json = await res.json();
+//         if (json.status !== 200) {
+//           console.error("API Error:", json);
+//           return;
+//         }
+
+//         const users = json.data;
+
+//         const learners: Learner[] = users.map((u: any, index: number) => ({
+//           id: index + 1,
+//           name: u.username || u.email.split("@")[0],
+//           xp: u.totalXp ?? 0,
+//           rank: index + 1,
+//           joined: new Date(u.createdAt).toLocaleDateString("en-US", {
+//             month: "short",
+//             day: "numeric",
+//             year: "numeric",
+//           }),
+//         }));
+
+//         // Sort by XP
+//         const sorted = learners.sort((a, b) => b.xp - a.xp);
+
+//         setTopLearners(sorted.slice(0, 3));
+//         setAllLearners(sorted.slice(3));
+//       } catch (err) {
+//         console.error("Fetch Failed:", err);
+//       }
+//     }
+
+//     fetchUsers();
+//   }, []);
+
+//   // Sorting Logic
+//   const handleSort = (key: SortKey) => {
+//     if (sortKey === key) {
+//       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+//     } else {
+//       setSortKey(key);
+//       setSortDirection(key === "xp" || key === "rank" ? "desc" : "asc");
+//     }
+//   };
+
+//   const processedLearners = useMemo(() => {
+//     let list = [...allLearners];
+
+//     list = list.filter((learner) => {
+//       if (filter === "7days") return learner.rank <= 7;
+//       if (filter === "30days") return learner.rank <= 15;
+//       return true;
+//     });
+
+//     list.sort((a, b) => {
+//       const aValue = a[sortKey];
+//       const bValue = b[sortKey];
+//       let comparison = 0;
+
+//       if (typeof aValue === "number" && typeof bValue === "number") {
+//         comparison = aValue - bValue;
+//       } else if (sortKey === "name") {
+//         comparison = String(aValue).localeCompare(String(bValue));
+//       } else if (sortKey === "joined") {
+//         const aTime = new Date(String(aValue)).getTime();
+//         const bTime = new Date(String(bValue)).getTime();
+//         comparison = aTime - bTime;
+//       }
+
+//       return sortDirection === "asc" ? comparison : comparison * -1;
+//     });
+
+//     return list;
+//   }, [allLearners, filter, sortKey, sortDirection]);
+
+//   const SortIcon: React.FC<{ columnKey: SortKey }> = ({ columnKey }) => {
+//     if (sortKey !== columnKey) return null;
+//     if (columnKey === "name") {
+//       return sortDirection === "asc" ? (
+//         <FaSortAlphaUp className="ml-1 inline-block text-[#507800]" />
+//       ) : (
+//         <FaSortAlphaDown className="ml-1 inline-block text-[#507800]" />
+//       );
+//     }
+//     return sortDirection === "asc" ? (
+//       <FaSortNumericUp className="ml-1 inline-block text-[#507800]" />
+//     ) : (
+//       <FaSortNumericDown className="ml-1 inline-block text-[#507800]" />
+//     );
+//   };
+
+//   // UI SECTION (unchanged)
+//   return (
+//     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+//       <style jsx>{`
+//         .custom-scrollbar::-webkit-scrollbar {
+//           width: 8px;
+//         }
+//         .custom-scrollbar::-webkit-scrollbar-track {
+//           background: #f1f1f1;
+//         }
+//         .custom-scrollbar::-webkit-scrollbar-thumb {
+//           background: #72a210;
+//           border-radius: 4px;
+//         }
+//         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+//           background: #507800;
+//         }
+//         .dark .custom-scrollbar::-webkit-scrollbar-track {
+//           background: #1f2937;
+//         }
+//         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+//           background: #a3e635;
+//         }
+//         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+//           background: #84cc16;
+//         }
+//         @media (max-width: 640px) {
+//           .custom-scrollbar::-webkit-scrollbar {
+//             display: none;
+//           }
+//           .custom-scrollbar {
+//             scrollbar-width: none;
+//             -ms-overflow-style: none;
+//           }
+//         }
+//       `}</style>
+
+//       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+//       <div className="flex-1 flex flex-col overflow-hidden">
+//         <Header setSidebarOpen={setSidebarOpen} />
+
+//         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
+//           <main className="p-4 sm:p-6 lg:p-8">
+//             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
+//               Leaderboard
+//             </h1>
+
+//             {/* Top 3 */}
+//             <div className="w-full overflow-x-auto overflow-y-visible py-6">
+//               <div className="flex justify-center items-end gap-6 mb-10 max-w-6xl mx-auto min-w-max px-4">
+//                 {topLearners.map((learner) => (
+//                   <div
+//                     key={learner.id}
+//                     className={`relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 ${
+//                       learner.rank === 1
+//                         ? "bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80"
+//                         : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72"
+//                     } ${learner.rank === 2 || learner.rank === 3 ? "translate-y-8" : ""}`}
+//                   >
+//                     {trophyImages[learner.rank] && (
+//                       <img
+//                         src={trophyImages[learner.rank]}
+//                         alt={`Rank ${learner.rank} trophy`}
+//                         className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+//                       />
+//                     )}
+
+//                     <div
+//                       className={`rounded-full flex items-center justify-center shadow mb-4 ${
+//                         learner.rank === 1
+//                           ? "w-24 h-24 md:w-28 md:h-28 bg-white/20 text-white text-3xl md:text-4xl font-bold"
+//                           : "w-20 h-20 md:w-24 md:h-24 bg-[#72a210]/10 dark:bg-[#72a210]/20 text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold"
+//                       }`}
+//                     >
+//                       {getInitials(learner.name)}
+//                     </div>
+
+//                     <h3
+//                       className={`font-semibold ${
+//                         learner.rank === 1
+//                           ? "text-lg"
+//                           : "text-lg md:text-xl text-gray-800 dark:text-gray-200"
+//                       }`}
+//                     >
+//                       {learner.name.split(" ")[0]}
+//                     </h3>
+
+//                     <p
+//                       className={`mt-2 font-bold ${
+//                         learner.rank === 1
+//                           ? "text-white text-xl md:text-2xl"
+//                           : "text-[#507800] dark:text-[#a3e635] text-base md:text-lg"
+//                       }`}
+//                     >
+//                       {learner.xp.toLocaleString()} XP
+//                     </p>
+
+//                     <div
+//                       className={`mt-3 flex items-center justify-center font-bold ${
+//                         learner.rank === 1
+//                           ? "w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl"
+//                           : "w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white"
+//                       }`}
+//                     >
+//                       {learner.rank}
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+
+//             {/* Divider */}
+//             <div className="max-w-6xl mx-auto mb-6">
+//               <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+//             </div>
+
+//             {/* Filters */}
+//             <div className="max-w-6xl mx-auto mb-6 flex gap-3 justify-end">
+//               {["7days", "30days", "all"].map((key) => (
+//                 <button
+//                   key={key}
+//                   className={`px-3 py-1 text-sm md:px-4 md:py-2 rounded-lg border cursor-pointer ${
+//                     filter === key
+//                       ? "bg-[#72a210] text-white border-[#72a210]"
+//                       : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+//                   }`}
+//                   onClick={() => setFilter(key)}
+//                 >
+//                   {key === "7days"
+//                     ? "7 Days"
+//                     : key === "30days"
+//                     ? "30 Days"
+//                     : "All Time"}
+//                 </button>
+//               ))}
+//             </div>
+
+//             {/* Table */}
+//             <div className="max-w-6xl mx-auto overflow-x-auto overflow-y-hidden rounded-xl">
+//               <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
+//                 <table className="min-w-max w-full bg-white dark:bg-gray-900 shadow rounded-xl">
+//                   <thead>
+//                     <tr className="text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-700">
+//                       <th
+//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+//                         onClick={() => handleSort("rank")}
+//                       >
+//                         Rank <SortIcon columnKey="rank" />
+//                       </th>
+//                       <th
+//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-[150px] whitespace-nowrap"
+//                         onClick={() => handleSort("name")}
+//                       >
+//                         Learner <SortIcon columnKey="name" />
+//                       </th>
+//                       <th
+//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+//                         onClick={() => handleSort("xp")}
+//                       >
+//                         XP Earned <SortIcon columnKey="xp" />
+//                       </th>
+//                       <th
+//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+//                         onClick={() => handleSort("joined")}
+//                       >
+//                         Joined <SortIcon columnKey="joined" />
+//                       </th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {processedLearners.map((learner, index) => (
+//                       <tr
+//                         key={learner.id}
+//                         className="border-b border-gray-100 dark:border-gray-700 hover:bg-[#72a210]/10 dark:hover:bg-[#72a210]/20 transition-colors cursor-pointer"
+//                       >
+//                         <td className="py-4 px-6 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
+//                           {sortKey === "rank" ? learner.rank : index + 1}
+//                         </td>
+
+//                         <td className="py-4 px-6 whitespace-nowrap">
+//                           <div className="flex items-center gap-3">
+//                             <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] font-bold flex-shrink-0">
+//                               {getInitials(learner.name)}
+//                             </div>
+//                             <span className="font-medium text-gray-900 dark:text-gray-100">
+//                               {learner.name}
+//                             </span>
+//                           </div>
+//                         </td>
+
+//                         <td className="py-4 px-6 font-semibold text-[#507800] dark:text-[#a3e635] whitespace-nowrap">
+//                           {learner.xp.toLocaleString()} XP
+//                         </td>
+
+//                         <td className="py-4 px-6 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+//                           {learner.joined}
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               </div>
+//             </div>
+//           </main>
+
+//           <Nav />
+//           <LearnerFooter />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

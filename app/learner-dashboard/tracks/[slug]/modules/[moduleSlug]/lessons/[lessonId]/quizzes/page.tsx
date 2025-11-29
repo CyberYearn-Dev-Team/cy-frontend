@@ -161,7 +161,7 @@ export default function QuizzesPage() {
     const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
     const passingScore = currentQuiz?.passing_score ?? 70; // Default to 70% if not specified
     const passed = score >= passingScore;
-    const xp = correctCount * 10;
+    const xp = 35; // Fixed 35 XP for passing the quiz
     const allCorrect = correctCount === totalQuestions;
 
     // Show appropriate toast message

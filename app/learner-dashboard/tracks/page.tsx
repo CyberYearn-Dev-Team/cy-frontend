@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getProgressSummary } from "@/lib/services/progressSummary";
+import { toast } from "sonner";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -28,6 +31,7 @@ type TrackLevel =
   | "advanced"
 
 interface Track {
+  id?: number;
   slug: string;
   title: string;
   description: string;
@@ -62,6 +66,7 @@ const Badge = ({ children }: { children: React.ReactNode }) => (
 
 // Track Card
 const TrackCard = ({
+  id,
   title,
   slug,
   description,
@@ -73,6 +78,52 @@ const TrackCard = ({
   buttonText = "View Track",
   thumbnail,
 }: Track) => {
+const router = useRouter();
+
+const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined, trackSlug: string) => {
+  e.preventDefault();
+
+  if (!trackId) {
+    toast.error('Invalid track ID');
+    return;
+  }
+
+  const toastId = toast.loading('Loading track...');
+
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (!apiUrl) throw new Error('API URL is not configured');
+
+    const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    toast.success(data.message || 'Track loaded successfully!', { id: toastId });
+
+    setTimeout(() => {
+      router.push(`/learner-dashboard/tracks/${trackSlug}`);
+    }, 1000);
+
+  } catch (error) {
+    console.error('Error starting track:', error);
+    toast.error(error instanceof Error ? error.message : 'Failed to load track', { id: toastId });
+
+    setTimeout(() => {
+      router.push(`/learner-dashboard/tracks/${trackSlug}`);
+    }, 1000);
+  }
+};
+
+
+
+
   const imageUrl = thumbnail
     ? `${process.env.DIRECTUS_URL || "https://cy-directus.onrender.com"}/assets/${
         typeof thumbnail === "string" ? thumbnail : thumbnail.id
@@ -101,11 +152,12 @@ const TrackCard = ({
             <h3 className="text-lg font-semibold">{title}</h3>
             <p className="text-sm text-gray-200">{topic}</p>
           </div>
-          <Link href={`/learner-dashboard/tracks/${slug}`} passHref>
-            <button className="bg-[#5a850d] text-white text-sm px-4 py-2 rounded-full hover:bg-[#72a210] focus:ring-2 focus:ring-[#72a210] transition cursor-pointer">
-              {buttonText}
-            </button>
-          </Link>
+          <button 
+            onClick={(e) => handleViewTrack(e, id, slug)}
+            className="bg-[#5a850d] text-white text-sm px-4 py-2 rounded-full hover:bg-[#72a210] focus:ring-2 focus:ring-[#72a210] transition cursor-pointer"
+          >
+            {buttonText}
+          </button>
         </div>
       </div>
 
@@ -145,42 +197,63 @@ export default function TracksPage() {
   const [loading, setLoading] = useState(true);
   const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/tracks");
-        if (!res.ok) throw new Error(`API failed: ${res.status}`);
-        const data = await res.json();
 
-        const tracksData =
-          data?.data || data?.tracks || (Array.isArray(data) ? data : []);
+useEffect(() => {
+  (async () => {
+    try {
+      const res = await fetch("/api/tracks");
+      if (!res.ok) throw new Error(`API failed: ${res.status}`);
+      const directus = await res.json();
 
-        const safe = (v: any): Track => ({
-          title: v.title || "Untitled",
-          slug: v.slug || "",
-          description: v.description || "",
-          level: v.level || "beginner",
-          topic: v.topic || "General",
-          modules: Array.isArray(v.modules)
-            ? v.modules.length
-            : typeof v.modules === "number"
-            ? v.modules
-            : 0,
-          duration: v.duration || "",
-          progress: typeof v.progress === "number" ? v.progress : 0,
-          thumbnail: v.thumbnail || null,
-          buttonText: "View Track",
-        });
+      const tracksData =
+        directus?.data || directus?.tracks || (Array.isArray(directus) ? directus : []);
 
-        setTracksFromCMS(tracksData.map(safe));
-      } catch (err) {
-        console.error(err);
-        setTracksFromCMS([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+      const safe = (v: any): Track => ({
+        id: v.id,
+        title: v.title || "Untitled",
+        slug: v.slug || "",
+        description: v.description || "",
+        level: v.level || "beginner",
+        topic: v.topic || "General",
+        modules: Array.isArray(v.modules)
+          ? v.modules.length
+          : typeof v.modules === "number"
+          ? v.modules
+          : 0,
+        duration: v.duration || "",
+        progress: 0,
+        thumbnail: v.thumbnail || null,
+        buttonText: "View Track",
+      });
+
+      // ***************************
+      // Fetch progress summary here!
+      // ***************************
+      const summary = await getProgressSummary();
+
+      // merge
+      const merged = tracksData.map((track: any) => {
+        const prog = summary.find((t: any) => t.trackId === track.id);
+
+        return {
+          ...safe(track),
+          progress: prog?.progress ?? 0,
+        };
+      });
+
+      setTracksFromCMS(merged);
+
+    } catch (err) {
+      console.error(err);
+      setTracksFromCMS([]);
+    } finally {
+      setLoading(false);
+    }
+  })();
+}, []);
+
+
+
 
   // Generate unique levels and topics from CMS
   const levels = React.useMemo(() => {

@@ -4,8 +4,8 @@ export async function getQuiz(lessonId: string) {
   }).then(res => res.json());
 }
 
-export async function submitQuiz(quizId: string, score: number, passed: boolean) {
-  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${quizId}/submit`, {
+export async function submitQuiz(lessonId: string, score: number, passed: boolean) {
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/submit`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

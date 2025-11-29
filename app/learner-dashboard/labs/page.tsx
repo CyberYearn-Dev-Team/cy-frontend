@@ -163,7 +163,7 @@ export default function LabGuidesPage() {
                             {truncateDescription(lab.description, 300)}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            <span className="font-semibold uppercase">{lab.levels}</span> • {lab.time} • <span className="font-semibold text-[#72a210]">{lab.xp} XP</span>
+                            • <span className="font-semibold uppercase">{lab.levels}</span> •
                           </p>
                         </div>
 
@@ -195,7 +195,7 @@ export default function LabGuidesPage() {
                           {/* Start Button - w-full on mobile */}
                           <Link href={`/learner-dashboard/labs/${lab.id}`} className="w-full sm:w-auto">
                             <button className="flex items-center justify-center w-full gap-1 px-4 sm:px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition cursor-pointer">
-                              Start Lab Guied
+                              Start Lab Guide
                             </button>
                           </Link>
                         </div>

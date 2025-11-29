@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
@@ -59,6 +60,7 @@ function truncateHTMLContent(html: string, wordLimit: number) {
 }
 
 export default function ModuleDetailPage() {
+  const router = useRouter();
   const { slug, moduleSlug } = useParams<{
     slug: string;
     moduleSlug: string;
@@ -83,6 +85,21 @@ export default function ModuleDetailPage() {
     }
     fetchModule();
   }, [slug, moduleSlug]);
+
+// For backend api to call start lesson 
+  async function startLesson(lessonId: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/start`,
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  return res.json();
+}
+
+
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -162,15 +179,32 @@ export default function ModuleDetailPage() {
                           </span>
                         </div>
 
-                        <Link
-  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`}
-  className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center"
+<button
+  className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center cursor-pointer"
   style={{ backgroundColor: primary }}
   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = primaryDarker)}
   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primary)}
+  onClick={async () => {
+    try {
+      await startLesson(lesson.id.toString());
+      toast.success('Lesson started!', {
+        description: 'You can now begin your lesson.',
+      });
+    } catch (error) {
+      console.error("Lesson start error:", error);
+      toast.error('Failed to start lesson', {
+        description: 'Please try again or contact support if the issue persists.',
+      });
+      return; // Don't redirect if there was an error
+    }
+
+    router.push(`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`);
+  }}
 >
   Start Lesson
-</Link>
+</button>
+
+
 
                       </div>
                     ))}

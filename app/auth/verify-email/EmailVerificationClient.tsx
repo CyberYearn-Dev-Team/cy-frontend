@@ -83,23 +83,27 @@ export default function EmailVerificationClient() {
           return;
         }
 
-        if (data.status === 200 && data.token) {
-          // Save token to localStorage
-          localStorage.setItem("token", data.token);
-          
-          // Remove pending registration
-          localStorage.removeItem("pendingRegistration");
-          
-          // Show success message
-          toast.success(data.message || "Account verified successfully!");
-          
-          // Redirect to dashboard
-          setTimeout(() => router.push("/learner-dashboard/dashboard"), 1000);
-        } else {
-          // Handle other successful responses without token
-          toast.success("Verification completed successfully!");
-          router.push("/auth/login");
-        }
+       if (data.status === 200 && data.token) {
+  // Store token in HTTP-only cookie via Next.js API route
+  await fetch("/api/v1/auth/set-cookie", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: data.token })
+  });
+
+  // Remove pending registration
+  localStorage.removeItem("pendingRegistration");
+
+  // Show success message
+  toast.success(data.message || "Account verified successfully!");
+
+  // Redirect to dashboard (no delay required, but you can keep it)
+  setTimeout(() => router.push("/learner-dashboard/dashboard"), 800);
+} else {
+  toast.success("Verification completed successfully!");
+  router.push("/auth/login");
+}
+
       } else {
         const error = await response.json();
         throw new Error(error.message || "Verification failed");
