@@ -197,7 +197,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Trophy, Lock } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
@@ -257,15 +257,7 @@ export default function AchievementsPage() {
         const json = await res.json();
 
         if (json.data) {
-          const mapped = json.data.map((badge: any, index: number) => ({
-            id: badge.id,
-            name: badge.name,
-            description: badge.description,
-            image: `https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%20${index + 1}.png`,
-            unlocked: false, // TODO: update with actual user data
-          }));
-
-          setAchievements(mapped);
+          setAchievements(json.data); // use backend data as-is
           setError(null);
         } else {
           throw new Error("Invalid data from server");
@@ -296,7 +288,11 @@ export default function AchievementsPage() {
                 icon={<Trophy className="h-5 w-5 text-[#72a210]" />}
               />
               <CardContent>
-                {loading && <p className="text-gray-600 dark:text-gray-400">Loading achievements...</p>}
+                {loading && (
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Loading achievements...
+                  </p>
+                )}
 
                 {error && (
                   <p className="text-red-600 dark:text-red-400">
@@ -309,29 +305,17 @@ export default function AchievementsPage() {
                     {achievements.map((a) => (
                       <div
                         key={a.id}
-                        className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
-                          bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300
-                          hover:scale-105 hover:shadow-lg cursor-pointer
-                          ${!a.unlocked ? "opacity-60 grayscale hover:grayscale-0" : ""}`}
+                        className="flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210] bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer"
                       >
-                        <img
-                          src={a.image}
-                          alt={a.name}
-                          className={`w-22 h-20 transition-all duration-300 ${
-                            !a.unlocked ? "grayscale" : ""
-                          }`}
-                        />
-                        {!a.unlocked && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
-                            <Lock className="h-8 w-8 text-white opacity-80" />
-                          </div>
-                        )}
                         <p className="font-semibold text-gray-900 dark:text-gray-100 mt-3 text-base">
                           {a.name}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {a.description}
                         </p>
+                        <pre className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-left w-full overflow-x-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                          {JSON.stringify(a.criteriaJson, null, 2)}
+                        </pre>
                       </div>
                     ))}
                   </div>

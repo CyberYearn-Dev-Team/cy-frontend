@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, BookOpen, BarChart3, Trophy, User } from "lucide-react";
+import { LayoutGrid, BookOpen, BarChart3, Award, Settings } from "lucide-react";
 
 export default function UserNav() {
   const pathname = usePathname();
@@ -10,9 +10,9 @@ export default function UserNav() {
   const navItems = [
     { name: "Dashboard", href: "/learner-dashboard/dashboard", icon: LayoutGrid },
     { name: "Tracks", href: "/learner-dashboard/tracks", icon: BookOpen },
+    { name: "Badges", href: "/learner-dashboard/achievements", icon: Award },
     { name: "Progress", href: "/learner-dashboard/progress", icon: BarChart3 },
-    { name: "Leaderboard", href: "/learner-dashboard/leaderboard", icon: Trophy },
-    { name: "Profile", href: "/learner-dashboard/profile", icon: User },
+    { name: "Settings", href: "/learner-dashboard/account-setting", icon: Settings },
   ];
 
   const isActive = (href: string) =>

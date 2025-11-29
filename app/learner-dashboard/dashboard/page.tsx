@@ -30,6 +30,7 @@ import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 import { getRewards } from "@/lib/services/gamificationService";
+import { getContinueLearning, ContinueLearningItem } from "@/lib/services/ContinueLearningService";
 
 // Theme Colors
 const primary = "#72a210";
@@ -45,6 +46,7 @@ interface Track {
   id: string;
   title: string;
   description: string;
+  thumbnail: string;
 }
 
 // REMOVED: interface Mentor {} - No longer needed
@@ -164,6 +166,8 @@ const EmptyState = ({
   </div>
 );
 
+
+
 // Dashboard
 export default function LearnerDashboard() {
   const [xp, setXp] = useState(0);
@@ -182,39 +186,52 @@ export default function LearnerDashboard() {
           return;
         }
 
-      const res = await getRewards(email);
+        const res = await getRewards(email);
 
-      if (res?.data) {
-        const totalXp = res.data.totalXp || 0;
-        setXp(totalXp);
-
-        // LEVEL: every 100 XP = 1 level
-        setLevel(Math.floor(totalXp / 100));
-// setLevel(parseFloat((totalXp / 100).toFixed(2)));
-
-
-        // STREAK (current days)
-        setStreak(res.data.streak?.currentDays || 0);
-
-        // BADGES (count of unlocked badges)
-        setBadgesCount(res.data.badges?.length || 0);
+        if (res?.data) {
+          const totalXp = res.data.totalXp || 0;
+          setXp(totalXp);
+          setLevel(Math.floor(totalXp / 100));
+          setStreak(res.data.streak?.currentDays || 0);
+          setBadgesCount(res.data.badges?.length || 0);
+        }
+      } catch (err) {
+        console.error("Gamification error:", err);
       }
-    } catch (err) {
-      console.error("Gamification error:", err);
     }
-  }
 
-  loadGamification();
-}, []);
+    loadGamification();
+  }, []);
 
+  // Add your new useEffect here
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      const currentUser = await getCurrentUser();
+      console.log("Current User:", currentUser);
+    };
 
+    loadCurrentUser();
+  }, []);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // ...rest of component
   // REMOVED: const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data is now initialized as empty arrays for a new user
-  const continueWatchingItems: any[] = [];
-  const suggestedItems: any[] = [];
+const [continueWatchingItems, setContinueWatchingItems] = useState<ContinueLearningItem[]>([]);
+const [continueLoading, setContinueLoading] = useState(true);
+
+useEffect(() => {
+  const loadContinueLearning = async () => {
+    const items = await getContinueLearning();
+    setContinueWatchingItems(items);
+    setContinueLoading(false);
+  };
+  loadContinueLearning();
+}, []);
+
+const [tracks, setTracks] = useState<Track[]>([]);
+  const suggestedItems = tracks.slice(0, 3); // Show first 3 tracks as suggestions
   const becauseItems: any[] = [];
   const comingItems: any[] = [];
   // REMOVED: const allMentors: Mentor[] = [];
@@ -342,7 +359,7 @@ export default function LearnerDashboard() {
                             {level}
                           </p>
                         </div>
-<Star className={`h-8 w-8 text-[${primary}]`} />
+                        <Star className={`h-8 w-8 text-[${primary}]`} />
                       </div>
                     </CardContent>
                   </Card>
@@ -381,6 +398,8 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
+
+
               {/* Continue Watching + Recent Activity Container */}
               <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
                 {/* Main Content - 60% */}
@@ -405,7 +424,8 @@ export default function LearnerDashboard() {
                         </div>
                       )}
                     </CardHeader>
-                    <CardContent className="h-full flex items-center justify-center">
+                    {/* <CardContent className="h-full flex items-center justify-center"> */}
+                    <CardContent className="h-full">
                       {continueWatchingItems.length > 0 ? (
                         <div
                           ref={continueWatchingRef}
@@ -430,19 +450,17 @@ export default function LearnerDashboard() {
                                   >
                                     {item.title}
                                   </h3>
-                                  <div
-                                    className={`flex items-center text-xs ${textLight}`}
+                                  <p
+                                    className={`text-xs ${textLight} line-clamp-2`}
                                   >
-                                    <span>{item.instructor}</span>
-                                    <span className="mx-2">•</span>
-                                    <span>{item.instructorTitle}</span>
-                                  </div>
+                                    {item.description}
+                                  </p>
                                 </div>
                                 <div className="space-y-1">
-                                  <Progress value={item.progress} />
                                   <p className={`text-xs ${textLight}`}>
                                     {item.progress}% complete
                                   </p>
+                                  <Progress value={item.progress} />
                                 </div>
                               </div>
                             </div>
@@ -539,15 +557,15 @@ export default function LearnerDashboard() {
                           ref={suggestedRef}
                           className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
                         >
-                          {suggestedItems.map((n) => (
+                          {suggestedItems.map((track) => (
                             <div
-                              key={n}
+                              key={track.id}
                               className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
                             >
                               <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
                                 <img
-                                  src="/api/placeholder/280/160"
-                                  alt={`Course Title ${n}`}
+                                  src={`${process.env.DIRECTUS_URL}/assets/${track.thumbnail}`}
+                                  alt={track.title || "Course thumbnail"}
                                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
@@ -556,7 +574,7 @@ export default function LearnerDashboard() {
                                   <h3
                                     className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
                                   >
-                                    Course Title {n}
+                                    {track.title || "Untitled Track"}
                                   </h3>
                                   <p
                                     className={`text-xs ${textLight} line-clamp-2`}

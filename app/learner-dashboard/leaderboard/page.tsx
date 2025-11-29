@@ -386,45 +386,53 @@ export default function LeaderboardPage() {
 //   const [allLearners, setAllLearners] = useState<Learner[]>([]);
 
 //   // 🚀 Fetch Users From Backend
-//   useEffect(() => {
-//     async function fetchUsers() {
-//       try {
-//         const res = await fetch(
-//           `${process.env.NEXT_PUBLIC_API_URL}/admin/users`
-//         );
+//  useEffect(() => {
+//   async function fetchUsers() {
+//     try {
+//       const token = localStorage.getItem("token");
 
-//         const json = await res.json();
-//         if (json.status !== 200) {
-//           console.error("API Error:", json);
-//           return;
+//       const res = await fetch(
+//         `${process.env.NEXT_PUBLIC_API_URL}/admin/users`,
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
 //         }
+//       );
 
-//         const users = json.data;
-
-//         const learners: Learner[] = users.map((u: any, index: number) => ({
-//           id: index + 1,
-//           name: u.username || u.email.split("@")[0],
-//           xp: u.totalXp ?? 0,
-//           rank: index + 1,
-//           joined: new Date(u.createdAt).toLocaleDateString("en-US", {
-//             month: "short",
-//             day: "numeric",
-//             year: "numeric",
-//           }),
-//         }));
-
-//         // Sort by XP
-//         const sorted = learners.sort((a, b) => b.xp - a.xp);
-
-//         setTopLearners(sorted.slice(0, 3));
-//         setAllLearners(sorted.slice(3));
-//       } catch (err) {
-//         console.error("Fetch Failed:", err);
+//       const json = await res.json();
+//       if (json.status !== 200) {
+//         console.error("API Error:", json);
+//         return;
 //       }
-//     }
 
-//     fetchUsers();
-//   }, []);
+//       const users = json.data;
+
+//       const learners: Learner[] = users.map((u: any, index: number) => ({
+//         id: index + 1,
+//         name: u.username || u.email.split("@")[0],
+//         xp: u.totalXp ?? 0,
+//         rank: index + 1,
+//         joined: new Date(u.createdAt).toLocaleDateString("en-US", {
+//           month: "short",
+//           day: "numeric",
+//           year: "numeric",
+//         }),
+//       }));
+
+//       const sorted = learners.sort((a, b) => b.xp - a.xp);
+
+//       setTopLearners(sorted.slice(0, 3));
+//       setAllLearners(sorted.slice(3));
+//     } catch (err) {
+//       console.error("Fetch Failed:", err);
+//     }
+//   }
+
+//   fetchUsers();
+// }, []);
+
 
 //   // Sorting Logic
 //   const handleSort = (key: SortKey) => {
