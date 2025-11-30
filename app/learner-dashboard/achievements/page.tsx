@@ -1,6 +1,6 @@
 // "use client";
 
-// import React, { useState } from "react";
+// import React, { useState, useEffect } from "react";
 // import { Trophy, Lock } from "lucide-react";
 
 // import Sidebar from "@/components/ui/learner-sidebar";
@@ -44,114 +44,104 @@
 
 // export default function AchievementsPage() {
 //   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const [achievements, setAchievements] = useState<any[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
 
-//   // 🔹 Now includes 9 total achievements
-//   const achievements = [
-//     {
-//       id: 1,
-//       name: "First Steps",
-//       description: "Completed your first lesson",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 2,
-//       name: "Quiz Master",
-//       description: "Scored 90%+ on 5 quizzes",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 3,
-//       name: "Lab Explorer",
-//       description: "Completed 5 lab guides",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%203.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 4,
-//       name: "Streak Keeper",
-//       description: "Maintained a 7-day streak",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 5,
-//       name: "XP Collector",
-//       description: "Earned 1000 XP",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%205.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 6,
-//       name: "Champion",
-//       description: "Top 1 in leaderboard",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%206.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 7,
-//       name: "Bug Bounty Hunter",
-//       description: "Reported your first security flaw",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 8,
-//       name: "Course Finisher",
-//       description: "Completed an entire track",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
-//       unlocked: false,
-//     },
-//     {
-//       id: 9,
-//       name: "Mentor in Training",
-//       description: "Helped 3 other learners",
-//       image:
-//         "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
-//       unlocked: false,
-//     },
+//   // 🔹 Your 9 Cloudflare-hosted images
+//   const badgeImages = [
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%203.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%205.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%206.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+//     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
 //   ];
+
+//   useEffect(() => {
+//     const fetchAchievements = async () => {
+//       try {
+//         setLoading(true);
+
+//         const res = await fetch("/api/badges");
+
+//         if (!res.ok) {
+//           throw new Error(`Server error: ${res.status}`);
+//         }
+
+//         const json = await res.json();
+
+//         if (json.data) {
+//           // 🔥 Cycle images no matter how many backend badges there are
+//           const updated = json.data.map((a: any, index: number) => {
+//             const total = badgeImages.length;
+
+//             // cycling logic (1→9 then repeat)
+//             const imageUrl = badgeImages[index % total];
+
+//             return {
+//               ...a,
+//               image: imageUrl,
+//             };
+//           });
+
+//           setAchievements(updated);
+//           setError(null);
+//         } else {
+//           throw new Error("Invalid data from server");
+//         }
+//       } catch (err: any) {
+//         console.error("Failed to load achievements:", err);
+//         setError(err.message || "Failed to load achievements");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchAchievements();
+//   }, []);
 
 //   return (
 //     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
-//       {/* Sidebar */}
 //       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-//       {/* Main Content Layout */}
 //       <div className="flex-1 flex flex-col overflow-hidden">
-//         {/* Header */}
 //         <Header setSidebarOpen={setSidebarOpen} />
 
-//         {/* Page Content + Footer Wrapper */}
 //         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
 //           <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-8">
-//             {/* Achievements Grid */}
 //             <Card>
 //               <CardHeader
 //                 title="Your Achievements"
 //                 icon={<Trophy className="h-5 w-5 text-[#72a210]" />}
 //               />
 //               <CardContent>
-//                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-//                   {achievements.map((a) => (
-//                     <div
-//                       key={a.id}
-//                       className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
+//                 {loading && (
+//                   <p className="text-gray-600 dark:text-gray-400">
+//                     Loading achievements...
+//                   </p>
+//                 )}
+
+//                 {error && (
+//                   <p className="text-red-600 dark:text-red-400">
+//                     {error}. Please try again later.
+//                   </p>
+//                 )}
+
+//                 {!loading && !error && (
+//                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+//                     {achievements.map((a) => (
+//                       <div
+//                         key={a.id}
+//                         className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
 //                         bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300
-//                         hover:scale-105 hover:shadow-lg cursor-pointer
-//                         ${!a.unlocked ? "opacity-60 grayscale hover:grayscale-0" : ""}`}
-//                     >
-//                       {/* Image */}
-//                       <img
+//                         hover:scale-105 hover:shadow-lg cursor-pointer opacity-60 grayscale hover:grayscale-0`}
+//                       >
+//                         {/* Image */}
+//                         <img
 //                         src={a.image}
 //                         alt={a.name}
 //                         className={`w-22 h-20 transition-all duration-300 ${
@@ -159,30 +149,27 @@
 //                         }`}
 //                       />
 
-//                       {/* Lock Overlay for Locked Achievements */}
-//                       {!a.unlocked && (
+//                         {/* Lock Overlay */}
 //                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
 //                           <Lock className="h-8 w-8 text-white opacity-80" />
 //                         </div>
-//                       )}
 
-//                       {/* Text */}
-//                       <p className="font-semibold text-gray-900 dark:text-gray-100 mt-3 text-base">
-//                         {a.name}
-//                       </p>
-//                       <p className="text-sm text-gray-600 dark:text-gray-400">
-//                         {a.description}
-//                       </p>
-//                     </div>
-//                   ))}
-//                 </div>
+//                         {/* Text */}
+//                         <p className="font-semibold text-gray-900 dark:text-gray-100 mt-3 text-base">
+//                           {a.name}
+//                         </p>
+//                         <p className="text-sm text-gray-600 dark:text-gray-400">
+//                           {a.description}
+//                         </p>
+//                       </div>
+//                     ))}
+//                   </div>
+//                 )}
 //               </CardContent>
 //             </Card>
 //           </main>
 
 //           <Nav />
-
-//           {/* Footer */}
 //           <LearnerFooter />
 //         </div>
 //       </div>
@@ -192,12 +179,10 @@
 
 
 
-
-
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Trophy } from "lucide-react";
+import { Trophy, Lock } from "lucide-react";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
@@ -240,37 +225,57 @@ const CardContent = ({ children }: { children: React.ReactNode }) => (
 
 export default function AchievementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [achievements, setAchievements] = useState<any[]>([]);
+  const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const badgeImages = [
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%203.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%205.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%206.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%202.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%201.png",
+    "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
+  ];
+
   useEffect(() => {
-    const fetchAchievements = async () => {
+    const fetchBadges = async () => {
       try {
         setLoading(true);
-        const res = await fetch("https://cy-backend.onrender.com/api/v1/badges");
 
-        if (!res.ok) {
-          throw new Error(`Server error: ${res.status}`);
-        }
+        // 1️⃣ Fetch all badges
+        const resAll = await fetch("/api/badges");
+        if (!resAll.ok) throw new Error("Failed to fetch all badges");
+        const allData = await resAll.json();
+        const allBadges = allData.data || [];
 
-        const json = await res.json();
+        // 2️⃣ Fetch gamification (unlocked badges)
+        const resGam = await fetch("/api/gamification");
+        if (!resGam.ok) throw new Error("Failed to fetch gamification");
+        const gamData = await resGam.json();
+        const unlocked = gamData.data?.badges?.map((b: any) => b.code) || [];
 
-        if (json.data) {
-          setAchievements(json.data); // use backend data as-is
-          setError(null);
-        } else {
-          throw new Error("Invalid data from server");
-        }
+        // 3️⃣ Merge unlocked state and assign images
+        const merged = allBadges.map((badge: any, index: number) => ({
+          ...badge,
+          unlocked: unlocked.includes(badge.code),
+          image: badgeImages[index % badgeImages.length],
+        }));
+
+        setBadges(merged);
+        setError(null);
       } catch (err: any) {
-        console.error("Failed to load achievements:", err);
-        setError(err.message || "Failed to load achievements");
+        console.error(err);
+        setError(err.message || "Failed to load badges");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAchievements();
+    fetchBadges();
   }, []);
 
   return (
@@ -302,20 +307,31 @@ export default function AchievementsPage() {
 
                 {!loading && !error && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {achievements.map((a) => (
+                    {badges.map((b) => (
                       <div
-                        key={a.id}
-                        className="flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210] bg-[#72a210]/10 dark:bg-[#72a210]/20 transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer"
+                        key={b.id}
+                        className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
+                        transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer
+                        ${b.unlocked ? "opacity-100 grayscale-0" : "opacity-60 grayscale"}`}
                       >
+                        <img
+                          src={b.image}
+                          alt={b.name}
+                          className="w-22 h-20 transition-all duration-300"
+                        />
+
+                        {!b.unlocked && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
+                            <Lock className="h-8 w-8 text-white opacity-80" />
+                          </div>
+                        )}
+
                         <p className="font-semibold text-gray-900 dark:text-gray-100 mt-3 text-base">
-                          {a.name}
+                          {b.name}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {a.description}
+                          {b.description || b.desciption}
                         </p>
-                        <pre className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-left w-full overflow-x-auto p-2 bg-gray-100 dark:bg-gray-800 rounded">
-                          {JSON.stringify(a.criteriaJson, null, 2)}
-                        </pre>
                       </div>
                     ))}
                   </div>

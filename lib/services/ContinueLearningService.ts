@@ -12,18 +12,17 @@ export interface ContinueLearningItem {
 
 export const getContinueLearning = async (): Promise<ContinueLearningItem[]> => {
   try {
-    const currentUser = await getCurrentUser();
-    const token = currentUser?.token;
-
-    if (!token) return [];
-
     const res = await fetch(
       "https://cy-backend.onrender.com/api/v1/me/progress/summary",
       {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
+        credentials: "include",   // <-- sends token cookie
       }
     );
+
+    if (!res.ok) {
+      console.error("Progress API failed:", res.status);
+      return [];
+    }
 
     const data = await res.json();
     const trackProgress = data?.data?.trackProgress || [];
@@ -44,3 +43,4 @@ export const getContinueLearning = async (): Promise<ContinueLearningItem[]> => 
     return [];
   }
 };
+

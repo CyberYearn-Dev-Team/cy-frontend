@@ -170,7 +170,7 @@ export default function QuizzesPage() {
       
       // Only submit to backend if all answers are correct
       try {
-        const result = await submitQuiz(quizzes[0].id.toString(), 100, true);
+        const result = await submitQuiz(lessonId, 100, true);
         if (result.xp) {
           toast.success(`+${result.xp} XP earned!`, { duration: 5000 });
         }
