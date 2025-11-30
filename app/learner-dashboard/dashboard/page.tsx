@@ -31,7 +31,10 @@ import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 import { getRewards } from "@/lib/services/gamificationService";
-import { getContinueLearning, ContinueLearningItem } from "@/lib/services/ContinueLearningService";
+import {
+  getContinueLearning,
+  ContinueLearningItem,
+} from "@/lib/services/ContinueLearningService";
 import AchievementsSection from "@/components/ui/AchievementsSection";
 
 // Theme Colors
@@ -55,8 +58,8 @@ interface ActivityItem {
   id: string;
   title: string;
   description: string;
-  status: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
-  type: 'track' | 'module' | 'lesson';
+  status: "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
+  type: "track" | "module" | "lesson";
   progress: number;
   timestamp?: Date;
   trackTitle?: string;
@@ -179,8 +182,6 @@ const EmptyState = ({
   </div>
 );
 
-
-
 // Dashboard
 export default function LearnerDashboard() {
   const [xp, setXp] = useState(0);
@@ -231,7 +232,9 @@ export default function LearnerDashboard() {
   // REMOVED: const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data is now initialized as empty arrays for a new user
-  const [continueLearning, setContinueLearning] = useState<ContinueLearningItem[]>([]);
+  const [continueLearning, setContinueLearning] = useState<
+    ContinueLearningItem[]
+  >([]);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
   const [continueLoading, setContinueLoading] = useState(true);
 
@@ -239,9 +242,9 @@ export default function LearnerDashboard() {
     const fetchData = async () => {
       const [continueData, progressData] = await Promise.all([
         getContinueLearning(),
-        fetch('https://cy-backend.onrender.com/api/v1/me/progress/summary', {
-          credentials: 'include'
-        }).then(res => res.json())
+        fetch("https://cy-backend.onrender.com/api/v1/me/progress/summary", {
+          credentials: "include",
+        }).then((res) => res.json()),
       ]);
 
       setContinueLearning(continueData);
@@ -252,25 +255,33 @@ export default function LearnerDashboard() {
 
         progressData.data.trackProgress.forEach((track: any) => {
           // Show all tracks that are either IN_PROGRESS or COMPLETED
-          if (track.status === 'IN_PROGRESS' || track.status === 'COMPLETED') {
-            const statusText = track.status === 'COMPLETED' ? 'Completed' : 'In Progress';
+          if (track.status === "IN_PROGRESS" || track.status === "COMPLETED") {
+            const statusText =
+              track.status === "COMPLETED" ? "Completed" : "In Progress";
             activities.push({
               id: `track-${track.trackId}`,
               title: `${statusText}: ${track.title}`,
-              description: `Progress: ${track.progress}% • ${track.completedLessons} of ${track.totalLessons || '?'} lessons`,
+              description: `Progress: ${track.progress}% • ${
+                track.completedLessons
+              } of ${track.totalLessons || "?"} lessons`,
               status: track.status,
-              type: 'track',
+              type: "track",
               progress: track.progress,
               trackTitle: track.title,
-              timestamp: new Date()
+              timestamp: new Date(),
             });
           }
         });
 
         // Sort by most recent first and limit to 5 activities
-        setRecentActivities(activities.sort((a, b) =>
-          (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0)
-        ).slice(0, 5));
+        setRecentActivities(
+          activities
+            .sort(
+              (a, b) =>
+                (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0)
+            )
+            .slice(0, 5)
+        );
       }
     };
 
@@ -444,8 +455,6 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
-
-
               {/* Continue Watching + Recent Activity Container */}
               <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
                 {/* Main Content - 60% */}
@@ -536,13 +545,18 @@ export default function LearnerDashboard() {
                       <div className="space-y-4">
                         {recentActivities.length > 0 ? (
                           recentActivities.map((activity) => (
-                            <div key={activity.id} className="flex items-start gap-3 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                activity.status === 'COMPLETED'
-                                  ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300'
-                                  : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
-                              }`}>
-                                {activity.status === 'COMPLETED' ? (
+                            <div
+                              key={activity.id}
+                              className="flex items-start gap-3 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
+                            >
+                              <div
+                                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                  activity.status === "COMPLETED"
+                                    ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                                    : "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300"
+                                }`}
+                              >
+                                {activity.status === "COMPLETED" ? (
                                   <Check className="h-4 w-4" />
                                 ) : (
                                   <Play className="h-3 w-3" />
@@ -553,12 +567,16 @@ export default function LearnerDashboard() {
                                   {activity.title}
                                 </p>
                                 <div className="flex items-center mt-1">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                    activity.status === 'COMPLETED'
-                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                  }`}>
-                                    {activity.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                      activity.status === "COMPLETED"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                    }`}
+                                  >
+                                    {activity.status === "COMPLETED"
+                                      ? "Completed"
+                                      : "In Progress"}
                                   </span>
                                   {activity.progress > 0 && (
                                     <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
@@ -586,7 +604,7 @@ export default function LearnerDashboard() {
               <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
-                {/* <div className="w-full lg:w-[60%] min-w-0 space-y-8"> */}
+                  {/* <div className="w-full lg:w-[60%] min-w-0 space-y-8"> */}
                   <Card className="h-full">
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
@@ -654,33 +672,106 @@ export default function LearnerDashboard() {
                   </Card>
                 </div>
 
-
-
                 {/* Achievements Section */}
+                {/* Achievements Section – Clean version (only second view is kept) */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
-    <Card className="h-full">
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Trophy className={`h-5 w-5 ${textMedium}`} />
-                <span>Your Achievements</span>
-            </CardTitle>
-        </CardHeader>
-        {/* Added standard padding and vertical space between content and button */}
-        <CardContent className="space-y-4"> 
-            <AchievementsSection/>
-            {/* The button is now inside the CardContent for consistent padding */}
-            <Link href="/learner-dashboard/achievements" className="block">
-                <Button
-                    variant="secondary"
-                    className="w-full cursor-pointer"
-                >
-                    View All Achievements
-                </Button>
-            </Link>
-        </CardContent>
-    </Card>
-</div>
-                
+                  <Card className="h-full flex flex-col overflow-hidden">
+                    <CardHeader className="flex-shrink-0 border-b dark:border-gray-800 pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                        <Trophy className={`h-5 w-5 ${textMedium}`} />
+                        <span>Your Achievements</span>
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="flex-1 flex flex-col justify-between py-6 space-y-8">
+                      <div className="text-center">
+                        {/* Count + header (THEMED) */}
+                        <div
+                          className="inline-flex items-center gap-2 font-semibold text-sm"
+                          style={{ color: primary }}
+                        >
+                          <Award className="h-5 w-5" />
+                          <span>Achievements</span>
+                          <span
+                            className="ml-2 px-3 py-0.5 rounded-full text-xs font-bold"
+                            style={{
+                              backgroundColor: "#72a21020", // light translucent green
+                              color: primary,
+                            }}
+                          >
+                            {badgesCount} unlocked
+                          </span>
+                        </div>
+
+                        {/* Beautiful circular preview – THEMED GRADIENT */}
+                        {badgesCount > 0 && (
+                          <div className="flex justify-center mt-4">
+                            <div className="flex -space-x-4">
+                              {/* Show max 3 badges */}
+                              {[...Array(Math.min(3, badgesCount))].map(
+                                (_, i) => (
+                                  <div
+                                    key={i}
+                                    className="w-18 h-18 rounded-full flex items-center justify-center shadow-md 
+                   border-2 border-white dark:border-gray-900 hover:scale-110 
+                   transition-transform cursor-pointer"
+                                    style={{
+                                      background:
+                                        "linear-gradient(135deg, #72a210, #507800)",
+                                    }}
+                                  >
+                                    <Trophy className="h-7 w-7 text-white" />
+                                  </div>
+                                )
+                              )}
+
+                              {/* Show “+X more” only when badges > 3 */}
+                              {badgesCount > 3 && (
+                                <div
+                                  className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 
+                   flex items-center justify-center border-2 
+                   border-white dark:border-gray-900 text-xs 
+                   font-bold text-gray-700 dark:text-gray-300"
+                                >
+                                  +{badgesCount - 3}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Optional badge tags */}
+                        {badgesCount > 0 && (
+                          <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs text-gray-600 dark:text-gray-400">
+                            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                              Perfect Score
+                            </div>
+                            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                              First Quiz
+                            </div>
+                            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                              First Steps
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* View All (kept neutral) */}
+                      <Link
+                        href="/learner-dashboard/achievements"
+                        className="block"
+                      >
+                        <Button
+                          variant="secondary"
+                          className="w-full py-2.5 text-sm font-semibold rounded-xl cursor-pointer"
+                        >
+                          View All Achievements
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 {/* Add any additional sections here */}
               </div>
               {/* (END NEW) Suggested + Achievements Container */}
