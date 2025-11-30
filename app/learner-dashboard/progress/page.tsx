@@ -26,9 +26,9 @@ export default function ProgressPage() {
   const [sortDropdown, setSortDropdown] = useState(false);
 
   const [openTrack, setOpenTrack] = useState<string | null>(null);
-  
+
   const toggleTrack = (trackId: string) => {
-    setOpenTrack(prev => prev === trackId ? null : trackId);
+    setOpenTrack((prev) => (prev === trackId ? null : trackId));
   };
 
   const [summary, setSummary] = useState<any>(null);
@@ -97,12 +97,14 @@ export default function ProgressPage() {
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
                   <Layers className="h-8 w-8 text-[#72a210]" />
-                  <p className="mt-2 text-2xl font-bold">{summary.totalTracks}</p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {summary.totalTracks}
+                  </p>
                   <p className="text-sm text-gray-500">Total Tracks</p>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
-                  <Loader className="h-8 w-8 text-[#72a210] animate-spin" />
+                  <Loader className="h-8 w-8 text-[#72a210]" />
                   <p className="mt-2 text-2xl font-bold">
                     {summary.inProgressTracks}
                   </p>
@@ -141,81 +143,80 @@ export default function ProgressPage() {
               </div>
 
               {/* FILTER DROPDOWN */}
-                            <div className="flex w-full sm:basis-[50%] sm:justify-end gap-2">
+              <div className="flex w-full sm:basis-[50%] sm:justify-end gap-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setFilterDropdown((prev) => !prev)}
+                    className="flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 cursor-pointer"
+                  >
+                    {filter}
+                    <ChevronDown className="h-4 w-4 ml-2 text-gray-500" />
+                  </button>
 
-              <div className="relative">
-                <button
-                  onClick={() => setFilterDropdown((prev) => !prev)}
-                  className="flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 cursor-pointer"
-                >
-                  {filter}
-                  <ChevronDown className="h-4 w-4 ml-2 text-gray-500" />
-                </button>
+                  {filterDropdown && (
+                    <div className="absolute mt-1 w-full bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
+                      {filterOptions.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => {
+                            setFilter(option);
+                            setFilterDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            filter === option ? "text-[#72a210]" : ""
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                {filterDropdown && (
-                  <div className="absolute mt-1 w-full bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => {
-                          setFilter(option);
-                          setFilterDropdown(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          filter === option ? "text-[#72a210]" : ""
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* SORT DROPDOWN */}
+                <div className="relative">
+                  <button
+                    onClick={() => setSortDropdown((prev) => !prev)}
+                    className="flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 cursor-pointer"
+                  >
+                    {sort}
+                    <ChevronDown className="h-4 w-4 ml-2 text-gray-500" />
+                  </button>
+
+                  {sortDropdown && (
+                    <div className="absolute mt-1 w-full bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
+                      {sortOptions.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => {
+                            setSort(option);
+                            setSortDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            sort === option ? "text-[#72a210]" : ""
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* SORT DROPDOWN */}
-              <div className="relative">
-                <button
-                  onClick={() => setSortDropdown((prev) => !prev)}
-                  className="flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 cursor-pointer"
-                >
-                  {sort}
-                  <ChevronDown className="h-4 w-4 ml-2 text-gray-500" />
-                </button>
-
-                {sortDropdown && (
-                  <div className="absolute mt-1 w-full bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => {
-                          setSort(option);
-                          setSortDropdown(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          sort === option ? "text-[#72a210]" : ""
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
             </div>
 
             {/* ----------- TRACK LIST ----------- */}
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse ">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse cursor-pointer">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="bg-white/70 dark:bg-gray-800/50 h-32 rounded-xl shadow"
+                    className="bg-white/70 dark:bg-gray-800/50 h-32 rounded-xl shadow cursor-pointer"
                   ></div>
                 ))}
               </div>
             ) : (
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start auto-rows-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start auto-rows-auto cursor-pointer">
                 {sortedTracks.length > 0 ? (
                   sortedTracks.map((track: any) => (
                     <div
@@ -224,7 +225,7 @@ export default function ProgressPage() {
                     >
                       <button
                         onClick={() => toggleTrack(track.trackId)}
-                        className="w-full p-5 flex flex-col gap-2"
+                        className="w-full p-5 flex flex-col gap-2 cursor-pointer"
                       >
                         <div className="flex justify-between items-center">
                           <h2 className="text-lg font-semibold">
@@ -253,45 +254,48 @@ export default function ProgressPage() {
                       </button>
 
                       <div
-  className={`transition-all duration-300 ease-in-out overflow-hidden cursor-pointer ${
-    openTrack === track.trackId
-      ? "max-h-[1000px] opacity-100"
-      : "max-h-0 opacity-0"
-  }`}
->
-  <div className="p-5 border-t border-gray-200 dark:border-gray-700 grid gap-3">
-    <p className="text-sm text-gray-500">
-      Total Lessons: {track.totalLessons}
-    </p>
+                        className={`transition-all duration-300 ease-in-out overflow-hidden cursor-pointer ${
+                          openTrack === track.trackId
+                            ? "max-h-[1000px] opacity-100"
+                            : "max-h-0 opacity-0"
+                        }`}
+                      >
+                        <div className="p-5 border-t border-gray-200 dark:border-gray-700 grid gap-3">
+                          <p className="text-sm text-gray-500">
+                            Total Lessons: {track.totalLessons}
+                          </p>
 
-    <p className="text-sm text-gray-500">
-      Completed Lessons: {track.completedLessons}
-    </p>
+                          <p className="text-sm text-gray-500">
+                            Completed Lessons: {track.completedLessons}
+                          </p>
 
-    {track.modules?.map((module: any, index: number) => (
-      <div
-        key={index}
-        className="flex justify-between items-center border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-      >
-        <div className="flex-1 pr-4">
-          <p className="text-sm font-medium">{module.name}</p>
+                          {track.modules?.map((module: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex justify-between items-center border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                            >
+                              <div className="flex-1 pr-4">
+                                <p className="text-sm font-medium">
+                                  {module.name}
+                                </p>
 
-          <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full mt-2">
-            <div
-              className="h-1.5 bg-[#72a210] rounded-full"
-              style={{ width: `${module.progress || 0}%` }}
-            />
-          </div>
+                                <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full mt-2">
+                                  <div
+                                    className="h-1.5 bg-[#72a210] rounded-full"
+                                    style={{
+                                      width: `${module.progress || 0}%`,
+                                    }}
+                                  />
+                                </div>
 
-          <p className="text-xs text-gray-500 mt-1">
-            {module.progress || 0}% complete
-          </p>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {module.progress || 0}% complete
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ))
                 ) : (

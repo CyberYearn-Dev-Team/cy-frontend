@@ -22,6 +22,7 @@ import {
   Flame,
   X,
   BookAIcon,
+  Check,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -31,6 +32,7 @@ import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
 import { getRewards } from "@/lib/services/gamificationService";
 import { getContinueLearning, ContinueLearningItem } from "@/lib/services/ContinueLearningService";
+import AchievementsSection from "@/components/ui/AchievementsSection";
 
 // Theme Colors
 const primary = "#72a210";
@@ -47,6 +49,17 @@ interface Track {
   title: string;
   description: string;
   thumbnail: string;
+}
+
+interface ActivityItem {
+  id: string;
+  title: string;
+  description: string;
+  status: 'COMPLETED' | 'IN_PROGRESS' | 'NOT_STARTED';
+  type: 'track' | 'module' | 'lesson';
+  progress: number;
+  timestamp?: Date;
+  trackTitle?: string;
 }
 
 // REMOVED: interface Mentor {} - No longer needed
@@ -218,26 +231,59 @@ export default function LearnerDashboard() {
   // REMOVED: const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data is now initialized as empty arrays for a new user
-const [continueWatchingItems, setContinueWatchingItems] = useState<ContinueLearningItem[]>([]);
-const [continueLoading, setContinueLoading] = useState(true);
+  const [continueLearning, setContinueLearning] = useState<ContinueLearningItem[]>([]);
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+  const [continueLoading, setContinueLoading] = useState(true);
 
-useEffect(() => {
-  const loadContinueLearning = async () => {
-    const items = await getContinueLearning();
-    setContinueWatchingItems(items);
-    setContinueLoading(false);
-  };
-  loadContinueLearning();
-}, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      const [continueData, progressData] = await Promise.all([
+        getContinueLearning(),
+        fetch('https://cy-backend.onrender.com/api/v1/me/progress/summary', {
+          credentials: 'include'
+        }).then(res => res.json())
+      ]);
 
-const [tracks, setTracks] = useState<Track[]>([]);
+      setContinueLearning(continueData);
+
+      // Transform progress data into activities
+      if (progressData?.data?.trackProgress) {
+        const activities: ActivityItem[] = [];
+
+        progressData.data.trackProgress.forEach((track: any) => {
+          // Show all tracks that are either IN_PROGRESS or COMPLETED
+          if (track.status === 'IN_PROGRESS' || track.status === 'COMPLETED') {
+            const statusText = track.status === 'COMPLETED' ? 'Completed' : 'In Progress';
+            activities.push({
+              id: `track-${track.trackId}`,
+              title: `${statusText}: ${track.title}`,
+              description: `Progress: ${track.progress}% • ${track.completedLessons} of ${track.totalLessons || '?'} lessons`,
+              status: track.status,
+              type: 'track',
+              progress: track.progress,
+              trackTitle: track.title,
+              timestamp: new Date()
+            });
+          }
+        });
+
+        // Sort by most recent first and limit to 5 activities
+        setRecentActivities(activities.sort((a, b) =>
+          (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0)
+        ).slice(0, 5));
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const [tracks, setTracks] = useState<Track[]>([]);
   const suggestedItems = tracks.slice(0, 3); // Show first 3 tracks as suggestions
   const becauseItems: any[] = [];
   const comingItems: any[] = [];
   // REMOVED: const allMentors: Mentor[] = [];
 
   // --- (MODIFIED) Mock Data: Set to empty array as requested ---
-  const recentActivityItems: any[] = []; // Now empty
   const achievementItems: any[] = []; // Now empty
   // --- (END MODIFIED) Mock Data ---
 
@@ -409,7 +455,7 @@ const [tracks, setTracks] = useState<Track[]>([]);
                       <CardTitle className={`text-[${secondary}]`}>
                         Continue Learning
                       </CardTitle>
-                      {continueWatchingItems.length > 0 && (
+                      {continueLearning.length > 0 && (
                         <div className="flex items-center gap-2 mt-2 sm:mt-0">
                           <button onClick={scrollContinueLeft}>
                             <ChevronLeft
@@ -426,12 +472,12 @@ const [tracks, setTracks] = useState<Track[]>([]);
                     </CardHeader>
                     {/* <CardContent className="h-full flex items-center justify-center"> */}
                     <CardContent className="h-full">
-                      {continueWatchingItems.length > 0 ? (
+                      {continueLearning.length > 0 ? (
                         <div
                           ref={continueWatchingRef}
                           className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
                         >
-                          {continueWatchingItems.map((item: any) => (
+                          {continueLearning.map((item: any) => (
                             <div
                               key={item.id}
                               className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
@@ -477,7 +523,7 @@ const [tracks, setTracks] = useState<Track[]>([]);
                   </Card>
                 </div>
 
-                {/* (MODIFIED) Recent Activity - 40% */}
+                {/* Recent Activity - 40% */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
                   <Card className="h-full">
                     <CardHeader>
@@ -486,41 +532,51 @@ const [tracks, setTracks] = useState<Track[]>([]);
                         <span>Recent Activity</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent
-                      className={
-                        recentActivityItems.length > 0
-                          ? "space-y-4"
-                          : "h-full flex items-center justify-center"
-                      }
-                    >
-                      {recentActivityItems.length > 0 ? (
-                        recentActivityItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-start space-x-3"
-                          >
-                            <item.icon
-                              className={`h-5 w-5 mt-0.5 flex-shrink-0 ${item.iconClassName}`}
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className={`font-medium text-sm ${textDark}`}>
-                                {item.title}
-                              </p>
-                              <p className={`text-xs ${textLight}`}>
-                                {item.status}
-                              </p>
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {recentActivities.length > 0 ? (
+                          recentActivities.map((activity) => (
+                            <div key={activity.id} className="flex items-start gap-3 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                activity.status === 'COMPLETED'
+                                  ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300'
+                                  : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
+                              }`}>
+                                {activity.status === 'COMPLETED' ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Play className="h-3 w-3" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {activity.title}
+                                </p>
+                                <div className="flex items-center mt-1">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                    activity.status === 'COMPLETED'
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  }`}>
+                                    {activity.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+                                  </span>
+                                  {activity.progress > 0 && (
+                                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                      {Math.round(activity.progress)}%
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))
-                      ) : (
-                        <EmptyState
-                          icon={Clock}
-                          title="Ready to Learn?"
-                          // Cool message here:
-                          message="Your recent activities will appear here once you start exploring the platform."
-                        />
-                      )}
+                          ))
+                        ) : (
+                          <EmptyState
+                            icon={BookAIcon}
+                            title="Ready to Learn?"
+                            message="Your recent activities will appear here once you start exploring the platform."
+                          />
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -530,6 +586,7 @@ const [tracks, setTracks] = useState<Track[]>([]);
               <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
+                {/* <div className="w-full lg:w-[60%] min-w-0 space-y-8"> */}
                   <Card className="h-full">
                     <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
@@ -597,71 +654,34 @@ const [tracks, setTracks] = useState<Track[]>([]);
                   </Card>
                 </div>
 
-                {/* (MODIFIED) Achievements - 40% */}
+
+
+                {/* Achievements Section */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
-                  <Card className="h-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Trophy className={`h-5 w-5 ${textMedium}`} />
-                        <span>Achievements</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent
-                      className={
-                        achievementItems.length > 0
-                          ? "space-y-4"
-                          : "h-full flex items-center justify-center"
-                      }
-                    >
-                      {achievementItems.length > 0 ? (
-                        <>
-                          {achievementItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-start space-x-3"
-                            >
-                              <item.icon
-                                className={`h-5 w-5 mt-0.5 flex-shrink-0 ${item.iconClassName}`}
-                                aria-hidden="true"
-                              />
-                              <div>
-                                <p
-                                  className={`font-medium text-sm ${textDark}`}
-                                >
-                                  {item.title}
-                                </p>
-                                <p className={`text-xs ${textLight}`}>
-                                  {item.status}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                          {/* "View All Achievements" button */}
-                          <Link href="/learner-dashboard/achievements">
-                            <div className="pt-2">
-                              <Button
-                                variant="secondary"
-                                className="w-full"
-                                onClick={() => {
-                                  // Add navigation or modal logic here
-                                }}
-                              >
-                                View All Achievements
-                              </Button>
-                            </div>
-                          </Link>
-                        </>
-                      ) : (
-                        <EmptyState
-                          icon={Trophy}
-                          title="Goals Await!"
-                          // Cool message here:
-                          message="Complete your first few steps to unlock your initial achievements."
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+    <Card className="h-full">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Trophy className={`h-5 w-5 ${textMedium}`} />
+                <span>Your Achievements</span>
+            </CardTitle>
+        </CardHeader>
+        {/* Added standard padding and vertical space between content and button */}
+        <CardContent className="space-y-4"> 
+            <AchievementsSection/>
+            {/* The button is now inside the CardContent for consistent padding */}
+            <Link href="/learner-dashboard/achievements" className="block">
+                <Button
+                    variant="secondary"
+                    className="w-full cursor-pointer"
+                >
+                    View All Achievements
+                </Button>
+            </Link>
+        </CardContent>
+    </Card>
+</div>
+                
+                {/* Add any additional sections here */}
               </div>
               {/* (END NEW) Suggested + Achievements Container */}
 
