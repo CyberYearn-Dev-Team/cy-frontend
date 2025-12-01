@@ -258,7 +258,7 @@ export default function ProgressPage() {
               </div>
 
               {/* FILTER DROPDOWN */}
-              <div className="flex w-full sm:basis-[50%] sm:justify-end gap-2">
+              <div className="flex w-full justify-between sm:basis-[50%] sm:justify-end gap-2">
                 <div className="relative">
                   <button
                     onClick={() => setFilterDropdown((prev) => !prev)}
