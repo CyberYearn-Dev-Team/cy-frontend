@@ -25,9 +25,11 @@ import { toast } from "sonner";
 
 // Theme constants
 const primary = "#72a210";
-const bgLight = "bg-gray-50 dark:bg-gray-950";
+const primaryDarker = "#5c880d";
+const bgLight = "bg-gray-100 dark:bg-gray-950";
+const cardBg = "bg-white dark:bg-gray-900";
 const textDark = "text-gray-900 dark:text-gray-100";
-const textMedium = "text-gray-700 dark:text-gray-300";
+const textMedium = "text-gray-600 dark:text-gray-300";
 const textLight = "text-gray-500 dark:text-gray-400";
 
 // Convert Directus file object to public URL
@@ -126,7 +128,7 @@ export default function LabDetailPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-6 space-y-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -154,20 +156,22 @@ export default function LabDetailPage() {
           {/* Lab content */}
           {lab && (
             <>
-              <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
-                {lab.title}
-              </h1>
+              <div className={`${cardBg} shadow rounded-lg p-6 mb-5`}>
+                <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
+                  {lab.title}
+                </h1>
 
-              {lab.description ? (
-                <div
-                  className="lab-description prose max-w-none space-y-6 dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: lab.description }}
-                />
-              ) : (
-                <div className={textLight}>No description available</div>
-              )}
+                {lab.description ? (
+                  <div
+                    className="lab-description prose max-w-none space-y-6 dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lab.description }}
+                  />
+                ) : (
+                  <div className={textLight}>No description available</div>
+                )}
 
-              <p className={`${textMedium} mt-2`}>• {lab.levels} • </p>
+                <p className={`${textMedium} mt-2`}>• {lab.levels} • </p>
+              </div>
 
               {/* -------------------- VIDEO SECTION -------------------- */}
               <div>
@@ -218,10 +222,8 @@ export default function LabDetailPage() {
                 </button>
               </div>
 
-
-
               {/* -------------------- ACTION BUTTONS -------------------- */}
-              <div className="flex flex-col md:flex-row gap-4 mt-10 pb-24">
+              <div className="flex flex-col md:flex-row gap-4 mt-10">
                 {/* Mark Completed Button */}
                 <button
                   onClick={() => {

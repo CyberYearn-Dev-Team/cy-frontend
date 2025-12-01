@@ -99,7 +99,7 @@ export default function LabGuidePage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
-        <main className="flex-1 overflow-y-auto p-6 space-y-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
@@ -127,6 +127,7 @@ export default function LabGuidePage() {
           {/* Lab Content */}
           {lab && (
             <>
+            <div className={`${cardBg} shadow rounded-lg p-6`}>
               <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
                 {lab.title}
               </h1>
@@ -144,6 +145,8 @@ export default function LabGuidePage() {
               {lab.levels && (
                 <p className={`${textMedium} mt-2`}>• {lab.levels} •</p>
               )}
+
+</div>
 
               {/* Video */}
               <div className="mt-6">
