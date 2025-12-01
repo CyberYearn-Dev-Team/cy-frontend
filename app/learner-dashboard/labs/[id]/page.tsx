@@ -218,6 +218,8 @@ export default function LabDetailPage() {
                 </button>
               </div>
 
+
+
               {/* -------------------- ACTION BUTTONS -------------------- */}
               <div className="flex flex-col md:flex-row gap-4 mt-10 pb-24">
                 {/* Mark Completed Button */}
