@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 import { getCurrentUser } from "@/lib/api/auth";
 import {
   Card,

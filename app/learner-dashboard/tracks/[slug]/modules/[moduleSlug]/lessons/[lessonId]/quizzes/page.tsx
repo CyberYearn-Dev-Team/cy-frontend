@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { FileText, Clock, RefreshCw } from "lucide-react"; // Import Clock and RefreshCw
 import QuizSkeleton from "@/components/ui/QuizSkeleton";
 import { submitQuiz } from "@/lib/services/quizService";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 import { useRouter } from "next/navigation";
 import {
   Breadcrumb,

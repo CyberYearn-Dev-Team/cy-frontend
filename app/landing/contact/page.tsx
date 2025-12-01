@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Header from "@/components/ui/header";
-import Footer from "@/components/ui/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Phone, Mail, Send } from "lucide-react";
 // NOTE: Assuming Card, Input, Label, Button, Select components are themable via Tailwind dark mode setup
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Footer from "@/components/ui/footer";
+import Footer from "@/components/footer";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";

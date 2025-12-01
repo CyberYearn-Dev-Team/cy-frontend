@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 import { ModuleDetailSkeleton } from "@/components/ui/ModuleDetailSkeleton";
 
 import {

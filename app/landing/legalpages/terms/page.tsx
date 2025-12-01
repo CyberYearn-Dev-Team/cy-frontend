@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Header from "@/components/ui/header";
-import Footer from "@/components/ui/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
 

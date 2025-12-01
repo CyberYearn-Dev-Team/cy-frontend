@@ -8,9 +8,9 @@ import {
 } from "@/lib/services/progressService";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 import { LessonDetailSkeleton } from "@/components/ui/LessonDetailSkeleton";
 import { toast } from "sonner";
 import {

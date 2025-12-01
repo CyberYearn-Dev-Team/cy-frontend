@@ -4,10 +4,10 @@ import React, { useState, useEffect } from "react";
 import { Trophy, Lock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
-import LearnerFooter from "@/components/ui/learner-footer";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
+import LearnerFooter from "@/components/learner-footer";
 
 // Reusable Card Wrapper
 const Card = ({

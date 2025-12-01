@@ -29,9 +29,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 // --- CHANGE END ---
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 import confetti from "canvas-confetti";
 
 // Theme Constants

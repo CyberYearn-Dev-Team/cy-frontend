@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import AdminSidebar from "@/components/ui/admin-sidebar";
-import AdminHeader from "@/components/ui/admin-header";
-import Nav from "@/components/ui/admin-nav";
+import AdminSidebar from "@/components/admin-sidebar";
+import AdminHeader from "@/components/admin-header";
+import Nav from "@/components/admin-nav";
 
 interface AuditLog {
   id: string;

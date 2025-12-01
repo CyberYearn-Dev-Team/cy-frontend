@@ -4,11 +4,11 @@ import React, { useState } from "react";
 
 // ✅ Import my admin nav just like i did in the stored code
 
-import Nav from "@/components/ui/admin-nav";
+import Nav from "@/components/admin-nav";
 
-import AdminSidebar from "@/components/ui/admin-sidebar";
+import AdminSidebar from "@/components/admin-sidebar";
 
-import AdminHeader from "@/components/ui/admin-header";
+import AdminHeader from "@/components/admin-header";
 
 import {
   Shield,

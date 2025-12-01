@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { FileText } from "lucide-react";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Nav from "@/components/ui/learner-nav";
-import Header from "@/components/ui/learner-header";
+import Sidebar from "@/components/learner-sidebar";
+import Nav from "@/components/learner-nav";
+import Header from "@/components/learner-header";
 import TechnicalIssuePopup from "@/components/ui/technical-issue-popup";
 import { LabDetailSkeleton } from "@/components/ui/LabDetailSkeleton";
 

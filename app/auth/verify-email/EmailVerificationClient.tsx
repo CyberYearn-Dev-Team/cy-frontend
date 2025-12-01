@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Loader2, Mail } from "lucide-react";
 import { Toaster, toast } from "sonner";
-import Footer from "@/components/ui/footer";
+import Footer from "@/components/footer";
 
 // Theme Constants
 const primary = "#72a210";

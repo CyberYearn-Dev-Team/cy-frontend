@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AdminSidebar from "@/components/ui/admin-sidebar";
-import AdminHeader from "@/components/ui/admin-header";
-import Nav from "@/components/ui/admin-nav";
+import AdminSidebar from "@/components/admin-sidebar";
+import AdminHeader from "@/components/admin-header";
+import Nav from "@/components/admin-nav";
 import { Users, Activity, TrendingUp, BarChart3 } from "lucide-react";
 import {
   LineChart as RLineChart,

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
 
-import LearnerFooter from "@/components/ui/learner-footer";
+import LearnerFooter from "@/components/learner-footer";
 import { Phone, Mail, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

@@ -33,10 +33,10 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
-import Sidebar from "@/components/ui/learner-sidebar";
-import Header from "@/components/ui/learner-header";
-import Nav from "@/components/ui/learner-nav";
-import LearnerFooter from "@/components/ui/learner-footer";
+import Sidebar from "@/components/learner-sidebar";
+import Header from "@/components/learner-header";
+import Nav from "@/components/learner-nav";
+import LearnerFooter from "@/components/learner-footer";
 import { getRewards } from "@/lib/services/gamificationService";
 import {
   getContinueLearning,
@@ -446,7 +446,10 @@ export default function LearnerDashboard() {
                               {xp}
                             </p>
                           </div>
-                          <Zap className={`h-8 w-8`} style={{ color: primary }} />
+                          <Zap
+                            className={`h-8 w-8`}
+                            style={{ color: primary }}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -611,24 +614,25 @@ export default function LearnerDashboard() {
                                   {activity.title}
                                 </p>
                                 <div className="flex items-center justify-between mt-1">
-                                  {activity.progress > 0 && (
+                                  {typeof activity.progress === 'number' && (
                                     <span className="ml-0 text-xs text-gray-500 dark:text-gray-400">
                                       {Math.round(activity.progress)}%
                                     </span>
                                   )}
 
                                   <div className="flex justify-end">
-  <span
-    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-      activity.status === "COMPLETED"
-        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-    }`}
-  >
-    {activity.status === "COMPLETED" ? "Completed" : "In Progress"}
-  </span>
-</div>
-
+                                    <span
+                                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                        activity.status === "COMPLETED"
+                                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                          : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                      }`}
+                                    >
+                                      {activity.status === "COMPLETED"
+                                        ? "Completed"
+                                        : "In Progress"}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
