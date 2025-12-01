@@ -249,9 +249,7 @@ export default function LearnerDashboard() {
   const [continueLearning, setContinueLearning] = useState<
     ContinueLearningItem[]
   >([]);
-  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>(
-    []
-  );
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState({
     continueLearning: true,
     recentActivities: true,
@@ -277,13 +275,18 @@ export default function LearnerDashboard() {
 
           progressData.data.trackProgress.forEach((track: any) => {
             // Show all tracks that are either IN_PROGRESS or COMPLETED
-            if (track.status === "IN_PROGRESS" || track.status === "COMPLETED") {
+            if (
+              track.status === "IN_PROGRESS" ||
+              track.status === "COMPLETED"
+            ) {
               const statusText =
                 track.status === "COMPLETED" ? "Completed" : "In Progress";
               activities.push({
                 id: `track-${track.trackId}`,
                 title: `${statusText}: ${track.title}`,
-                description: `Progress: ${track.progress}% • ${track.completedLessons} of ${track.totalLessons || "?"} lessons`,
+                description: `Progress: ${track.progress}% • ${
+                  track.completedLessons
+                } of ${track.totalLessons || "?"} lessons`,
                 status: track.status,
                 type: "track",
                 progress: track.progress,
@@ -310,7 +313,11 @@ export default function LearnerDashboard() {
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         // Ensure loaders are turned off to avoid infinite spinners
-        setIsLoading({ continueLearning: false, recentActivities: false, achievements: false });
+        setIsLoading({
+          continueLearning: false,
+          recentActivities: false,
+          achievements: false,
+        });
       }
     };
 
@@ -451,7 +458,10 @@ export default function LearnerDashboard() {
                             {level}
                           </p>
                         </div>
-                        <Star className={`h-8 w-8`} style={{ color: primary }} />
+                        <Star
+                          className={`h-8 w-8`}
+                          style={{ color: primary }}
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -466,7 +476,10 @@ export default function LearnerDashboard() {
                             {streak}
                           </p>
                         </div>
-                        <Flame className={`h-8 w-8`} style={{ color: secondary }} />
+                        <Flame
+                          className={`h-8 w-8`}
+                          style={{ color: secondary }}
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -481,7 +494,10 @@ export default function LearnerDashboard() {
                             {badgesCount}
                           </p>
                         </div>
-                        <Award className={`h-8 w-8`} style={{ color: primary }} />
+                        <Award
+                          className={`h-8 w-8`}
+                          style={{ color: primary }}
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -534,15 +550,15 @@ export default function LearnerDashboard() {
                                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
-                              <div className="space-y-2 h-[110px] flex flex-col justify-between">
+                              <div className="space-y-2 h-[100px] flex flex-col justify-between">
                                 <div>
                                   <h3
-                                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
+                                    className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-3`}
                                   >
                                     {item.title}
                                   </h3>
                                   <p
-                                    className={`text-xs ${textLight} line-clamp-2 mt-1`}
+                                    className={`text-xs ${textLight} line-clamp-3 mt-1`}
                                     dangerouslySetInnerHTML={{
                                       __html: item.description,
                                     }}
@@ -574,50 +590,41 @@ export default function LearnerDashboard() {
                         <span>Recent Activity</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
+
+                    {/* ADDED max-h + scroll here */}
+                    <CardContent className="p-6 max-h-[450px] overflow-y-auto">
                       {isLoading.recentActivities ? (
                         <RecentActivitySkeleton />
                       ) : recentActivities.length > 0 ? (
                         <div className="space-y-4">
-                          {recentActivities.map((activity) => (
+                          {recentActivities.slice(0, 4).map((activity) => (
                             <div
                               key={activity.id}
                               className="flex items-start gap-3 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0"
                             >
-                              <div
-                                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                  activity.status === "COMPLETED"
-                                    ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
-                                    : "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300"
-                                }`}
-                              >
-                                {activity.status === "COMPLETED" ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Play className="h-3 w-3" />
-                                )}
-                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                   {activity.title}
                                 </p>
-                                <div className="flex items-center mt-1">
-                                  <span
-                                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                      activity.status === "COMPLETED"
-                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                    }`}
-                                  >
-                                    {activity.status === "COMPLETED"
-                                      ? "Completed"
-                                      : "In Progress"}
-                                  </span>
+                                <div className="flex items-center justify-between mt-1">
                                   {activity.progress > 0 && (
-                                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                    <span className="ml-0 text-xs text-gray-500 dark:text-gray-400">
                                       {Math.round(activity.progress)}%
                                     </span>
                                   )}
+
+                                  <div className="flex justify-end">
+  <span
+    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+      activity.status === "COMPLETED"
+        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+    }`}
+  >
+    {activity.status === "COMPLETED" ? "Completed" : "In Progress"}
+  </span>
+</div>
+
                                 </div>
                               </div>
                             </div>
@@ -764,9 +771,7 @@ export default function LearnerDashboard() {
                                 )}
 
                                 {badgesCount > 3 && (
-                                  <div
-                                    className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-900 text-xs font-bold text-gray-700 dark:text-gray-300"
-                                  >
+                                  <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-900 text-xs font-bold text-gray-700 dark:text-gray-300">
                                     +{badgesCount - 3}
                                   </div>
                                 )}
@@ -792,7 +797,10 @@ export default function LearnerDashboard() {
                       )}
 
                       {/* View All (kept neutral) */}
-                      <Link href="/learner-dashboard/achievements" className="block">
+                      <Link
+                        href="/learner-dashboard/achievements"
+                        className="block"
+                      >
                         <Button
                           variant="secondary"
                           className="w-full py-2.5 text-sm font-semibold rounded-xl cursor-pointer"
@@ -805,7 +813,6 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
-              
               {/* Coming Soon Section */}
               <div className="w-full lg:w-[60%] xl:w-[72%]">
                 <Card>
@@ -819,7 +826,6 @@ export default function LearnerDashboard() {
                   </CardContent>
                 </Card>
               </div>
-
             </div>
           </main>
 

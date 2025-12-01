@@ -147,10 +147,6 @@ export default function ComingSoonSection() {
                 {item.description}
               </p>
             </div>
-            
-            {/* <span className="inline-block px-3 py-1 mt-4 text-xs font-medium bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 rounded-full">
-              Coming Soon
-            </span> */}
           </div>
         </motion.div>
       ))}

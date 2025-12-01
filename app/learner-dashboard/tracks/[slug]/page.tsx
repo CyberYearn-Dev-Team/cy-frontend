@@ -10,6 +10,7 @@ import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 
 import { BookOpen } from "lucide-react";
+import { TrackDetailSkeleton } from "@/components/ui/TrackDetailSkeleton";
 // import Breadcrumb from "@/components/ui/breadcrumb";
 // import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
@@ -178,7 +179,7 @@ async function startModule(moduleId: string) {
 </Breadcrumb>
           <br />
           {loading ? (
-            <p className={textLight}>Loading track...</p>
+            <TrackDetailSkeleton />
           ) : !track ? (
             <p className={textLight}>Track not found.</p>
           ) : (

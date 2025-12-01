@@ -7,6 +7,7 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Nav from "@/components/ui/learner-nav";
 import Header from "@/components/ui/learner-header";
 import TechnicalIssuePopup from "@/components/ui/technical-issue-popup";
+import { LabDetailSkeleton } from "@/components/ui/LabDetailSkeleton";
 
 import { Video, Film, Clapperboard } from "lucide-react";
 
@@ -144,7 +145,7 @@ export default function LabDetailPage() {
           </Breadcrumb>
 
           {/* Loading / Error / Empty states */}
-          {loading && <div className={`${textMedium}`}>Loading...</div>}
+          {loading && <LabDetailSkeleton />}
           {error && <div className="p-8 text-red-600">{`Error: ${error}`}</div>}
           {!loading && !error && !lab && (
             <div className={`${textMedium}`}>Lab not found</div>

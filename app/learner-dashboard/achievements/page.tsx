@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Trophy, Lock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
@@ -112,19 +113,23 @@ export default function AchievementsPage() {
                 icon={<Trophy className="h-5 w-5 text-[#72a210]" />}
               />
               <CardContent>
-                {loading && (
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Loading achievements...
-                  </p>
-                )}
-
                 {error && (
                   <p className="text-red-600 dark:text-red-400">
                     {error}. Please try again later.
                   </p>
                 )}
 
-                {!loading && !error && (
+                {loading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="flex flex-col items-center space-y-3 p-6">
+                        <Skeleton className="h-20 w-20 rounded-full" />
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-48" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {badges.map((b) => (
                       <div

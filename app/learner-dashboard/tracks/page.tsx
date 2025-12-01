@@ -10,6 +10,7 @@ import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
 import LearnerFooter from "@/components/ui/learner-footer";
+import TracksSkeleton from "@/components/ui/TracksSkeleton";
 
 // Theme Constants
 const primary = "#72a210";
@@ -375,7 +376,7 @@ useEffect(() => {
 
             {/* Tracks Grid */}
             {loading ? (
-              <p className={textLight}>Loading tracks...</p>
+              <TracksSkeleton count={6} />
             ) : filteredTracks.length === 0 ? (
               <div
                 className={`${cardBg} text-center py-20 border rounded-lg shadow-md`}
@@ -391,9 +392,9 @@ useEffect(() => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredTracks.map((track, i) => (
-                  <TrackCard key={i} {...track} />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredTracks.map((track) => (
+                  <TrackCard key={track.id} {...track} />
                 ))}
               </div>
             )}

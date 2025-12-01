@@ -69,20 +69,3 @@ export function AchievementsSkeleton() {
   );
 }
 
-export const StatsSkeleton = () => (
-  <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6">
-    {[1, 2, 3, 4].map((i) => (
-      <Card key={i}>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-4">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-6 w-16" />
-            </div>
-            <Skeleton className="h-8 w-8 rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);

@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import {
+  Skeleton
+} from "@/components/ui/skeleton";
+import {
   FlaskConical,
   CheckCircle2,
   Clock,
@@ -124,9 +127,22 @@ export default function LabGuidesPage() {
               />
               <CardContent>
                 {loading ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Loading lab guides...
-                  </p>
+                  <div className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-6 border rounded-lg border-gray-200 dark:border-gray-700">
+                        <Skeleton className="h-6 w-3/4 mb-3" />
+                        <div className="space-y-2 mb-4">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-5/6" />
+                          <Skeleton className="h-4 w-4/6" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-10 w-32" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : labs.length === 0 ? (
                   <div className="text-center py-20 bg-white dark:bg-gray-900 border rounded-lg shadow-sm border-gray-200 dark:border-gray-700">
                     <FileText className="mx-auto h-20 w-20 text-[#72a210] mb-4" />
@@ -185,7 +201,7 @@ export default function LabGuidesPage() {
                             href={`/learner-dashboard/labs/${lab.id}`}
                             className="w-full sm:w-auto"
                           >
-                            <button className="flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto">
+                            <button className="flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto cursor-pointer">
                               <PlayCircle className="h-4 w-4" />
                               Start Lab Guide
                             </button>

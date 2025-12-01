@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FileText, Clock, RefreshCw } from "lucide-react"; // Import Clock and RefreshCw
+import QuizSkeleton from "@/components/ui/QuizSkeleton";
 import { submitQuiz } from "@/lib/services/quizService";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
@@ -238,7 +239,7 @@ export default function QuizzesPage() {
         </Breadcrumb>
         <br />
           {loading ? (
-            <p className={textLight}>Loading quizzes...</p>
+            <QuizSkeleton />
           ) : quizzes.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center mt-20 space-y-4 px-4 sm:px-0">
               <FileText className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto text-[${primary}]`} />

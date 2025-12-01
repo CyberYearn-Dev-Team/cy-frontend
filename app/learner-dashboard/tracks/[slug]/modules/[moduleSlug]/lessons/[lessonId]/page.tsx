@@ -11,6 +11,7 @@ import Link from "next/link";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
+import { LessonDetailSkeleton } from "@/components/ui/LessonDetailSkeleton";
 import { toast } from "sonner";
 import {
   Breadcrumb,
@@ -231,7 +232,7 @@ export default function LessonDetailPage() {
           <br />
 
           {loading ? (
-            <p className={textLight}>Loading lesson...</p>
+            <LessonDetailSkeleton />
           ) : !lesson ? (
             <p className={textLight}>Lesson not found.</p>
           ) : (

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Sidebar from "@/components/ui/learner-sidebar";
 import Header from "@/components/ui/learner-header";
 import Nav from "@/components/ui/learner-nav";
+import { ModuleDetailSkeleton } from "@/components/ui/ModuleDetailSkeleton";
 
 import {
   Breadcrumb,
@@ -131,7 +132,7 @@ export default function ModuleDetailPage() {
           </Breadcrumb>
           <br />
           {loading ? (
-            <p className={textLight}>Loading module...</p>
+            <ModuleDetailSkeleton />
           ) : !module ? (
             <p className={textLight}>Module not found.</p>
           ) : (
