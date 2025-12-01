@@ -8,6 +8,7 @@ import {
   RecentActivitySkeleton,
   AchievementsSkeleton,
 } from "@/components/ui/DashboardSkeletons";
+import DashboardStatsSkeleton from "@/components/ui/DashboardStatsSkeleton";
 import {
   BookOpen,
   FlaskConical,
@@ -430,78 +431,81 @@ export default function LearnerDashboard() {
                 </div>
 
                 {/* Stats Section - 30% */}
-                <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6">
-                  <Card>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-4">
-                          <p className={`text-sm font-medium ${textMedium}`}>
-                            Total XP
-                          </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>
-                            {xp}
-                          </p>
+                {isLoading.achievements ? (
+                  <DashboardStatsSkeleton />
+                ) : (
+                  <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6">
+                    <Card>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-4">
+                            <p className={`text-sm font-medium ${textMedium}`}>
+                              Total XP
+                            </p>
+                            <p className={`text-2xl font-bold ${textDark}`}>
+                              {xp}
+                            </p>
+                          </div>
+                          <Zap className={`h-8 w-8`} style={{ color: primary }} />
                         </div>
-
-                        <Zap className={`h-8 w-8`} style={{ color: primary }} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-4">
-                          <p className={`text-sm font-medium ${textMedium}`}>
-                            Level (XP)
-                          </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>
-                            {level}
-                          </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-4">
+                            <p className={`text-sm font-medium ${textMedium}`}>
+                              Level (XP)
+                            </p>
+                            <p className={`text-2xl font-bold ${textDark}`}>
+                              {level}
+                            </p>
+                          </div>
+                          <Star
+                            className={`h-8 w-8`}
+                            style={{ color: primary }}
+                          />
                         </div>
-                        <Star
-                          className={`h-8 w-8`}
-                          style={{ color: primary }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-4">
-                          <p className={`text-sm font-medium ${textMedium}`}>
-                            Streak
-                          </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>
-                            {streak}
-                          </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-4">
+                            <p className={`text-sm font-medium ${textMedium}`}>
+                              Streak
+                            </p>
+                            <p className={`text-2xl font-bold ${textDark}`}>
+                              {streak}
+                            </p>
+                          </div>
+                          <Flame
+                            className={`h-8 w-8`}
+                            style={{ color: secondary }}
+                          />
                         </div>
-                        <Flame
-                          className={`h-8 w-8`}
-                          style={{ color: secondary }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-4">
-                          <p className={`text-sm font-medium ${textMedium}`}>
-                            Badges
-                          </p>
-                          <p className={`text-2xl font-bold ${textDark}`}>
-                            {badgesCount}
-                          </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-4">
+                            <p className={`text-sm font-medium ${textMedium}`}>
+                              Badges
+                            </p>
+                            <p className={`text-2xl font-bold ${textDark}`}>
+                              {badgesCount}
+                            </p>
+                          </div>
+                          <Award
+                            className={`h-8 w-8`}
+                            style={{ color: primary }}
+                          />
                         </div>
-                        <Award
-                          className={`h-8 w-8`}
-                          style={{ color: primary }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
 
               {/* Continue Watching + Recent Activity Container */}

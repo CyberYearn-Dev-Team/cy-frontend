@@ -122,10 +122,16 @@ export default function AchievementsPage() {
                 {loading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="flex flex-col items-center space-y-3 p-6">
-                        <Skeleton className="h-20 w-20 rounded-full" />
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-48" />
+                      <div
+                        key={i}
+                        className="flex flex-col items-center space-y-3 p-6 w-full"
+                      >
+                        <Skeleton className="h-20 w-full" />{" "}
+                        {/* image placeholder as rectangle */}
+                        <Skeleton className="h-5 w-3/4" />{" "}
+                        {/* title placeholder */}
+                        <Skeleton className="h-4 w-full" />{" "}
+                        {/* description placeholder */}
                       </div>
                     ))}
                   </div>
@@ -136,7 +142,11 @@ export default function AchievementsPage() {
                         key={b.id}
                         className={`relative flex flex-col items-center text-center p-6 rounded-xl border border-[#72a210]
                         transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer
-                        ${b.unlocked ? "opacity-100 grayscale-0" : "opacity-60 grayscale"}`}
+                        ${
+                          b.unlocked
+                            ? "opacity-100 grayscale-0"
+                            : "opacity-60 grayscale"
+                        }`}
                       >
                         <img
                           src={b.image}
