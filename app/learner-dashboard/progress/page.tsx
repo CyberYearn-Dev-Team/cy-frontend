@@ -47,8 +47,11 @@ interface TrackProgress {
   progress: number;
   completedLessons: number;
   totalLessons: number;
-  modules: ModuleProgress[]; // Assuming modules are part of the track data
+
+  completedModules: number;
+  totalModules: number;
 }
+
 
 interface SummaryData {
   totalTracks: number;
@@ -93,9 +96,7 @@ const TrackCard: React.FC<{
 
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
-          <h2 className="text-lg font-semibold line-clamp-2">
-            {track.title}
-          </h2>
+          <h2 className="text-lg font-semibold line-clamp-2">{track.title}</h2>
           <span className="text-sm font-semibold text-[#507800]">
             {track.progress}%
           </span>
@@ -120,15 +121,13 @@ const TrackCard: React.FC<{
             {track.completedLessons}/{track.totalLessons} lessons
           </p>
           <p className="font-medium text-gray-900 dark:text-gray-100">
-            {track.modules?.length || 0} Modules
+             {track.totalModules ?? 0} Modules
           </p>
         </div>
-
       </div>
     </div>
   );
 };
-
 
 export default function ProgressPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -332,7 +331,7 @@ export default function ProgressPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 cursor-pointer">
                 {sortedTracks.length > 0 ? (
                   sortedTracks.map((track) => (
                     <TrackCard
