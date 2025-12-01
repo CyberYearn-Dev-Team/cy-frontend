@@ -96,19 +96,19 @@ export default function ProgressPage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
-                  <Layers className="h-8 w-8 text-[#72a210]" />
-                  <p className="mt-2 text-2xl font-bold">
-                    {summary.totalTracks}
-                  </p>
-                  <p className="text-sm text-gray-500">Total Tracks</p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
                   <Loader className="h-8 w-8 text-[#72a210]" />
                   <p className="mt-2 text-2xl font-bold">
                     {summary.inProgressTracks}
                   </p>
                   <p className="text-sm text-gray-500">In Progress</p>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
+                  <Layers className="h-8 w-8 text-[#72a210]" />
+                  <p className="mt-2 text-2xl font-bold">
+                    {summary.totalTracks}
+                  </p>
+                  <p className="text-sm text-gray-500">Total Tracks</p>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-xl p-4 flex flex-col items-center">
