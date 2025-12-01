@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import {
   startLesson,
   trackTime,
-  completeLesson,
 } from "@/lib/services/progressService";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -51,67 +50,11 @@ export default function LessonDetailPage() {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const totalTimeRef = useRef(0);
 
-  // Check lesson progress on load
+  // Start lesson on load
   useEffect(() => {
-    async function checkLessonProgress() {
-  try {
-    if (!process.env.NEXT_PUBLIC_API_URL) {
-      console.error("NEXT_PUBLIC_API_URL is not defined");
-      return;
-    }
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL.endsWith("/")
-      ? process.env.NEXT_PUBLIC_API_URL.slice(0, -1)
-      : process.env.NEXT_PUBLIC_API_URL;
-
-    const url = `${apiUrl}/me/progress`;
-    console.log("Fetching from URL:", url);
-
-    const res = await fetch(url, {
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-      },
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Failed to fetch progress:", {
-        status: res.status,
-        statusText: res.statusText,
-        error: errorText,
-      });
-      return;
-    }
-
-    const data = await res.json();
-    console.log("Progress response:", data);
-
-    const progressList = data?.data || [];
-
-    const progressForLesson = progressList.find(
-      (p: any) => p.lessonId === lessonId
-    );
-
-    if (progressForLesson?.status === "COMPLETED") {
-      console.log("Lesson is completed");
-      setIsCompleted(true);
-    } else {
-      console.log("Lesson is not completed");
-      setIsCompleted(false);
-    }
-  } catch (error) {
-    console.error("Error checking lesson progress:", error);
-  }
-}
-
-
     startLesson(lessonId as string).catch(console.error);
-    checkLessonProgress();
 
     async function fetchLesson() {
       try {
@@ -163,31 +106,6 @@ export default function LessonDetailPage() {
       trackTime(lessonId as string, 15).catch(console.error);
     };
   }, [lessonId]);
-
-  const handleComplete = async () => {
-    try {
-      const response = await completeLesson(lessonId as string);
-      console.log('Complete lesson response:', response);
-
-      // Check for success in different possible response structures
-      const isSuccess = 
-        response?.status === 200 || 
-        response?.satus === 200 ||
-        response?.data?.status?.toUpperCase() === "COMPLETED" ||
-        response?.status?.toUpperCase() === "COMPLETED";
-
-      if (isSuccess) {
-        setIsCompleted(true);
-        toast.success("Lesson completed! Now take the quiz.");
-      } else {
-        console.error('Unexpected response format:', response);
-        toast.error("Failed to complete lesson: Unexpected response format");
-      }
-    } catch (error) {
-      console.error('Error completing lesson:', error);
-      toast.error("Failed to complete lesson. Please try again.");
-    }
-  };
 
   const contentHtml = lesson?.description || "";
 
@@ -251,21 +169,14 @@ export default function LessonDetailPage() {
                   <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
                 </div>
 
-                {/* Completion Button */}
-                <div className="flex justify-end pt-4">
-                  <button
-                    onClick={handleComplete}
-                    disabled={isCompleted}
-                    className={`px-4 py-2 rounded-lg w-full sm:w-auto text-white transition-all ${
-                      isCompleted
-                        ? "opacity-50 cursor-not-allowed bg-green-600"
-                        : "bg-[#72a210] hover:bg-[#5c880d] cursor-pointer"
-                    }`}
-                  >
-                    {isCompleted ? "Completed ✓" : "Mark as Complete"}
-                  </button>
-                </div>
               </div>
+
+{/* LAB GUIDEs SECTION  */}
+
+
+
+
+
 
               {/* QUIZ SECTION */}
               <div

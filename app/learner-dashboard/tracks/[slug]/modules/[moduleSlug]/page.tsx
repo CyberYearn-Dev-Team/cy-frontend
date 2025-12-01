@@ -47,15 +47,15 @@ interface Module {
 
 // Function to truncate HTML content to a word limit
 function truncateHTMLContent(html: string, wordLimit: number) {
-  if (!html) return '';
+  if (!html) return "";
   // Remove HTML tags temporarily to count words
-  const text = html.replace(/<[^>]+>/g, '');
+  const text = html.replace(/<[^>]+>/g, "");
   const words = text.split(/\s+/).filter(Boolean);
 
   if (words.length <= wordLimit) return html;
 
   // Take only the first `wordLimit` words
-  const truncatedText = words.slice(0, wordLimit).join(' ') + '...';
+  const truncatedText = words.slice(0, wordLimit).join(" ") + "...";
 
   return truncatedText;
 }
@@ -87,20 +87,18 @@ export default function ModuleDetailPage() {
     fetchModule();
   }, [slug, moduleSlug]);
 
-// For backend api to call start lesson 
+  // For backend api to call start lesson
   async function startLesson(lessonId: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/start`,
-    {
-      method: "POST",
-      credentials: "include",
-    }
-  );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/start`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
 
-  return res.json();
-}
-
-
+    return res.json();
+  }
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -148,9 +146,10 @@ export default function ModuleDetailPage() {
                 />
               </div>
 
-
               {/* Lessons List */}
-              <div className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}>
+              <div
+                className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
+              >
                 <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
                   Lessons
                 </h2>
@@ -163,8 +162,12 @@ export default function ModuleDetailPage() {
                         key={lesson.id}
                         className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
                       >
-                        <div className={`w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 ${textMedium}`}>
-                          <span className="text-sm font-medium">{index + 1}</span>
+                        <div
+                          className={`w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 ${textMedium}`}
+                        >
+                          <span className="text-sm font-medium">
+                            {index + 1}
+                          </span>
                         </div>
 
                         <div className="flex-1">
@@ -172,7 +175,14 @@ export default function ModuleDetailPage() {
                             {lesson.title}
                           </h3>
                           <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <div dangerouslySetInnerHTML={{ __html: truncateHTMLContent(lesson.description, 50) }} />
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: truncateHTMLContent(
+                                  lesson.description,
+                                  50
+                                ),
+                              }}
+                            />
                           </div>
 
                           <span className={`text-xs ${textLight}`}>
@@ -180,33 +190,38 @@ export default function ModuleDetailPage() {
                           </span>
                         </div>
 
-<button
-  className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center cursor-pointer"
-  style={{ backgroundColor: primary }}
-  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = primaryDarker)}
-  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primary)}
-  onClick={async () => {
-    try {
-      await startLesson(lesson.id.toString());
-      toast.success('Lesson started!', {
-        description: 'You can now begin your lesson.',
-      });
-    } catch (error) {
-      console.error("Lesson start error:", error);
-      toast.error('Failed to start lesson', {
-        description: 'Please try again or contact support if the issue persists.',
-      });
-      return; // Don't redirect if there was an error
-    }
+                        <button
+                          className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center cursor-pointer"
+                          style={{ backgroundColor: primary }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor =
+                              primaryDarker)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = primary)
+                          }
+                          onClick={async () => {
+                            try {
+                              await startLesson(lesson.id.toString());
+                              toast.success("Lesson started!", {
+                                description: "You can now begin your lesson.",
+                              });
+                            } catch (error) {
+                              console.error("Lesson start error:", error);
+                              toast.error("Failed to start lesson", {
+                                description:
+                                  "Please try again or contact support if the issue persists.",
+                              });
+                              return; // Don't redirect if there was an error
+                            }
 
-    router.push(`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`);
-  }}
->
-  Start Lesson
-</button>
-
-
-
+                            router.push(
+                              `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lesson.id}`
+                            );
+                          }}
+                        >
+                          Start Lesson
+                        </button>
                       </div>
                     ))}
                   </div>
