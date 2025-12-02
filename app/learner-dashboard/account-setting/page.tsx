@@ -25,6 +25,8 @@ import {
   Shield,
   Lock,
   Key,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // Theme Colors
@@ -32,17 +34,30 @@ const primary = "#72a210";
 const primaryDarker = "#507800";
 
 export default function AccountSettingsPage() {
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [profile, setProfile] = useState({
+  interface UserProfile {
+    email: string;
+    username: string;
+    roles: string[];
+    createdAt: string;
+    lastLogin: string;
+    profileImage?: string;
+  }
+
+  const [profile, setProfile] = useState<UserProfile>({
     email: "",
     username: "",
     roles: [],
     createdAt: "",
     lastLogin: "",
+    profileImage: "",
   });
 
   const [passwords, setPasswords] = useState({
@@ -57,13 +72,12 @@ export default function AccountSettingsPage() {
         const res = await getCurrentUser();
         const u = res?.data || res;
         setProfile({
-  email: u?.email || "",
-  username: u?.username || "",
-  roles: u?.roles || [],      // <-- FIX HERE
-  createdAt: u?.createdAt || "",
-  lastLogin: u?.lastLogin || "",
-});
-
+          email: u?.email || "",
+          username: u?.username || "",
+          roles: u?.roles || [], // <-- FIX HERE
+          createdAt: u?.createdAt || "",
+          lastLogin: u?.lastLogin || "",
+        });
       } catch (err) {
         console.error("Failed to load user:", err);
         toast.error("Unable to load user info");
@@ -74,66 +88,314 @@ export default function AccountSettingsPage() {
     fetchUser();
   }, []);
 
-const handleSaveProfile = async () => {
-  setSaving(true);
-  try {
-    const res = await fetch("/api/v1/auth/me/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...profile,
-        profileImage, // include the image URL
-        passwords,
-      }),
-    });
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      // Get token from localStorage
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("cy_token") : null;
 
-    const data = await res.json();
+      if (!token) {
+        throw new Error("Authentication required. Please log in again.");
+      }
 
-    if (!res.ok) throw new Error(data.error || "Failed to update profile");
+      console.log('Sending password change request...');
+      const response = await fetch(
+        "https://cy-backend.onrender.com/api/v1/auth/reset-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          },
+          body: JSON.stringify({
+            currentpassword: currentPassword,
+            newpassword: newPassword,
+          }),
+        }
+      );
 
-    toast.success("Profile updated successfully!");
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to save profile");
-  } finally {
-    setSaving(false);
-  }
-};
+      // Log response status and headers for debugging
+      console.log('Password change response status:', response.status);
+      
+      // Handle response safely
+      const responseText = await response.text();
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error("Failed to parse response as JSON:", responseText);
+        throw new Error("Invalid response from server. Please try again.");
+      }
 
+      if (!response.ok) {
+        const errorMessage = data.message || data.error || data.errorMessage || "Failed to update password";
+        console.error('Password change failed:', errorMessage);
+        
+        // Handle specific error cases
+        if (response.status === 401) {
+          throw new Error("Invalid current password. Please try again.");
+        } else if (response.status === 400) {
+          throw new Error(errorMessage || "Invalid request. Please check your input.");
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        }
+        throw new Error(errorMessage);
+      }
 
-
-const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    toast.loading("Uploading image...");
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.error(data.error || "Upload failed");
-      return;
+      // If we get here, the password change was successful
+      console.log('Password changed successfully');
+      return data;
+      
+    } catch (err: any) {
+      console.error("Password change error:", err);
+      // If it's already an Error object with a message, just rethrow it
+      if (err instanceof Error) {
+        throw err;
+      }
+      // If it's a string or something else, convert to Error
+      throw new Error(
+        typeof err === "string" ? err : "Failed to update password. Please try again."
+      );
     }
+  };
 
-    setProfileImage(data.url);
-    toast.success("Profile photo uploaded successfully!");
-  } catch (err) {
-    console.error("Upload failed:", err);
-    toast.error("Error uploading image");
-  } finally {
-    toast.dismiss();
-  }
-};
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    let toastId: string | number = '';
 
+    try {
+      // Check if we're trying to change the password
+      const isPasswordChangeAttempt = 
+        passwords.currentPassword ||
+        passwords.newPassword ||
+        passwords.confirmPassword;
+
+      if (isPasswordChangeAttempt) {
+        // Validate passwords
+        if (!passwords.currentPassword) {
+          throw new Error("Please enter your current password");
+        }
+
+        if (!passwords.newPassword) {
+          throw new Error("Please enter a new password");
+        }
+
+        if (passwords.newPassword.length < 8) {
+          throw new Error("New password must be at least 8 characters long");
+        }
+
+        if (passwords.newPassword !== passwords.confirmPassword) {
+          throw new Error("New passwords do not match");
+        }
+
+        // Show loading state
+        toastId = toast.loading("Updating your password...");
+        console.log('Attempting to change password...');
+
+        try {
+          // Call the password change API
+          await changePassword(
+            passwords.currentPassword,
+            passwords.newPassword
+          );
+
+          // Clear password fields on success
+          setPasswords({
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+
+          // Show success message
+          toast.success("Password updated successfully!");
+          console.log('Password updated successfully');
+          
+        } catch (error: any) {
+          // Show error message from the API or validation
+          console.error('Password change failed:', error);
+          toast.error(error.message || 'Failed to update password. Please try again.');
+          // Re-throw to be caught by the outer catch block
+          throw error;
+        } finally {
+          // Dismiss the loading toast if it was created
+          if (toastId) {
+            toast.dismiss(toastId);
+          }
+        }
+      }
+
+      // Only proceed with profile update if there are changes (other than password)
+      const hasProfileChanges = Object.keys(profile).some(
+        (key) => profile[key as keyof typeof profile] !== ""
+      );
+
+      if (hasProfileChanges || profileImage) {
+        const toastId = toast.loading("Updating profile...");
+
+        try {
+          // First check if we need to update the profile image
+          if (profileImage) {
+            const imageFormData = new FormData();
+            // Convert profileImage URL to blob if it's not already a File object
+            if (typeof profileImage === "string") {
+              const imageResponse = await fetch(profileImage);
+              const blob = await imageResponse.blob();
+              const file = new File([blob], "profile-image.jpg", {
+                type: "image/jpeg",
+              });
+              imageFormData.append("file", file);
+            } else {
+              imageFormData.append("file", profileImage);
+            }
+
+            // Upload the image first
+            const uploadRes = await fetch("/api/upload", {
+              method: "POST",
+              body: imageFormData,
+            });
+
+            const uploadData = await uploadRes.json();
+
+            if (!uploadRes.ok || !uploadData.url) {
+              throw new Error(uploadData.error || "Failed to upload image");
+            }
+
+            // Update profile with the new image URL
+            profile.profileImage = uploadData.url;
+          }
+
+          // Update user profile with the backend
+          const token =
+            typeof window !== "undefined"
+              ? localStorage.getItem("cy_token")
+              : null;
+          if (!token) {
+            throw new Error("Authentication required. Please log in again.");
+          }
+
+          // Debug: Log the request details
+          console.log('Sending PATCH request to update profile with token:', token ? 'Token exists' : 'No token');
+          
+          try {
+            console.log('Fetching user profile data...');
+            
+            const response = await fetch(
+              "https://cy-backend.onrender.com/api/v1/me",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+                  "Accept": "application/json",
+                },
+                credentials: "include"
+              }
+            );
+            
+            // Log response status and headers for debugging
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Handle response safely
+            const responseText = await response.text();
+            let data;
+            try {
+              data = responseText ? JSON.parse(responseText) : {};
+              
+              if (!response.ok) {
+                const errorMessage = data.message || data.error || `HTTP error! status: ${response.status}`;
+                console.error('Server responded with error:', errorMessage);
+                throw new Error(errorMessage);
+              }
+              
+              return data;
+            } catch (parseError) {
+              console.error('Failed to parse response:', responseText);
+              throw new Error('Invalid server response');
+            }
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            const errorName = error instanceof Error ? error.name : 'UnknownError';
+            
+            console.error('Fetch error:', {
+              name: errorName,
+              message: errorMessage,
+              stack: error instanceof Error ? error.stack : undefined,
+              type: typeof error,
+            });
+            
+            // Check for specific error types
+            if (errorName === 'TypeError' && errorMessage === 'Failed to fetch') {
+              throw new Error('Failed to connect to the server. Please check your internet connection and try again.');
+            }
+            
+            if (errorName === 'TypeError' && errorMessage.includes('NetworkError')) {
+              throw new Error('Network error. Please check your connection and try again.');
+            }
+            
+            throw new Error(errorMessage);
+          }
+
+          // If we get here, the request was successful
+          toast.success("Profile updated successfully!");
+        } catch (err: any) {
+          console.error("Profile update failed:", err);
+          throw err; // Re-throw to be caught by the outer catch block
+        } finally {
+          toast.dismiss(toastId);
+        }
+      }
+    } catch (err: any) {
+      console.error("Save error:", err);
+      // Show more specific error messages based on error type
+      let errorMessage = err.message || "Failed to save changes";
+
+      // Handle network errors
+      if (errorMessage.includes("Failed to fetch")) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      toast.loading("Uploading image...");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Upload failed");
+        return;
+      }
+
+      setProfileImage(data.url);
+      toast.success("Profile photo uploaded successfully!");
+    } catch (err) {
+      console.error("Upload failed:", err);
+      toast.error("Error uploading image");
+    } finally {
+      toast.dismiss();
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -145,7 +407,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pb-20 md:pb-8 mb-[50px] md:mb-0">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-             Account Settings
+              Account Settings
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               Manage your profile and password
@@ -215,13 +477,13 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className={`w-5 h-5 text-[${primary}]`} />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      User Email 
-                    </span>
-                  </div>
-                   <span className="px-2 py-1 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className={`w-5 h-5 text-[${primary}]`} />
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        User Email
+                      </span>
+                    </div>
+                    <span className="px-2 py-1 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
                       Verified
                     </span>
                   </div>
@@ -234,7 +496,9 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       </span>
                     </div>
                     <span className="px-2 py-1 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
-                      {profile.roles?.length > 0 ? profile.roles.join(", ") : "No roles"}
+                      {profile.roles?.length > 0
+                        ? profile.roles.join(", ")
+                        : "No roles"}
                     </span>
                   </div>
 
@@ -293,24 +557,6 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       </div>
                     </div>
 
-                    {/* Full Name */}
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={profile.fullName}
-                          onChange={(e) =>
-                            setProfile({ ...profile, fullName: e.target.value })
-                          }
-                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
-                        />
-                      </div>
-                    </div> */}
-
                     {/* Email (read-only) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -342,17 +588,27 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         <div className="relative">
                           <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
-                            type="password"
+                            type={showCurrentPassword ? "text" : "password"}
+                            placeholder="Enter current password"
                             value={passwords.currentPassword}
                             onChange={(e) =>
-                              setPasswords({
-                                ...passwords,
-                                currentPassword: e.target.value,
-                              })
+                              setPasswords({ ...passwords, currentPassword: e.target.value })
                             }
-                            placeholder="Enter current password"
-                            className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
+                            className={`w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
                           />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                            onClick={() =>
+                              setShowCurrentPassword(!showCurrentPassword)
+                            }
+                          >
+                            {showCurrentPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
                         </div>
                       </div>
 
@@ -364,17 +620,25 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
-                            type="password"
+                            type={showNewPassword ? "text" : "password"}
+                            placeholder="Enter new password"
                             value={passwords.newPassword}
                             onChange={(e) =>
-                              setPasswords({
-                                ...passwords,
-                                newPassword: e.target.value,
-                              })
+                              setPasswords({ ...passwords, newPassword: e.target.value })
                             }
-                            placeholder="Enter new password"
-                            className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
+                            className={`w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
                           />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                          >
+                            {showNewPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
                         </div>
                       </div>
 
@@ -386,17 +650,27 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input
-                            type="password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm new password"
                             value={passwords.confirmPassword}
                             onChange={(e) =>
-                              setPasswords({
-                                ...passwords,
-                                confirmPassword: e.target.value,
-                              })
+                              setPasswords({ ...passwords, confirmPassword: e.target.value })
                             }
-                            placeholder="Confirm new password"
-                            className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
+                            className={`w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
                           />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -406,7 +680,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       <button
                         onClick={handleSaveProfile}
                         disabled={saving}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60`}
+                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 cursor-pointer`}
                       >
                         <Save className="w-5 h-5" />
                         {saving ? "Saving..." : "Save Changes"}
