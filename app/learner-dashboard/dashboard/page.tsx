@@ -446,7 +446,7 @@ export default function LearnerDashboard() {
                               Total XP
                             </p>
                             <p className={`text-2xl font-bold ${textDark}`}>
-                              {xp}
+                              {xp || 0}
                             </p>
                           </div>
                           <Zap
@@ -464,7 +464,7 @@ export default function LearnerDashboard() {
                               Level (XP)
                             </p>
                             <p className={`text-2xl font-bold ${textDark}`}>
-                              {level}
+                              {level || 0}
                             </p>
                           </div>
                           <Star
@@ -482,7 +482,7 @@ export default function LearnerDashboard() {
                               Streak
                             </p>
                             <p className={`text-2xl font-bold ${textDark}`}>
-                              {streak}
+                              {streak || 0}
                             </p>
                           </div>
                           <Flame
@@ -500,7 +500,7 @@ export default function LearnerDashboard() {
                               Badges
                             </p>
                             <p className={`text-2xl font-bold ${textDark}`}>
-                              {badgesCount}
+                              {badgesCount || 0}
                             </p>
                           </div>
                           <Award
