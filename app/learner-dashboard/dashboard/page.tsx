@@ -186,7 +186,7 @@ const EmptyState = ({
   title: string;
   message: string;
 }) => (
-  <div className="flex flex-col items-center justify-center text-center py-12 text-gray-500 dark:text-gray-400">
+  <div className="flex flex-col items-center justify-center text-center py-10 text-gray-500 dark:text-gray-400">
     <Icon className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
     <h4 className={`font-semibold ${textDark}`}>{title}</h4>
     <p className={`text-sm ${textMedium}`}>{message}</p>
@@ -200,12 +200,15 @@ export default function LearnerDashboard() {
   const [streak, setStreak] = useState(0);
   const [badgesCount, setBadgesCount] = useState(0);
 
-  // Update achievements loading state when badges are loaded
+  // Update achievements loading state when gamification data is loaded
   useEffect(() => {
-    if (badgesCount > 0) {
+    // Set loading to false once we have the gamification data
+    const timer = setTimeout(() => {
       setIsLoading((prev) => ({ ...prev, achievements: false }));
-    }
-  }, [badgesCount]);
+    }, 500); // Small delay to ensure smooth transition
+    
+    return () => clearTimeout(timer);
+  }, [xp, level, streak, badgesCount]);
 
   useEffect(() => {
     async function loadGamification() {
@@ -536,7 +539,9 @@ export default function LearnerDashboard() {
                       )}
                     </CardHeader>
                     <CardContent className="h-full">
-                      {continueLearning.length > 0 ? (
+                      {isLoading.continueLearning ? (
+                        <ContinueLearningSkeleton />
+                      ) : continueLearning.length > 0 ? (
                         <div
                           ref={continueWatchingRef}
                           className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
@@ -582,7 +587,11 @@ export default function LearnerDashboard() {
                           ))}
                         </div>
                       ) : (
-                        <ContinueLearningSkeleton />
+                        <EmptyState
+                          icon={BookOpen}
+                          title="Start Your Learning Journey"
+                          message="Once you start learning, you can track your progress and continue from where you left off right here."
+                        />
                       )}
                     </CardContent>
                   </Card>
@@ -760,8 +769,8 @@ export default function LearnerDashboard() {
                           </div>
 
                           {/* Beautiful circular preview – THEMED GRADIENT */}
-                          {badgesCount > 0 && (
-                            <div className="flex justify-center mt-4">
+                          {badgesCount && badgesCount > 0 ? (
+                            <div className="flex justify-center">
                               <div className="flex -space-x-4">
                                 {[...Array(Math.min(3, badgesCount))].map(
                                   (_, i) => (
@@ -784,6 +793,14 @@ export default function LearnerDashboard() {
                                   </div>
                                 )}
                               </div>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <EmptyState
+                                icon={Trophy}
+                                title="Your Achievements Await"
+                                message="Complete lessons and earn badges"
+                              />
                             </div>
                           )}
 
