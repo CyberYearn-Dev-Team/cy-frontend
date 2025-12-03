@@ -4,15 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home,
+ LayoutDashboard,
   Users,
   BarChart3,
   ToggleLeft,
   Activity,
-  Settings,
-  Shield,
+  Wrench,
+  User,
+  Siren,
   LogOut,
-  GraduationCap,
   X,
 } from "lucide-react";
 
@@ -32,15 +32,24 @@ export default function AdminSidebar({
   const basePath = "/admin-dashboard";
 
   const sidebarItems = [
-    { name: "Overview", icon: Home, href: `${basePath}/overview` },
+    { name: "Overview", icon: LayoutDashboard, href: `${basePath}/overview` },
     { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
-    { name: "Feature Flags", icon: ToggleLeft, href: `${basePath}/feature-flags` },
+    {
+      name: "Feature Flags",
+      icon: ToggleLeft,
+      href: `${basePath}/feature-flags`,
+    },
     { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
-    { name: "Platform Security", icon: Shield, href: `${basePath}/security` },
+    { name: "Platform Security", icon: Siren, href: `${basePath}/security` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
     {
+      name: "Technical Issues",
+      icon: Wrench,
+      href: `${basePath}/technical-issues`,
+    },
+    {
       name: "Switch to Learner",
-      icon: GraduationCap,
+      icon: User,
       href: `/learner-dashboard/dashboard`,
     },
   ];
