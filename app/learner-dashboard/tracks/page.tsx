@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getProgressSummary } from "@/lib/services/progressSummary";
 import { toast } from "sonner";
 import Sidebar from "@/components/learner-sidebar";
@@ -78,7 +78,8 @@ const TrackCard = ({
   progress,
   buttonText = "View Track",
   thumbnail,
-}: Track) => {
+  isSelected = false,
+}: Track & { isSelected?: boolean }) => {
 const router = useRouter();
 
 const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined, trackSlug: string) => {
@@ -132,57 +133,61 @@ const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined,
     : null;
 
   return (
-    <div className="relative rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-transform hover:scale-[1.02] duration-300 bg-white dark:bg-gray-900">
-      {/* Image Header */}
-      <div className="relative h-48 w-full">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="absolute inset-0 w-full h-full object-cover"
+    <div className={`relative group ${isSelected ? 'ring-2 ring-[#72a210] rounded-xl' : ''}`}>
+      <div
+        className={`relative overflow-hidden rounded-xl border ${isSelected ? 'border-[#72a210]' : 'border-gray-200 dark:border-gray-700'} transition-all duration-300 hover:shadow-lg ${cardBg} h-full flex flex-col`}
+      >
+        {/* Image Header */}
+        <div className="relative h-48 w-full">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+              <FileText className="h-12 w-12 text-gray-400" />
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent rounded-t-3xl" />
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
+            <div>
+              <h3 className="text-lg font-semibold">{title}</h3>
+              <p className="text-sm text-gray-200">{topic}</p>
+            </div>
+            <button 
+              onClick={(e) => handleViewTrack(e, id, slug)}
+              className="bg-[#5a850d] text-white text-sm px-4 py-2 rounded-full hover:bg-[#72a210] focus:ring-2 focus:ring-[#72a210] transition cursor-pointer"
+            >
+              {buttonText}
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <Badge>{level}</Badge>
+            <span className="text-xs text-gray-500">{modules} Modules</span>
+          </div>
+
+          <div 
+            className={`text-sm ${textMedium} line-clamp-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
+            dangerouslySetInnerHTML={{ __html: description }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
-            <FileText className="h-12 w-12 text-gray-400" />
+
+          <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+            <div className="flex items-center gap-1">
+              <Clock className={`h-4 w-4 text-[${primary}]`} />
+              <span>{duration}</span>
+            </div>
+            <span className="font-semibold">{progress}%</span>
           </div>
-        )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent rounded-t-3xl" />
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
-          <div>
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <p className="text-sm text-gray-200">{topic}</p>
-          </div>
-          <button 
-            onClick={(e) => handleViewTrack(e, id, slug)}
-            className="bg-[#5a850d] text-white text-sm px-4 py-2 rounded-full hover:bg-[#72a210] focus:ring-2 focus:ring-[#72a210] transition cursor-pointer"
-          >
-            {buttonText}
-          </button>
+          <Progress value={progress} />
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <Badge>{level}</Badge>
-          <span className="text-xs text-gray-500">{modules} Modules</span>
-        </div>
-
-        <div 
-          className={`text-sm ${textMedium} line-clamp-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}
-          dangerouslySetInnerHTML={{ __html: description }}
-        />
-
-        <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
-          <div className="flex items-center gap-1">
-            <Clock className={`h-4 w-4 text-[${primary}]`} />
-            <span>{duration}</span>
-          </div>
-          <span className="font-semibold">{progress}%</span>
-        </div>
-
-        <Progress value={progress} />
       </div>
     </div>
   );
@@ -197,6 +202,8 @@ export default function TracksPage() {
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
+  const searchParams = useSearchParams();
+  const selectedTrackId = searchParams?.get('selected');
 
 
 useEffect(() => {
@@ -393,9 +400,10 @@ useEffect(() => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTracks.map((track) => (
-                  <TrackCard key={track.id} {...track} />
-                ))}
+                {filteredTracks.map((track) => {
+                const isSelected = track.id?.toString() === selectedTrackId;
+                return <TrackCard key={track.id} {...track} isSelected={isSelected} />;
+              })}
               </div>
             )}
           </main>

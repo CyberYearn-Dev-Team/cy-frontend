@@ -7,6 +7,7 @@ import {
   ContinueLearningSkeleton,
   RecentActivitySkeleton,
   AchievementsSkeleton,
+  SuggestedForYouSkeleton,
 } from "@/components/ui/DashboardSkeletons";
 import DashboardStatsSkeleton from "@/components/ui/DashboardStatsSkeleton";
 import {
@@ -780,11 +781,7 @@ export default function LearnerDashboard() {
                           ))}
                         </div>
                       ) : (
-                        <EmptyState
-                          icon={Star}
-                          title="No Suggestions Yet"
-                          message="Complete some tracks to get personalized recommendations."
-                        />
+                        <SuggestedForYouSkeleton />
                       )}
                     </CardContent>
                   </Card>
