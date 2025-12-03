@@ -2,6 +2,43 @@
  * Service for handling authentication-related API calls
  */
 
+/**
+ * Fetches the current authenticated user's profile
+ * @returns Promise with user profile data
+ */
+export const getCurrentUser = async (): Promise<any> => {
+  try {
+    // Get token from localStorage
+    const token = typeof window !== "undefined" ? localStorage.getItem("cy_token") : null;
+
+    if (!token) {
+      throw new Error("Authentication required. Please log in again.");
+    }
+
+    const response = await fetch(
+      "https://cy-backend.onrender.com/api/v1/me",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch user profile");
+    }
+
+    return await response.json();
+  } catch (err: any) {
+    console.error("Failed to fetch user profile:", err);
+    throw new Error(err.message || "Failed to fetch user profile. Please try again.");
+  }
+};
+
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<any> => {
   try {
     // Get token from localStorage

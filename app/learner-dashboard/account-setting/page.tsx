@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getCurrentUser } from "@/lib/services/authService";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
-import { getCurrentUser } from "@/lib/api/auth";
 import { changePassword } from "@/lib/services/authService";
 import {
   Card,
@@ -42,6 +42,8 @@ export default function AccountSettingsPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isUsernameModified, setIsUsernameModified] = useState(false);
+  const [originalUsername, setOriginalUsername] = useState("");
 
   interface UserProfile {
     email: string;
@@ -72,10 +74,12 @@ export default function AccountSettingsPage() {
       try {
         const res = await getCurrentUser();
         const u = res?.data || res;
+        const username = u?.username || "";
+        setOriginalUsername(username);
         setProfile({
           email: u?.email || "",
-          username: u?.username || "",
-          roles: u?.roles || [], // <-- FIX HERE
+          username: username,
+          roles: u?.roles || [],
           createdAt: u?.createdAt || "",
           lastLogin: u?.lastLogin || "",
         });
@@ -90,207 +94,187 @@ export default function AccountSettingsPage() {
   }, []);
 
 
-  const handleSaveProfile = async () => {
+  const handleUpdateUsername = async () => {
+    if (!profile.username) {
+      toast.error("Username cannot be empty");
+      return;
+    }
+
     setSaving(true);
-    let toastId: string | number = '';
+    const toastId = toast.loading("Updating username...");
 
     try {
-      // Check if we're trying to change the password
-      const isPasswordChangeAttempt = 
-        passwords.currentPassword ||
-        passwords.newPassword ||
-        passwords.confirmPassword;
-
-      if (isPasswordChangeAttempt) {
-        // Validate passwords
-        if (!passwords.currentPassword) {
-          throw new Error("Please enter your current password");
+      const updateRes = await fetch(
+        "https://cy-backend.onrender.com/api/v1/me/update",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            username: profile.username,
+          }),
         }
-
-        if (!passwords.newPassword) {
-          throw new Error("Please enter a new password");
-        }
-
-        if (passwords.newPassword.length < 8) {
-          throw new Error("New password must be at least 8 characters long");
-        }
-
-        if (passwords.newPassword !== passwords.confirmPassword) {
-          throw new Error("New passwords do not match");
-        }
-
-        // Show loading state
-        toastId = toast.loading("Updating your password...");
-        console.log('Attempting to change password...');
-
-        try {
-          // Call the password change API
-          await changePassword(
-            passwords.currentPassword,
-            passwords.newPassword
-          );
-
-          // Clear password fields on success
-          setPasswords({
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-          });
-
-          // Show success message
-          toast.success("Password updated successfully!");
-          console.log('Password updated successfully');
-          
-        } catch (error: any) {
-          // Show error message from the API or validation
-          console.error('Password change failed:', error);
-          toast.error(error.message || 'Failed to update password. Please try again.');
-          // Re-throw to be caught by the outer catch block
-          throw error;
-        } finally {
-          // Dismiss the loading toast if it was created
-          if (toastId) {
-            toast.dismiss(toastId);
-          }
-        }
-      }
-
-      // Only proceed with profile update if there are changes (other than password)
-      const hasProfileChanges = Object.keys(profile).some(
-        (key) => profile[key as keyof typeof profile] !== ""
       );
 
-      if (hasProfileChanges || profileImage) {
-        const toastId = toast.loading("Updating profile...");
+      const updateData = await updateRes.json();
 
-        try {
-          // First check if we need to update the profile image
-          if (profileImage) {
-            const imageFormData = new FormData();
-            // Convert profileImage URL to blob if it's not already a File object
-            if (typeof profileImage === "string") {
-              const imageResponse = await fetch(profileImage);
-              const blob = await imageResponse.blob();
-              const file = new File([blob], "profile-image.jpg", {
-                type: "image/jpeg",
-              });
-              imageFormData.append("file", file);
-            } else {
-              imageFormData.append("file", profileImage);
-            }
-
-            // Upload the image first
-            const uploadRes = await fetch("/api/upload", {
-              method: "POST",
-              body: imageFormData,
-            });
-
-            const uploadData = await uploadRes.json();
-
-            if (!uploadRes.ok || !uploadData.url) {
-              throw new Error(uploadData.error || "Failed to upload image");
-            }
-
-            // Update profile with the new image URL
-            profile.profileImage = uploadData.url;
-          }
-
-          // Update user profile with the backend
-          const token =
-            typeof window !== "undefined"
-              ? localStorage.getItem("cy_token")
-              : null;
-          if (!token) {
-            throw new Error("Authentication required. Please log in again.");
-          }
-
-          // Debug: Log the request details
-          console.log('Sending PATCH request to update profile with token:', token ? 'Token exists' : 'No token');
-          
-          try {
-            console.log('Fetching user profile data...');
-            
-            const response = await fetch(
-              "https://cy-backend.onrender.com/api/v1/me",
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${token}`,
-                  "Accept": "application/json",
-                },
-                credentials: "include"
-              }
-            );
-            
-            // Log response status and headers for debugging
-            console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-            
-            // Handle response safely
-            const responseText = await response.text();
-            let data;
-            try {
-              data = responseText ? JSON.parse(responseText) : {};
-              
-              if (!response.ok) {
-                const errorMessage = data.message || data.error || `HTTP error! status: ${response.status}`;
-                console.error('Server responded with error:', errorMessage);
-                throw new Error(errorMessage);
-              }
-              
-              return data;
-            } catch (parseError) {
-              console.error('Failed to parse response:', responseText);
-              throw new Error('Invalid server response');
-            }
-          } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-            const errorName = error instanceof Error ? error.name : 'UnknownError';
-            
-            console.error('Fetch error:', {
-              name: errorName,
-              message: errorMessage,
-              stack: error instanceof Error ? error.stack : undefined,
-              type: typeof error,
-            });
-            
-            // Check for specific error types
-            if (errorName === 'TypeError' && errorMessage === 'Failed to fetch') {
-              throw new Error('Failed to connect to the server. Please check your internet connection and try again.');
-            }
-            
-            if (errorName === 'TypeError' && errorMessage.includes('NetworkError')) {
-              throw new Error('Network error. Please check your connection and try again.');
-            }
-            
-            throw new Error(errorMessage);
-          }
-
-          // If we get here, the request was successful
-          toast.success("Profile updated successfully!");
-        } catch (err: any) {
-          console.error("Profile update failed:", err);
-          throw err; // Re-throw to be caught by the outer catch block
-        } finally {
-          toast.dismiss(toastId);
-        }
+      if (!updateRes.ok) {
+        throw new Error(
+          updateData.message ||
+            updateData.error ||
+            "Failed to update username"
+        );
       }
+
+      setOriginalUsername(profile.username);
+      setIsUsernameModified(false);
+      toast.success("Username updated successfully!");
     } catch (err: any) {
-      console.error("Save error:", err);
-      // Show more specific error messages based on error type
-      let errorMessage = err.message || "Failed to save changes";
-
-      // Handle network errors
-      if (errorMessage.includes("Failed to fetch")) {
-        errorMessage = "Network error. Please check your connection.";
-      }
-
-      toast.error(errorMessage);
+      console.error("Username update failed:", err);
+      toast.error(err.message || "Failed to update username");
+      throw err;
     } finally {
+      toast.dismiss(toastId);
       setSaving(false);
     }
   };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    let toastId: string | number = "";
+
+    try {
+      // ---------------------------------------------------
+      // PASSWORD CHANGE LOGIC
+      // ---------------------------------------------------
+      if (!passwords.currentPassword) {
+        throw new Error("Please enter your current password");
+      }
+
+      if (!passwords.newPassword) {
+        throw new Error("Please enter a new password");
+      }
+
+      if (passwords.newPassword.length < 8) {
+        throw new Error("New password must be at least 8 characters long");
+      }
+
+      if (passwords.newPassword !== passwords.confirmPassword) {
+        throw new Error("New passwords do not match");
+      }
+
+      toastId = toast.loading("Updating your password...");
+      console.log("Attempting to change password...");
+
+      try {
+        await changePassword(
+          passwords.currentPassword,
+          passwords.newPassword
+        );
+
+        setPasswords({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+
+        toast.success("Password updated successfully!");
+        console.log("Password updated successfully");
+      } catch (error: any) {
+        console.error("Password change failed:", error);
+        toast.error(
+          error.message ||
+            "Failed to update password. Please try again."
+        );
+        throw error;
+      } finally {
+        if (toastId) toast.dismiss(toastId);
+      }
+
+    // Handle profile image upload if needed
+    if (profileImage) {
+      const toastId = toast.loading("Uploading profile image...");
+      
+      try {
+        const imageFormData = new FormData();
+        let finalImageUrl = profileImage;
+
+        if (typeof profileImage === "string") {
+          const imgRes = await fetch(profileImage);
+          const blob = await imgRes.blob();
+          const file = new File([blob], "profile-image.jpg", {
+            type: "image/jpeg",
+          });
+          imageFormData.append("file", file);
+        } else {
+          imageFormData.append("file", profileImage);
+        }
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: imageFormData,
+        });
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok || !uploadData.url) {
+          throw new Error(uploadData.error || "Failed to upload image");
+        }
+
+        finalImageUrl = uploadData.url;
+
+        // Update profile with new image
+        const updateRes = await fetch(
+          "https://cy-backend.onrender.com/api/v1/me/update",
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              profileImage: finalImageUrl,
+            }),
+          }
+        );
+
+        const updateData = await updateRes.json();
+
+        if (!updateRes.ok) {
+          throw new Error(
+            updateData.message ||
+              updateData.error ||
+              "Failed to update profile image"
+          );
+        }
+
+        setProfile(prev => ({ ...prev, profileImage: finalImageUrl }));
+        toast.success("Profile image updated successfully!");
+      } catch (err: any) {
+        console.error("Profile image update failed:", err);
+        toast.error(err.message || "Failed to update profile image");
+        throw err;
+      } finally {
+        toast.dismiss(toastId);
+      }
+    }
+  } catch (err: any) {
+    console.error("Save error:", err);
+
+    let errorMessage = err.message || "Failed to save changes";
+
+    if (errorMessage.includes("Failed to fetch")) {
+      errorMessage = "Network error. Please check your connection.";
+    }
+
+    toast.error(errorMessage);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -471,16 +455,29 @@ export default function AccountSettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Username
                       </label>
-                      <div className="relative">
-                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={profile.username}
-                          onChange={(e) =>
-                            setProfile({ ...profile, username: e.target.value })
-                          }
-                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
-                        />
+                      <div className="relative flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input
+                            type="text"
+                            value={profile.username}
+                            onChange={(e) => {
+                              const newUsername = e.target.value;
+                              setProfile({ ...profile, username: newUsername });
+                              setIsUsernameModified(newUsername !== originalUsername);
+                            }}
+                            className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[${primary}] text-gray-900 dark:text-gray-100 transition`}
+                          />
+                        </div>
+                        {isUsernameModified && (
+                          <button
+                            onClick={handleUpdateUsername}
+                            disabled={saving}
+                            className={`px-4 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-medium text-sm transition whitespace-nowrap ${saving ? 'opacity-60 cursor-not-allowed cursor-pointer ' : 'cursor-pointer'}`}
+                          >
+                            {saving ? 'Saving...' : 'Save'}
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -602,15 +599,15 @@ export default function AccountSettingsPage() {
                       </div>
                     </div>
 
-                    {/* Save Button */}
+                    {/* Save Password Button */}
                     <div className="flex items-center gap-3 pt-6">
                       <button
                         onClick={handleSaveProfile}
-                        disabled={saving}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 cursor-pointer`}
+                        disabled={saving || (!passwords.currentPassword && !passwords.newPassword && !passwords.confirmPassword)}
+                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
                       >
                         <Save className="w-5 h-5" />
-                        {saving ? "Saving..." : "Save Changes"}
+                        {saving ? "Saving..." : "Update Password"}
                       </button>
                     </div>
                   </div>
