@@ -190,7 +190,7 @@ const Button = ({
   );
 };
 
-// A reusable placeholder for empty sections
+// A reusable placeholder for empty sections (important)
 const EmptyState = ({
   icon: Icon,
   title,
