@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -193,8 +193,8 @@ const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined,
   );
 };
 
-// Page
-export default function TracksPage() {
+// Inner component that contains the page content
+function TracksPageInner() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("All Levels");
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
