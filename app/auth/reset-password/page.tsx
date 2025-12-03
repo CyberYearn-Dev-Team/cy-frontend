@@ -46,10 +46,36 @@ function ResetPasswordForm() {
       return;
     }
 
+    // Password validation (at least 8 characters, 1 uppercase, 1 number, 1 special char)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(form.password)) {
+      toast.error("Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.");
+      return;
+    }
+
     setLoading(true);
     try {
-      // ✅ Mock API: simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const token = searchParams.get('token');
+      if (!token) {
+        throw new Error('Reset token is missing');
+      }
+
+      const response = await fetch('https://cy-backend.onrender.com/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          newPassword: form.password,
+          token: token
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to reset password');
+      }
 
       toast.success("Password reset successfully. Redirecting to login...");
 
@@ -57,8 +83,9 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/auth/login");
       }, 1500);
-    } catch {
-      toast.error("Failed to reset password. Try again.");
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      toast.error(error.message || "Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }

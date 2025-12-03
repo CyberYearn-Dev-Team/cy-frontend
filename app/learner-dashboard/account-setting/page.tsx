@@ -103,7 +103,7 @@ export default function AccountSettingsPage() {
 
       console.log('Sending password change request...');
       const response = await fetch(
-        "https://cy-backend.onrender.com/api/v1/auth/reset-password",
+        "https://cy-backend.onrender.com/api/v1/auth/change-password",
         {
           method: "POST",
           headers: {
