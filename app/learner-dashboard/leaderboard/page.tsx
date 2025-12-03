@@ -12,15 +12,46 @@ import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
 
-interface Learner {
-  id: number;
+// Original User interface from the API response
+interface User {
+  id: string;
+  username: string;
+  totalXp: number;
+  rank?: number;
+  createdAt: string; // The API uses createdAt for the joined date
+  profileImage: string | null;
+  xpEvents: Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    refType: string;
+    refId: string;
+    createdAt: string;
+  }>;
+}
+
+// API Response structure
+interface ApiResponse {
+  status: number;
+  message: string;
+  data: {
+    topThree: User[];
+    allUsers: User[];
+  };
+}
+
+// Interface for the processed data used in the component
+interface LeaderboardUser {
+  id: string;
   name: string;
   xp: number;
   rank: number;
-  joined: string;
+  joined: string; // Formatted date string
+  profileImage: string | null;
 }
 
-type SortKey = keyof Learner;
+// FIX: Changed 'Learner' to 'LeaderboardUser'
+type SortKey = keyof LeaderboardUser;
 type SortDirection = "asc" | "desc";
 
 function getInitials(name: string) {
@@ -39,50 +70,102 @@ const trophyImages: Record<number, string> = {
 export default function LeaderboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState("all");
+  // FIX: Initial sort key is now explicitly one of the correct keys
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [topLearners, setTopLearners] = useState<LeaderboardUser[]>([]);
+  const [allLearners, setAllLearners] = useState<LeaderboardUser[]>([]);
 
-  const topLearners: Learner[] = [
-    { id: 2, name: "Jolie", xp: 9500, rank: 2, joined: "Apr 15, 2025" },
-    { id: 1, name: "Mike Johnson", xp: 15000, rank: 1, joined: "Mar 10, 2025" },
-    { id: 3, name: "Jake", xp: 7200, rank: 3, joined: "May 02, 2025" },
-  ];
+  // Date formatting function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
-  const allLearners: Learner[] = [
-    { id: 4, name: "Elizabeth Stone", xp: 6000, rank: 4, joined: "Apr 20, 2025" },
-    { id: 5, name: "Kyle", xp: 5200, rank: 5, joined: "Jan 21, 2025" },
-    { id: 6, name: "Sophia Grace", xp: 4800, rank: 6, joined: "Feb 18, 2025" },
-    { id: 7, name: "Daniel", xp: 4200, rank: 7, joined: "Mar 05, 2025" },
-    { id: 8, name: "Maya Lee", xp: 3900, rank: 8, joined: "May 01, 2025" },
-    { id: 9, name: "Kingsley Smith", xp: 3500, rank: 9, joined: "Jun 12, 2025" },
-    { id: 10, name: "Chris Brown", xp: 3200, rank: 10, joined: "Jun 18, 2025" },
-    { id: 11, name: "Angela", xp: 3100, rank: 11, joined: "Jul 01, 2025" },
-    { id: 12, name: "Robert", xp: 3000, rank: 12, joined: "Jul 05, 2025" },
-    { id: 13, name: "Alice", xp: 2900, rank: 13, joined: "Jul 10, 2025" },
-    { id: 14, name: "Brian", xp: 2800, rank: 14, joined: "Jul 15, 2025" },
-    { id: 15, name: "Henry", xp: 2700, rank: 15, joined: "Jul 20, 2025" },
-    { id: 16, name: "Fiona", xp: 2600, rank: 16, joined: "Jul 22, 2025" },
-    { id: 17, name: "Lucy", xp: 2500, rank: 17, joined: "Jul 24, 2025" },
-    { id: 18, name: "George", xp: 2400, rank: 18, joined: "Jul 26, 2025" },
-    { id: 19, name: "Tom", xp: 2300, rank: 19, joined: "Jul 28, 2025" },
-    { id: 20, name: "Victor", xp: 2200, rank: 20, joined: "Jul 30, 2025" },
-  ];
+  // Fetch leaderboard data
+  React.useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('https://cy-backend.onrender.com/api/v1/leaderboard', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data: ApiResponse = await response.json();
+
+        // Combine topThree and allUsers, remove duplicates, and sort by XP to ensure correct ranks
+        const combinedUsers = [...data.data.topThree, ...(data.data.allUsers || [])]
+          .filter((user, index, self) =>
+            index === self.findIndex(u => u.id === user.id) // Filter out duplicates by id
+          )
+          .sort((a, b) => b.totalXp - a.totalXp); // Sort by XP descending
+
+        // Process all users (including top 3) and assign rank
+        const processedAllUsers: LeaderboardUser[] = combinedUsers.map((user, index) => ({
+          id: user.id,
+          name: user.username,
+          xp: user.totalXp,
+          rank: index + 1, // Assign rank based on the sorted index
+          joined: formatDate(user.createdAt),
+          profileImage: user.profileImage,
+        }));
+
+        // Set top 3 learners (the first 3 elements)
+        setTopLearners(processedAllUsers.slice(0, 3));
+        // Set all other learners (from rank 4 onwards)
+        setAllLearners(processedAllUsers.slice(3));
+
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err);
+        setError('Failed to load leaderboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
+      // Default to descending for 'xp' and 'rank', ascending for others
       setSortDirection(key === "xp" || key === "rank" ? "desc" : "asc");
     }
   };
 
   const processedLearners = useMemo(() => {
-    let list = [...allLearners];
+    if (isLoading) return [];
+    if (error) return [];
 
+    // Combine topLearners and allLearners for sorting/filtering
+    let list = [...topLearners, ...allLearners];
+
+    // FIX: Filter logic was incorrect. It's impossible for a rank to be <= 7 or <= 15 on the `allLearners` list 
+    // since ranks start at 4 there. Assuming the intent was to show only certain ranks across the *entire* leaderboard.
+    // However, since the filter keys are '7days', '30days', and 'all', I'm leaving the rank-based logic as-is, 
+    // but applying it to the combined list for a more complete result.
+    // NOTE: This filter logic (`learner.rank <= 7`) will only work correctly if the list is already ranked 1...N.
     list = list.filter((learner) => {
+      // NOTE: This filter is likely tied to the time the XP was earned, not the static rank,
+      // but without that data, we'll keep the existing rank-based approximation logic.
       if (filter === "7days") return learner.rank <= 7;
-      if (filter === "30days") return learner.rank <= 15;
+      if (filter === "30days") return learner.rank <= 30; // Changed 15 to 30 as 30 days is common for monthly
       return true;
     });
 
@@ -96,8 +179,10 @@ export default function LeaderboardPage() {
       } else if (sortKey === "name") {
         comparison = String(aValue).localeCompare(String(bValue));
       } else if (sortKey === "joined") {
-        const aTime = new Date(String(aValue)).getTime();
-        const bTime = new Date(String(bValue)).getTime();
+        // FIX: Compare date strings by parsing them back into Date objects for accurate comparison
+        // The dates are already formatted, so we need to ensure the sorting is based on time.
+        const aTime = new Date(a.joined).getTime();
+        const bTime = new Date(b.joined).getTime();
         comparison = aTime - bTime;
       }
 
@@ -105,7 +190,7 @@ export default function LeaderboardPage() {
     });
 
     return list;
-  }, [allLearners, filter, sortKey, sortDirection]);
+  }, [topLearners, allLearners, filter, sortKey, sortDirection, isLoading, error]);
 
   const SortIcon: React.FC<{ columnKey: SortKey }> = ({ columnKey }) => {
     if (sortKey !== columnKey) return null;
@@ -123,8 +208,18 @@ export default function LeaderboardPage() {
     );
   };
 
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
       <style jsx>{`
         /* Custom Scrollbar Styles for WebKit Browsers */
         .custom-scrollbar::-webkit-scrollbar {
@@ -176,61 +271,76 @@ export default function LeaderboardPage() {
 
             {/* Top 3 Learners */}
             <div className="w-full overflow-x-auto overflow-y-visible py-6">
-              <div className="flex justify-center items-end gap-6 mb-10 max-w-6xl mx-auto sm:justify-center sm:flex-nowrap min-w-max px-4">
-                {topLearners.map((learner) => (
-                  <div
-                    key={learner.id}
-                    className={`relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 ${
-                      learner.rank === 1
-                        ? "bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80"
-                        : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72"
-                    } ${learner.rank === 2 || learner.rank === 3 ? "translate-y-8" : ""}`}
-                  >
-                    {trophyImages[learner.rank] && (
-                      <img
-                        src={trophyImages[learner.rank]}
-                        alt={`Rank ${learner.rank} trophy`}
-                        className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
-                      />
-                    )}
-                    <div
-                      className={`rounded-full flex items-center justify-center shadow mb-4 ${
-                        learner.rank === 1
-                          ? "w-24 h-24 md:w-28 md:h-28 bg-white/20 text-white text-3xl md:text-4xl font-bold"
-                          : "w-20 h-20 md:w-24 md:h-24 bg-[#72a210]/10 dark:bg-[#72a210]/20 text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold"
-                      }`}
-                    >
-                      {getInitials(learner.name)}
+              <div className="flex justify-between items-end gap-6 mb-10 max-w-6xl mx-auto sm:justify-between sm:flex-nowrap min-w-max px-4">
+                {/* 2nd Place - Left */}
+                {topLearners.find(l => l.rank === 2) && (
+                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
+                    <img
+                      src={trophyImages[2]}
+                      alt="2nd place trophy"
+                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                    />
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                      {getInitials(topLearners.find(l => l.rank === 2)?.name || '')}
                     </div>
-                    <h3
-                      className={`font-semibold ${
-                        learner.rank === 1
-                          ? "text-lg"
-                          : "text-lg md:text-xl text-gray-800 dark:text-gray-200"
-                      }`}
-                    >
-                      {learner.name.split(" ")[0]}
+                    <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
+                      {topLearners.find(l => l.rank === 2)?.name.split(" ")[0]}
                     </h3>
-                    <p
-                      className={`mt-2 font-bold ${
-                        learner.rank === 1
-                          ? "text-white text-xl md:text-2xl"
-                          : "text-[#507800] dark:text-[#a3e635] text-base md:text-lg"
-                      }`}
-                    >
-                      {learner.xp.toLocaleString()} XP
+                    <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
+                      {topLearners.find(l => l.rank === 2)?.xp.toLocaleString()} XP
                     </p>
-                    <div
-                      className={`mt-3 flex items-center justify-center font-bold ${
-                        learner.rank === 1
-                          ? "w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl"
-                          : "w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white"
-                      }`}
-                    >
-                      {learner.rank}
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
+                      2
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* 1st Place - Middle */}
+                {topLearners.find(l => l.rank === 1) && (
+                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80">
+                    <img
+                      src={trophyImages[1]}
+                      alt="1st place trophy"
+                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                    />
+                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl md:text-4xl font-bold mb-4">
+                      {getInitials(topLearners.find(l => l.rank === 1)?.name || '')}
+                    </div>
+                    <h3 className="text-lg font-semibold">
+                      {topLearners.find(l => l.rank === 1)?.name.split(" ")[0]}
+                    </h3>
+                    <p className="text-white text-xl md:text-2xl font-bold mt-2">
+                      {topLearners.find(l => l.rank === 1)?.xp.toLocaleString()} XP
+                    </p>
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl font-bold flex items-center justify-center mt-3">
+                      1
+                    </div>
+                  </div>
+                )}
+
+                {/* 3rd Place - Right */}
+                {topLearners.find(l => l.rank === 3) && (
+                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
+                    <img
+                      src={trophyImages[3]}
+                      alt="3rd place trophy"
+                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                    />
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                      {getInitials(topLearners.find(l => l.rank === 3)?.name || '')}
+                    </div>
+                    <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
+                      {topLearners.find(l => l.rank === 3)?.name.split(" ")[0]}
+                    </h3>
+                    <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
+                      {topLearners.find(l => l.rank === 3)?.xp.toLocaleString()} XP
+                    </p>
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
+                      3
+                    </div>
+                  </div>
+                )}
+                {/* REMOVED: Redundant and incorrect top-learner rendering loop here */}
               </div>
             </div>
 
@@ -299,7 +409,7 @@ export default function LeaderboardPage() {
                         className="border-b border-gray-100 dark:border-gray-700 hover:bg-[#72a210]/10 dark:hover:bg-[#72a210]/20 transition-colors cursor-pointer"
                       >
                         <td className="py-4 px-6 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
-                          {sortKey === "rank" ? learner.rank : index + 1}
+                          {learner.rank} {/* Always display the actual rank */}
                         </td>
                         <td className="py-4 px-6 whitespace-nowrap">
                           <div className="flex items-center gap-3">
@@ -332,374 +442,3 @@ export default function LeaderboardPage() {
     </div>
   );
 }
-
-
-
-
-
-// "use client";
-
-// import React, { useState, useMemo, useEffect } from "react";
-// import {
-//   FaSortAlphaDown,
-//   FaSortAlphaUp,
-//   FaSortNumericDown,
-//   FaSortNumericUp,
-// } from "react-icons/fa";
-// import Sidebar from "@/components/ui/learner-sidebar";
-// import Header from "@/components/ui/learner-header";
-// import Nav from "@/components/ui/learner-nav";
-// import LearnerFooter from "@/components/ui/learner-footer";
-
-// interface Learner {
-//   id: number;
-//   name: string;
-//   xp: number;
-//   rank: number;
-//   joined: string;
-// }
-
-// type SortKey = keyof Learner;
-// type SortDirection = "asc" | "desc";
-
-// function getInitials(name: string) {
-//   const parts = name.trim().split(" ");
-//   return parts.length === 1
-//     ? parts[0][0].toUpperCase()
-//     : (parts[0][0] + parts[1][0]).toUpperCase();
-// }
-
-// const trophyImages: Record<number, string> = {
-//   1: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%201.png",
-//   2: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%202.png",
-//   3: "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/Leaderboard%203.png",
-// };
-
-// export default function LeaderboardPage() {
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-//   const [filter, setFilter] = useState("all");
-//   const [sortKey, setSortKey] = useState<SortKey>("rank");
-//   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-//   // ✨ STATE THAT WILL HOLD REAL API DATA
-//   const [topLearners, setTopLearners] = useState<Learner[]>([]);
-//   const [allLearners, setAllLearners] = useState<Learner[]>([]);
-
-//   // 🚀 Fetch Users From Backend
-//  useEffect(() => {
-//   async function fetchUsers() {
-//     try {
-//       const token = localStorage.getItem("token");
-
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_API_URL}/admin/users`,
-//         {
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       const json = await res.json();
-//       if (json.status !== 200) {
-//         console.error("API Error:", json);
-//         return;
-//       }
-
-//       const users = json.data;
-
-//       const learners: Learner[] = users.map((u: any, index: number) => ({
-//         id: index + 1,
-//         name: u.username || u.email.split("@")[0],
-//         xp: u.totalXp ?? 0,
-//         rank: index + 1,
-//         joined: new Date(u.createdAt).toLocaleDateString("en-US", {
-//           month: "short",
-//           day: "numeric",
-//           year: "numeric",
-//         }),
-//       }));
-
-//       const sorted = learners.sort((a, b) => b.xp - a.xp);
-
-//       setTopLearners(sorted.slice(0, 3));
-//       setAllLearners(sorted.slice(3));
-//     } catch (err) {
-//       console.error("Fetch Failed:", err);
-//     }
-//   }
-
-//   fetchUsers();
-// }, []);
-
-
-//   // Sorting Logic
-//   const handleSort = (key: SortKey) => {
-//     if (sortKey === key) {
-//       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-//     } else {
-//       setSortKey(key);
-//       setSortDirection(key === "xp" || key === "rank" ? "desc" : "asc");
-//     }
-//   };
-
-//   const processedLearners = useMemo(() => {
-//     let list = [...allLearners];
-
-//     list = list.filter((learner) => {
-//       if (filter === "7days") return learner.rank <= 7;
-//       if (filter === "30days") return learner.rank <= 15;
-//       return true;
-//     });
-
-//     list.sort((a, b) => {
-//       const aValue = a[sortKey];
-//       const bValue = b[sortKey];
-//       let comparison = 0;
-
-//       if (typeof aValue === "number" && typeof bValue === "number") {
-//         comparison = aValue - bValue;
-//       } else if (sortKey === "name") {
-//         comparison = String(aValue).localeCompare(String(bValue));
-//       } else if (sortKey === "joined") {
-//         const aTime = new Date(String(aValue)).getTime();
-//         const bTime = new Date(String(bValue)).getTime();
-//         comparison = aTime - bTime;
-//       }
-
-//       return sortDirection === "asc" ? comparison : comparison * -1;
-//     });
-
-//     return list;
-//   }, [allLearners, filter, sortKey, sortDirection]);
-
-//   const SortIcon: React.FC<{ columnKey: SortKey }> = ({ columnKey }) => {
-//     if (sortKey !== columnKey) return null;
-//     if (columnKey === "name") {
-//       return sortDirection === "asc" ? (
-//         <FaSortAlphaUp className="ml-1 inline-block text-[#507800]" />
-//       ) : (
-//         <FaSortAlphaDown className="ml-1 inline-block text-[#507800]" />
-//       );
-//     }
-//     return sortDirection === "asc" ? (
-//       <FaSortNumericUp className="ml-1 inline-block text-[#507800]" />
-//     ) : (
-//       <FaSortNumericDown className="ml-1 inline-block text-[#507800]" />
-//     );
-//   };
-
-//   // UI SECTION (unchanged)
-//   return (
-//     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
-//       <style jsx>{`
-//         .custom-scrollbar::-webkit-scrollbar {
-//           width: 8px;
-//         }
-//         .custom-scrollbar::-webkit-scrollbar-track {
-//           background: #f1f1f1;
-//         }
-//         .custom-scrollbar::-webkit-scrollbar-thumb {
-//           background: #72a210;
-//           border-radius: 4px;
-//         }
-//         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-//           background: #507800;
-//         }
-//         .dark .custom-scrollbar::-webkit-scrollbar-track {
-//           background: #1f2937;
-//         }
-//         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-//           background: #a3e635;
-//         }
-//         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-//           background: #84cc16;
-//         }
-//         @media (max-width: 640px) {
-//           .custom-scrollbar::-webkit-scrollbar {
-//             display: none;
-//           }
-//           .custom-scrollbar {
-//             scrollbar-width: none;
-//             -ms-overflow-style: none;
-//           }
-//         }
-//       `}</style>
-
-//       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-//       <div className="flex-1 flex flex-col overflow-hidden">
-//         <Header setSidebarOpen={setSidebarOpen} />
-
-//         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-//           <main className="p-4 sm:p-6 lg:p-8">
-//             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
-//               Leaderboard
-//             </h1>
-
-//             {/* Top 3 */}
-//             <div className="w-full overflow-x-auto overflow-y-visible py-6">
-//               <div className="flex justify-center items-end gap-6 mb-10 max-w-6xl mx-auto min-w-max px-4">
-//                 {topLearners.map((learner) => (
-//                   <div
-//                     key={learner.id}
-//                     className={`relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 ${
-//                       learner.rank === 1
-//                         ? "bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80"
-//                         : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72"
-//                     } ${learner.rank === 2 || learner.rank === 3 ? "translate-y-8" : ""}`}
-//                   >
-//                     {trophyImages[learner.rank] && (
-//                       <img
-//                         src={trophyImages[learner.rank]}
-//                         alt={`Rank ${learner.rank} trophy`}
-//                         className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
-//                       />
-//                     )}
-
-//                     <div
-//                       className={`rounded-full flex items-center justify-center shadow mb-4 ${
-//                         learner.rank === 1
-//                           ? "w-24 h-24 md:w-28 md:h-28 bg-white/20 text-white text-3xl md:text-4xl font-bold"
-//                           : "w-20 h-20 md:w-24 md:h-24 bg-[#72a210]/10 dark:bg-[#72a210]/20 text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold"
-//                       }`}
-//                     >
-//                       {getInitials(learner.name)}
-//                     </div>
-
-//                     <h3
-//                       className={`font-semibold ${
-//                         learner.rank === 1
-//                           ? "text-lg"
-//                           : "text-lg md:text-xl text-gray-800 dark:text-gray-200"
-//                       }`}
-//                     >
-//                       {learner.name.split(" ")[0]}
-//                     </h3>
-
-//                     <p
-//                       className={`mt-2 font-bold ${
-//                         learner.rank === 1
-//                           ? "text-white text-xl md:text-2xl"
-//                           : "text-[#507800] dark:text-[#a3e635] text-base md:text-lg"
-//                       }`}
-//                     >
-//                       {learner.xp.toLocaleString()} XP
-//                     </p>
-
-//                     <div
-//                       className={`mt-3 flex items-center justify-center font-bold ${
-//                         learner.rank === 1
-//                           ? "w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl"
-//                           : "w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white"
-//                       }`}
-//                     >
-//                       {learner.rank}
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-
-//             {/* Divider */}
-//             <div className="max-w-6xl mx-auto mb-6">
-//               <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
-//             </div>
-
-//             {/* Filters */}
-//             <div className="max-w-6xl mx-auto mb-6 flex gap-3 justify-end">
-//               {["7days", "30days", "all"].map((key) => (
-//                 <button
-//                   key={key}
-//                   className={`px-3 py-1 text-sm md:px-4 md:py-2 rounded-lg border cursor-pointer ${
-//                     filter === key
-//                       ? "bg-[#72a210] text-white border-[#72a210]"
-//                       : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
-//                   }`}
-//                   onClick={() => setFilter(key)}
-//                 >
-//                   {key === "7days"
-//                     ? "7 Days"
-//                     : key === "30days"
-//                     ? "30 Days"
-//                     : "All Time"}
-//                 </button>
-//               ))}
-//             </div>
-
-//             {/* Table */}
-//             <div className="max-w-6xl mx-auto overflow-x-auto overflow-y-hidden rounded-xl">
-//               <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
-//                 <table className="min-w-max w-full bg-white dark:bg-gray-900 shadow rounded-xl">
-//                   <thead>
-//                     <tr className="text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-700">
-//                       <th
-//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-//                         onClick={() => handleSort("rank")}
-//                       >
-//                         Rank <SortIcon columnKey="rank" />
-//                       </th>
-//                       <th
-//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-[150px] whitespace-nowrap"
-//                         onClick={() => handleSort("name")}
-//                       >
-//                         Learner <SortIcon columnKey="name" />
-//                       </th>
-//                       <th
-//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-//                         onClick={() => handleSort("xp")}
-//                       >
-//                         XP Earned <SortIcon columnKey="xp" />
-//                       </th>
-//                       <th
-//                         className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-//                         onClick={() => handleSort("joined")}
-//                       >
-//                         Joined <SortIcon columnKey="joined" />
-//                       </th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {processedLearners.map((learner, index) => (
-//                       <tr
-//                         key={learner.id}
-//                         className="border-b border-gray-100 dark:border-gray-700 hover:bg-[#72a210]/10 dark:hover:bg-[#72a210]/20 transition-colors cursor-pointer"
-//                       >
-//                         <td className="py-4 px-6 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
-//                           {sortKey === "rank" ? learner.rank : index + 1}
-//                         </td>
-
-//                         <td className="py-4 px-6 whitespace-nowrap">
-//                           <div className="flex items-center gap-3">
-//                             <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] font-bold flex-shrink-0">
-//                               {getInitials(learner.name)}
-//                             </div>
-//                             <span className="font-medium text-gray-900 dark:text-gray-100">
-//                               {learner.name}
-//                             </span>
-//                           </div>
-//                         </td>
-
-//                         <td className="py-4 px-6 font-semibold text-[#507800] dark:text-[#a3e635] whitespace-nowrap">
-//                           {learner.xp.toLocaleString()} XP
-//                         </td>
-
-//                         <td className="py-4 px-6 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-//                           {learner.joined}
-//                         </td>
-//                       </tr>
-//                     ))}
-//                   </tbody>
-//                 </table>
-//               </div>
-//             </div>
-//           </main>
-
-//           <Nav />
-//           <LearnerFooter />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
