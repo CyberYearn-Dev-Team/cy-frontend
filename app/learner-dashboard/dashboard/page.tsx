@@ -54,6 +54,17 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
 
+interface TrackProgress {
+  trackId: string;
+  title: string;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+  progress: number;
+  level: string;
+  completedLessons: number;
+  totalLessons: number;
+  thumbnail?: string;
+}
+
 interface Track {
   id: string;
   title: string;
@@ -261,59 +272,105 @@ export default function LearnerDashboard() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAndProcessProgress = async () => {
+    try {
+      const response = await fetch("https://cy-backend.onrender.com/api/v1/me/progress/summary", {
+        credentials: "include"
+      });
+      const data = await response.json();
+      
+      if (data?.data?.trackProgress) {
+        const trackProgress: TrackProgress[] = data.data.trackProgress;
+        
+        // Find main track (IN_PROGRESS with highest progress)
+        const inProgressTracks = trackProgress.filter(
+          (t: TrackProgress) => t.status === "IN_PROGRESS"
+        );
+        
+        let mainTrack = inProgressTracks.sort(
+          (a: TrackProgress, b: TrackProgress) => b.progress - a.progress
+        )[0];
+
+        // Get all NOT_STARTED tracks
+        const notStartedTracks = trackProgress.filter(
+          (t: TrackProgress) => t.status === "NOT_STARTED"
+        );
+
+        let suggestions: TrackProgress[] = [];
+
+        if (mainTrack) {
+          // Filter by same level
+          const sameLevelTracks = notStartedTracks.filter(
+            (t: TrackProgress) => t.level === mainTrack.level
+          );
+          
+          if (sameLevelTracks.length > 0) {
+            // Show all same level tracks, sorted by progress
+            suggestions = sameLevelTracks
+              .sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+          } else {
+            // Fallback: all NOT_STARTED sorted by progress
+            suggestions = [...notStartedTracks]
+              .sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+          }
+        } else {
+          // No main track, get all NOT_STARTED sorted by progress
+          suggestions = notStartedTracks
+            .sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+        }
+
+        // Map to Track format expected by the UI
+        setSuggestedTracks(
+          suggestions.map((t: TrackProgress) => ({
+            id: t.trackId,
+            title: t.title,
+            description: `Start learning ${t.title}`,
+            thumbnail: t.thumbnail || "",
+          }))
+        );
+
+        // Process recent activities
+        const activities: ActivityItem[] = [];
+        trackProgress.forEach((track: TrackProgress) => {
+          if (track.status === "IN_PROGRESS" || track.status === "COMPLETED") {
+            const statusText = track.status === "COMPLETED" ? "Completed" : "In Progress";
+            activities.push({
+              id: `track-${track.trackId}`,
+              title: `${statusText}: ${track.title}`,
+              description: `Progress: ${track.progress}% • ${track.completedLessons} of ${track.totalLessons || "?"} lessons`,
+              status: track.status,
+              type: "track",
+              progress: track.progress,
+              trackTitle: track.title,
+              timestamp: new Date(),
+            });
+          }
+        });
+
+        setRecentActivities(
+          activities
+            .sort((a, b) => (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0))
+            .slice(0, 5)
+        );
+        setIsLoading(prev => ({ ...prev, recentActivities: false }));
+      }
+    } catch (error) {
+      console.error("Error fetching progress:", error);
+      setIsLoading(prev => ({ ...prev, recentActivities: false }));
+    }
+  };
+
+  const fetchData = async () => {
       try {
-        const [continueData, progressData] = await Promise.all([
-          getContinueLearning(),
-          fetch("https://cy-backend.onrender.com/api/v1/me/progress/summary", {
-            credentials: "include",
-          }).then((res) => res.json()),
+        const [continueData] = await Promise.all([
+          getContinueLearning()
         ]);
 
         setContinueLearning(continueData || []);
         setIsLoading((prev) => ({ ...prev, continueLearning: false }));
-
-        // Transform progress data into activities
-        if (progressData?.data?.trackProgress) {
-          const activities: ActivityItem[] = [];
-
-          progressData.data.trackProgress.forEach((track: any) => {
-            // Show all tracks that are either IN_PROGRESS or COMPLETED
-            if (
-              track.status === "IN_PROGRESS" ||
-              track.status === "COMPLETED"
-            ) {
-              const statusText =
-                track.status === "COMPLETED" ? "Completed" : "In Progress";
-              activities.push({
-                id: `track-${track.trackId}`,
-                title: `${statusText}: ${track.title}`,
-                description: `Progress: ${track.progress}% • ${
-                  track.completedLessons
-                } of ${track.totalLessons || "?"} lessons`,
-                status: track.status,
-                type: "track",
-                progress: track.progress,
-                trackTitle: track.title,
-                timestamp: new Date(),
-              });
-            }
-          });
-
-          // Sort by most recent first and limit to 5 activities
-          setRecentActivities(
-            activities
-              .sort(
-                (a, b) =>
-                  (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0)
-              )
-              .slice(0, 5)
-          );
-          setIsLoading((prev) => ({ ...prev, recentActivities: false }));
-        } else {
-          // If no trackProgress, turn off recentActivities loading
-          setIsLoading((prev) => ({ ...prev, recentActivities: false }));
-        }
+        
+        // Fetch and process progress data
+        await fetchAndProcessProgress();
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         // Ensure loaders are turned off to avoid infinite spinners
@@ -329,7 +386,7 @@ export default function LearnerDashboard() {
   }, []);
 
   const [tracks, setTracks] = useState<Track[]>([]);
-  const suggestedItems = tracks.slice(0, 3); // Show first 3 tracks as suggestions
+  const [suggestedTracks, setSuggestedTracks] = useState<Track[]>([]);
   const becauseItems: any[] = [];
   const comingItems: any[] = [];
   const achievementItems: any[] = []; // Now empty
@@ -354,7 +411,7 @@ export default function LearnerDashboard() {
   const scrollContinueLearningLeft = () => scrollContinueLearningBy(-300);
   const scrollContinueLearningRight = () => scrollContinueLearningBy(300);
 
-  const suggestedRef = useRef<HTMLDivElement | null>(null);
+  const suggestedRef = useRef<HTMLDivElement>(null);
   const scrollSuggestedBy = (delta: number) => {
     const el = suggestedRef.current;
     if (!el) return;
@@ -664,11 +721,11 @@ export default function LearnerDashboard() {
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
                   <Card className="h-full">
-                    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                      <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
                         Suggested for You
                       </CardTitle>
-                      {suggestedItems.length > 0 && (
+                      {suggestedTracks.length > 0 && (
                         <div className="flex items-center gap-2 mt-2 sm:mt-0">
                           <button onClick={scrollSuggestedLeft}>
                             <ChevronLeft
@@ -685,12 +742,12 @@ export default function LearnerDashboard() {
                     </CardHeader>
 
                     <CardContent>
-                      {suggestedItems.length > 0 ? (
+                      {suggestedTracks.length > 0 ? (
                         <div
                           ref={suggestedRef}
                           className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
                         >
-                          {suggestedItems.map((track) => (
+                          {suggestedTracks.map((track) => (
                             <div
                               key={track.id}
                               className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
@@ -702,7 +759,7 @@ export default function LearnerDashboard() {
                                       ? `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${track.thumbnail}`
                                       : "/placeholder.png"
                                   }
-                                  alt={track.title || "Course thumbnail"}
+                                  alt={track.title}
                                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
@@ -711,14 +768,13 @@ export default function LearnerDashboard() {
                                   <h3
                                     className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-2`}
                                   >
-                                    {track.title || "Untitled Track"}
+                                    {track.title}
                                   </h3>
-                                  <p
-                                    className={`text-xs ${textLight} line-clamp-2`}
-                                  >
-                                    Short description goes here.
+                                  <p className={`text-xs ${textLight} line-clamp-2`}>
+                                    {track.description}
                                   </p>
                                 </div>
+                                {/* VIEW BUTTON */}
                               </div>
                             </div>
                           ))}
@@ -726,8 +782,8 @@ export default function LearnerDashboard() {
                       ) : (
                         <EmptyState
                           icon={Star}
-                          title="Suggestions Coming Soon"
-                          message="We'll recommend courses here based on your activity."
+                          title="No Suggestions Yet"
+                          message="Complete some tracks to get personalized recommendations."
                         />
                       )}
                     </CardContent>
