@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -31,7 +31,7 @@ type TrackLevel =
   | "intermediate"
   | "advanced"
 
-interface Track {
+export interface Track {
   id?: number;
   slug: string;
   title: string;
@@ -80,51 +80,48 @@ const TrackCard = ({
   thumbnail,
   isSelected = false,
 }: Track & { isSelected?: boolean }) => {
-const router = useRouter();
+  const router = useRouter();
 
-const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined, trackSlug: string) => {
-  e.preventDefault();
+  const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined, trackSlug: string) => {
+    e.preventDefault();
 
-  if (!trackId) {
-    toast.error('Invalid track ID');
-    return;
-  }
-
-  const toastId = toast.loading('Loading track...');
-
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (!apiUrl) throw new Error('API URL is not configured');
-
-    const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (!trackId) {
+      toast.error('Invalid track ID');
+      return;
     }
 
-    const data = await response.json();
-    toast.success(data.message || 'Track loaded successfully!', { id: toastId });
+    const toastId = toast.loading('Loading track...');
 
-    setTimeout(() => {
-      router.push(`/learner-dashboard/tracks/${trackSlug}`);
-    }, 1000);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (!apiUrl) throw new Error('API URL is not configured');
 
-  } catch (error) {
-    console.error('Error starting track:', error);
-    toast.error(error instanceof Error ? error.message : 'Failed to load track', { id: toastId });
+      const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
 
-    setTimeout(() => {
-      router.push(`/learner-dashboard/tracks/${trackSlug}`);
-    }, 1000);
-  }
-};
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
+      const data = await response.json();
+      toast.success(data.message || 'Track loaded successfully!', { id: toastId });
 
+      setTimeout(() => {
+        router.push(`/learner-dashboard/tracks/${trackSlug}`);
+      }, 1000);
 
+    } catch (error) {
+      console.error('Error starting track:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to load track', { id: toastId });
+
+      setTimeout(() => {
+        router.push(`/learner-dashboard/tracks/${trackSlug}`);
+      }, 1000);
+    }
+  };
 
   const imageUrl = thumbnail
     ? `${process.env.DIRECTUS_URL || "https://cy-directus.onrender.com"}/assets/${
@@ -193,8 +190,7 @@ const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined,
   );
 };
 
-// Inner component that contains the page content
-function TracksPageInner() {
+export default function TracksPageInner() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("All Levels");
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
@@ -206,63 +202,56 @@ function TracksPageInner() {
   const selectedTrackId = searchParams?.get('selected');
   const highlightTrackId = searchParams?.get('highlight');
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/tracks");
+        if (!res.ok) throw new Error(`API failed: ${res.status}`);
+        const directus = await res.json();
 
-useEffect(() => {
-  (async () => {
-    try {
-      const res = await fetch("/api/tracks");
-      if (!res.ok) throw new Error(`API failed: ${res.status}`);
-      const directus = await res.json();
+        const tracksData =
+          directus?.data || directus?.tracks || (Array.isArray(directus) ? directus : []);
 
-      const tracksData =
-        directus?.data || directus?.tracks || (Array.isArray(directus) ? directus : []);
+        const safe = (v: any): Track => ({
+          id: v.id,
+          title: v.title || "Untitled",
+          slug: v.slug || "",
+          description: v.description || "",
+          level: v.level || "beginner",
+          topic: v.topic || "General",
+          modules: Array.isArray(v.modules)
+            ? v.modules.length
+            : typeof v.modules === "number"
+            ? v.modules
+            : 0,
+          duration: v.duration || "",
+          progress: 0,
+          thumbnail: v.thumbnail || null,
+          buttonText: "View Track",
+        });
 
-      const safe = (v: any): Track => ({
-        id: v.id,
-        title: v.title || "Untitled",
-        slug: v.slug || "",
-        description: v.description || "",
-        level: v.level || "beginner",
-        topic: v.topic || "General",
-        modules: Array.isArray(v.modules)
-          ? v.modules.length
-          : typeof v.modules === "number"
-          ? v.modules
-          : 0,
-        duration: v.duration || "",
-        progress: 0,
-        thumbnail: v.thumbnail || null,
-        buttonText: "View Track",
-      });
+        const summary = await getProgressSummary();
 
-      // ***************************
-      // Fetch progress summary here!
-      // ***************************
-      const summary = await getProgressSummary();
+        // merge
+        const merged = tracksData.map((track: any) => {
+          const prog = summary.find((t: any) => t.trackId === track.id);
 
-      // merge
-      const merged = tracksData.map((track: any) => {
-        const prog = summary.find((t: any) => t.trackId === track.id);
+          return {
+            ...safe(track),
+            progress: prog?.progress ?? 0,
+          };
+        });
 
-        return {
-          ...safe(track),
-          progress: prog?.progress ?? 0,
-        };
-      });
+        setTracksFromCMS(merged);
 
-      setTracksFromCMS(merged);
-
-    } catch (err) {
-      console.error(err);
-      setTracksFromCMS([]);
-    } finally {
-      setLoading(false);
-    }
-  })();
-}, []);
-
-
-
+      } catch (err) {
+        console.error(err);
+        setTracksFromCMS([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   // Generate unique levels and topics from CMS
   const levels = React.useMemo(() => {
@@ -314,7 +303,7 @@ useEffect(() => {
                 </span>
               </div>
 
-<div className="flex justify-between gap-2 sm:flex-row">
+              <div className="flex justify-between gap-2 sm:flex-row">
                 {/* Level Dropdown */}
                 <div className="relative">
                   <button
@@ -349,36 +338,35 @@ useEffect(() => {
                 </div>
 
                 {/* Topic Dropdown */}
-<div className="relative">
-  <button
-    onClick={() => setShowTopicDropdown((prev) => !prev)}
-    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
-  >
-    <span className="block w-32 truncate">{selectedTopic}</span>
-    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
-  </button>
-  {showTopicDropdown && (
-    <div className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}>
-      {topics.map((topic) => (
-        <button
-          key={topic}
-          onClick={() => {
-            setSelectedTopic(topic);
-            setShowTopicDropdown(false);
-          }}
-          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
-            selectedTopic === topic
-              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
-              : textMedium
-          }`}
-        >
-          <span className="block w-36 truncate">{topic}</span>
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
+                <div className="relative">
+                  <button
+                    onClick={() => setShowTopicDropdown((prev) => !prev)}
+                    className={`flex items-center justify-between w-40 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[${primary}] ${textMedium} ${cardBg}`}
+                  >
+                    <span className="block w-32 truncate">{selectedTopic}</span>
+                    <ChevronDown className={`h-4 w-4 ml-2 ${textLight}`} />
+                  </button>
+                  {showTopicDropdown && (
+                    <div className={`absolute mt-1 w-40 ${cardBg} border rounded-lg shadow-lg z-10`}>
+                      {topics.map((topic) => (
+                        <button
+                          key={topic}
+                          onClick={() => {
+                            setSelectedTopic(topic);
+                            setShowTopicDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-[${primary}]/10 ${
+                            selectedTopic === topic
+                              ? `bg-[${primary}]/20 text-[${primarySecondary}]`
+                              : textMedium
+                          }`}
+                        >
+                          <span className="block w-36 truncate">{topic}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -417,13 +405,5 @@ useEffect(() => {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function TracksPage() {
-  return (
-    <Suspense fallback={<TracksSkeleton count={6} />}>
-      <TracksPageInner />
-    </Suspense>
   );
 }
