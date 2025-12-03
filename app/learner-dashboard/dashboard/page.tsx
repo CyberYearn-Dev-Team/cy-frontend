@@ -28,10 +28,12 @@ import {
   ChevronRight,
   Award,
   Flame,
+  ArrowRight,
   X,
   BookAIcon,
   Check,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import Sidebar from "@/components/learner-sidebar";
@@ -440,6 +442,8 @@ export default function LearnerDashboard() {
   const scrollComingLeft = () => scrollComingBy(-300);
   const scrollComingRight = () => scrollComingBy(300);
 
+  const router = useRouter();
+
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -628,7 +632,7 @@ export default function LearnerDashboard() {
                                     {item.title}
                                   </h3>
                                   <p
-                                    className={`text-xs ${textLight} line-clamp-3 mt-1`}
+                                    className={`text-xs ${textLight} line-clamp-2 mt-1`}
                                     dangerouslySetInnerHTML={{
                                       __html: item.description,
                                     }}
@@ -774,8 +778,30 @@ export default function LearnerDashboard() {
                                   <p className={`text-xs ${textLight} line-clamp-2`}>
                                     {track.description}
                                   </p>
-                                </div>
-                                {/* VIEW BUTTON */}
+                                </div> 
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/learner-dashboard/tracks?highlight=${track.id}`);
+                                  }}
+                                  className={`mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-3 rounded-md transition-colors cursor-pointer`}
+                                  style={{
+                                    backgroundColor: primary,
+                                    color: 'white',
+                                    border: `1px solid ${primary}`,
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = hover;
+                                    e.currentTarget.style.borderColor = hover;
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = primary;
+                                    e.currentTarget.style.borderColor = primary;
+                                  }}
+                                >
+                                  View Track
+                                  <ArrowRight className="w-3 h-3 ml-1" />
+                                </button> 
                               </div>
                             </div>
                           ))}

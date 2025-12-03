@@ -204,6 +204,7 @@ export default function TracksPage() {
   const [tracksFromCMS, setTracksFromCMS] = useState<Track[]>([]);
   const searchParams = useSearchParams();
   const selectedTrackId = searchParams?.get('selected');
+  const highlightTrackId = searchParams?.get('highlight');
 
 
 useEffect(() => {
@@ -400,10 +401,13 @@ useEffect(() => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTracks.map((track) => {
-                const isSelected = track.id?.toString() === selectedTrackId;
-                return <TrackCard key={track.id} {...track} isSelected={isSelected} />;
-              })}
+                {filteredTracks.map((track) => (
+                  <TrackCard 
+                    key={track.id} 
+                    {...track} 
+                    isSelected={highlightTrackId ? track.id?.toString() === highlightTrackId : false}
+                  />
+                ))}
               </div>
             )}
           </main>
