@@ -46,12 +46,14 @@ function ResetPasswordForm() {
       return;
     }
 
-    // Password validation (at least 8 characters, 1 uppercase, 1 number, 1 special char)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(form.password)) {
-      toast.error("Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.");
-      return;
-    }
+    // Password validation (at least 8 chars, 1 uppercase, 1 number) — special chars optional
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+
+if (!passwordRegex.test(form.password)) {
+  toast.error("Password must be at least 8 characters long and include at least one uppercase letter and one number.");
+  return;
+}
+
 
     setLoading(true);
     try {
