@@ -12,6 +12,9 @@ import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
 
+import LeaderboardSkeleton from "@/components/ui/LeaderboardSkeleton";
+
+
 // Original User interface from the API response
 interface User {
   id: string;
@@ -264,176 +267,180 @@ export default function LeaderboardPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          <main className="p-4 sm:p-6 lg:p-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
-              Leaderboard
-            </h1>
+          {isLoading ? (
+            <LeaderboardSkeleton />
+          ) : (
+            <main className="p-4 sm:p-6 lg:p-8">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
+                Leaderboard
+              </h1>
 
-            {/* Top 3 Learners */}
-            <div className="w-full overflow-x-auto overflow-y-visible py-6">
-              <div className="flex justify-between items-end gap-6 mb-10 max-w-6xl mx-auto sm:justify-between sm:flex-nowrap min-w-max px-4">
-                {/* 2nd Place - Left */}
-                {topLearners.find(l => l.rank === 2) && (
-                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
-                    <img
-                      src={trophyImages[2]}
-                      alt="2nd place trophy"
-                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
-                    />
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
-                      {getInitials(topLearners.find(l => l.rank === 2)?.name || '')}
+              {/* Top 3 Learners */}
+              <div className="w-full overflow-x-auto overflow-y-visible py-6">
+                <div className="flex justify-between items-end gap-6 mb-10 max-w-6xl mx-auto sm:justify-between sm:flex-nowrap min-w-max px-4">
+                  {/* 2nd Place - Left */}
+                  {topLearners.find(l => l.rank === 2) && (
+                    <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
+                      <img
+                        src={trophyImages[2]}
+                        alt="2nd place trophy"
+                        className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                      />
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                        {getInitials(topLearners.find(l => l.rank === 2)?.name || '')}
+                      </div>
+                      <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
+                        {topLearners.find(l => l.rank === 2)?.name.split(" ")[0]}
+                      </h3>
+                      <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
+                        {topLearners.find(l => l.rank === 2)?.xp.toLocaleString()} XP
+                      </p>
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
+                        2
+                      </div>
                     </div>
-                    <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
-                      {topLearners.find(l => l.rank === 2)?.name.split(" ")[0]}
-                    </h3>
-                    <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
-                      {topLearners.find(l => l.rank === 2)?.xp.toLocaleString()} XP
-                    </p>
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
-                      2
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 1st Place - Middle */}
-                {topLearners.find(l => l.rank === 1) && (
-                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80">
-                    <img
-                      src={trophyImages[1]}
-                      alt="1st place trophy"
-                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
-                    />
-                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl md:text-4xl font-bold mb-4">
-                      {getInitials(topLearners.find(l => l.rank === 1)?.name || '')}
+                  {/* 1st Place - Middle */}
+                  {topLearners.find(l => l.rank === 1) && (
+                    <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-gradient-to-br from-[#72a210] to-[#507800] text-white p-8 w-64 md:w-80">
+                      <img
+                        src={trophyImages[1]}
+                        alt="1st place trophy"
+                        className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                      />
+                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl md:text-4xl font-bold mb-4">
+                        {getInitials(topLearners.find(l => l.rank === 1)?.name || '')}
+                      </div>
+                      <h3 className="text-lg font-semibold">
+                        {topLearners.find(l => l.rank === 1)?.name.split(" ")[0]}
+                      </h3>
+                      <p className="text-white text-xl md:text-2xl font-bold mt-2">
+                        {topLearners.find(l => l.rank === 1)?.xp.toLocaleString()} XP
+                      </p>
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl font-bold flex items-center justify-center mt-3">
+                        1
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold">
-                      {topLearners.find(l => l.rank === 1)?.name.split(" ")[0]}
-                    </h3>
-                    <p className="text-white text-xl md:text-2xl font-bold mt-2">
-                      {topLearners.find(l => l.rank === 1)?.xp.toLocaleString()} XP
-                    </p>
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white text-[#507800] text-xl md:text-2xl font-bold flex items-center justify-center mt-3">
-                      1
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 3rd Place - Right */}
-                {topLearners.find(l => l.rank === 3) && (
-                  <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
-                    <img
-                      src={trophyImages[3]}
-                      alt="3rd place trophy"
-                      className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
-                    />
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
-                      {getInitials(topLearners.find(l => l.rank === 3)?.name || '')}
+                  {/* 3rd Place - Right */}
+                  {topLearners.find(l => l.rank === 3) && (
+                    <div className="relative rounded-2xl shadow-md flex flex-col items-center transform flex-shrink-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 w-56 md:w-72 translate-y-8">
+                      <img
+                        src={trophyImages[3]}
+                        alt="3rd place trophy"
+                        className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
+                      />
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                        {getInitials(topLearners.find(l => l.rank === 3)?.name || '')}
+                      </div>
+                      <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
+                        {topLearners.find(l => l.rank === 3)?.name.split(" ")[0]}
+                      </h3>
+                      <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
+                        {topLearners.find(l => l.rank === 3)?.xp.toLocaleString()} XP
+                      </p>
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
+                        3
+                      </div>
                     </div>
-                    <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
-                      {topLearners.find(l => l.rank === 3)?.name.split(" ")[0]}
-                    </h3>
-                    <p className="text-[#507800] dark:text-[#a3e635] text-base md:text-lg font-bold mt-2">
-                      {topLearners.find(l => l.rank === 3)?.xp.toLocaleString()} XP
-                    </p>
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#72a210] text-white flex items-center justify-center font-bold mt-3">
-                      3
-                    </div>
-                  </div>
-                )}
-                {/* REMOVED: Redundant and incorrect top-learner rendering loop here */}
+                  )}
+                  {/* REMOVED: Redundant and incorrect top-learner rendering loop here */}
+                </div>
               </div>
-            </div>
 
-            {/* Divider */}
-            <div className="max-w-6xl mx-auto mb-6">
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
-            </div>
+              {/* Divider */}
+              <div className="max-w-6xl mx-auto mb-6">
+                <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+              </div>
 
-            {/* Filter buttons */}
-            <div className="max-w-6xl mx-auto mb-6 flex gap-3 justify-end">
-              {["7days", "30days", "all"].map((key) => (
-                <button
-                  key={key}
-                  className={`px-3 py-1 text-sm md:px-4 md:py-2 rounded-lg border cursor-pointer ${
-                    filter === key
-                      ? "bg-[#72a210] text-white border-[#72a210]"
-                      : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
-                  }`}
-                  onClick={() => setFilter(key)}
-                >
-                  {key === "7days"
-                    ? "7 Days"
-                    : key === "30days"
-                    ? "30 Days"
-                    : "All Time"}
-                </button>
-              ))}
-            </div>
+              {/* Filter buttons */}
+              <div className="max-w-6xl mx-auto mb-6 flex gap-3 justify-end">
+                {["7days", "30days", "all"].map((key) => (
+                  <button
+                    key={key}
+                    className={`px-3 py-1 text-sm md:px-4 md:py-2 rounded-lg border cursor-pointer ${
+                      filter === key
+                        ? "bg-[#72a210] text-white border-[#72a210]"
+                        : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700"
+                    }`}
+                    onClick={() => setFilter(key)}
+                  >
+                    {key === "7days"
+                      ? "7 Days"
+                      : key === "30days"
+                      ? "30 Days"
+                      : "All Time"}
+                  </button>
+                ))}
+              </div>
 
-            {/* Scrollable Leaderboard Table */}
-            <div className="max-w-6xl mx-auto overflow-x-auto overflow-y-hidden rounded-xl">
-              <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
-                <table className="min-w-max w-full bg-white dark:bg-gray-900 shadow rounded-xl">
-                  <thead>
-                    <tr className="text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-700">
-                      <th
-                        className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-                        onClick={() => handleSort("rank")}
-                      >
-                        Rank <SortIcon columnKey="rank" />
-                      </th>
-                      <th
-                        className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-[150px] whitespace-nowrap"
-                        onClick={() => handleSort("name")}
-                      >
-                        Learner <SortIcon columnKey="name" />
-                      </th>
-                      <th
-                        className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-                        onClick={() => handleSort("xp")}
-                      >
-                        XP Earned <SortIcon columnKey="xp" />
-                      </th>
-                      <th
-                        className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
-                        onClick={() => handleSort("joined")}
-                      >
-                        Joined <SortIcon columnKey="joined" />
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {processedLearners.map((learner, index) => (
-                      <tr
-                        key={learner.id}
-                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-[#72a210]/10 dark:hover:bg-[#72a210]/20 transition-colors cursor-pointer"
-                      >
-                        <td className="py-4 px-6 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
-                          {learner.rank} {/* Always display the actual rank */}
-                        </td>
-                        <td className="py-4 px-6 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] font-bold flex-shrink-0">
-                              {getInitials(learner.name)}
-                            </div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
-                              {learner.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 font-semibold text-[#507800] dark:text-[#a3e635] whitespace-nowrap">
-                          {learner.xp.toLocaleString()} XP
-                        </td>
-                        <td className="py-4 px-6 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                          {learner.joined}
-                        </td>
+              {/* Scrollable Leaderboard Table */}
+              <div className="max-w-6xl mx-auto overflow-x-auto overflow-y-hidden rounded-xl">
+                <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
+                  <table className="min-w-max w-full bg-white dark:bg-gray-900 shadow rounded-xl">
+                    <thead>
+                      <tr className="text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-700">
+                        <th
+                          className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+                          onClick={() => handleSort("rank")}
+                        >
+                          Rank <SortIcon columnKey="rank" />
+                        </th>
+                        <th
+                          className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-[150px] whitespace-nowrap"
+                          onClick={() => handleSort("name")}
+                        >
+                          Learner <SortIcon columnKey="name" />
+                        </th>
+                        <th
+                          className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+                          onClick={() => handleSort("xp")}
+                        >
+                          XP Earned <SortIcon columnKey="xp" />
+                        </th>
+                        <th
+                          className="text-left py-4 px-6 font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
+                          onClick={() => handleSort("joined")}
+                        >
+                          Joined <SortIcon columnKey="joined" />
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {processedLearners.map((learner, index) => (
+                        <tr
+                          key={learner.id}
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-[#72a210]/10 dark:hover:bg-[#72a210]/20 transition-colors cursor-pointer"
+                        >
+                          <td className="py-4 px-6 text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
+                            {learner.rank} {/* Always display the actual rank */}
+                          </td>
+                          <td className="py-4 px-6 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] font-bold flex-shrink-0">
+                                {getInitials(learner.name)}
+                              </div>
+                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                                {learner.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 font-semibold text-[#507800] dark:text-[#a3e635] whitespace-nowrap">
+                            {learner.xp.toLocaleString()} XP
+                          </td>
+                          <td className="py-4 px-6 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                            {learner.joined}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          </main>
+            </main>
+          )}
 
           <Nav />
           <LearnerFooter />
