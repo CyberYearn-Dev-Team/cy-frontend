@@ -82,7 +82,12 @@ export default function AccountSettingsPage() {
           roles: u?.roles || [],
           createdAt: u?.createdAt || "",
           lastLogin: u?.lastLogin || "",
+          profileImage: u?.profileImage || "",
         });
+        // Set the profile image state if available
+        if (u?.profileImage) {
+          setProfileImage(u.profileImage);
+        }
       } catch (err) {
         console.error("Failed to load user:", err);
         toast.error("Unable to load user info");
@@ -146,9 +151,7 @@ export default function AccountSettingsPage() {
     let toastId: string | number = "";
 
     try {
-      // ---------------------------------------------------
       // PASSWORD CHANGE LOGIC
-      // ---------------------------------------------------
       if (!passwords.currentPassword) {
         throw new Error("Please enter your current password");
       }
@@ -280,31 +283,67 @@ export default function AccountSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const toastId = toast.loading("Uploading image...");
+    
     try {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image size should be less than 5MB");
+      }
+
+      // Check file type
+      if (!file.type.match('image.*')) {
+        throw new Error("Only image files are allowed");
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
-      toast.loading("Uploading image...");
-
-      const res = await fetch("/api/upload", {
+      // Upload the image
+      const uploadRes = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
+      const uploadData = await uploadRes.json();
 
-      if (!res.ok) {
-        toast.error(data.error || "Upload failed");
-        return;
+      if (!uploadRes.ok || !uploadData.url) {
+        throw new Error(uploadData.error || "Failed to upload image");
       }
 
-      setProfileImage(data.url);
-      toast.success("Profile photo uploaded successfully!");
-    } catch (err) {
-      console.error("Upload failed:", err);
-      toast.error("Error uploading image");
-    } finally {
-      toast.dismiss();
+      // Update profile with new image URL
+      const updateRes = await fetch(
+        "https://cy-backend.onrender.com/api/v1/me/update",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            profileImage: uploadData.url,
+          }),
+        }
+      );
+
+      const updateData = await updateRes.json();
+
+      if (!updateRes.ok) {
+        throw new Error(
+          updateData.message ||
+          updateData.error ||
+          "Failed to update profile image"
+        );
+      }
+
+      // Update both the profile and profileImage states
+      setProfile(prev => ({ ...prev, profileImage: uploadData.url }));
+      setProfileImage(uploadData.url);
+      
+      toast.success("Profile picture updated successfully!", { id: toastId });
+    } catch (err: any) {
+      console.error("Profile image update failed:", err);
+      toast.error(err.message || "Failed to update profile image", { id: toastId });
     }
   };
 
