@@ -2,6 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { Trophy, Lock } from "lucide-react";
+
+interface Badge {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  image: string;
+  [key: string]: any; // For any additional properties that might exist
+}
 import { Skeleton } from "@/components/ui/skeleton";
 
 import Sidebar from "@/components/learner-sidebar";
@@ -45,7 +55,7 @@ const CardContent = ({ children }: { children: React.ReactNode }) => (
 
 export default function AchievementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [badges, setBadges] = useState<any[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,12 +88,14 @@ export default function AchievementsPage() {
         const gamData = await resGam.json();
         const unlocked = gamData.data?.badges?.map((b: any) => b.code) || [];
 
-        // 3️⃣ Merge unlocked state and assign images
-        const merged = allBadges.map((badge: any, index: number) => ({
-          ...badge,
-          unlocked: unlocked.includes(badge.code),
-          image: badgeImages[index % badgeImages.length],
-        }));
+        // 3️⃣ Merge unlocked state, assign images, and sort to show unlocked first
+        const merged = allBadges
+          .map((badge: Omit<Badge, 'unlocked' | 'image'>, index: number) => ({
+            ...badge,
+            unlocked: unlocked.includes(badge.code),
+            image: badgeImages[index % badgeImages.length],
+          }))
+          .sort((a: Badge, b: Badge) => (a.unlocked === b.unlocked ? 0 : a.unlocked ? -1 : 1));
 
         setBadges(merged);
         setError(null);
