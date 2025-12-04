@@ -901,7 +901,7 @@ export default function LearnerDashboard() {
                       )}
 
                       {/* View All (kept neutral) */}
-                      <Link
+                      {/* <Link
                         href="/learner-dashboard/achievements"
                         className="block"
                       >
@@ -911,7 +911,7 @@ export default function LearnerDashboard() {
                         >
                           View All Achievements
                         </Button>
-                      </Link>
+                      </Link> */}
                     </CardContent>
                   </Card>
                 </div>
