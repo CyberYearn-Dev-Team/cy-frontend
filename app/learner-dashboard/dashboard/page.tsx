@@ -213,6 +213,7 @@ export default function LearnerDashboard() {
   const [level, setLevel] = useState(0);
   const [streak, setStreak] = useState(0);
   const [badgesCount, setBadgesCount] = useState(0);
+  const [badges, setBadges] = useState<Array<{code: string; name: string; description: string; awardedAt: string}>>([]);
 
   // Update achievements loading state when gamification data is loaded
   useEffect(() => {
@@ -243,6 +244,7 @@ export default function LearnerDashboard() {
           setLevel(Math.floor(totalXp / 100));
           setStreak(res.data.streak?.currentDays || 0);
           setBadgesCount(res.data.badges?.length || 0);
+          setBadges(res.data.badges || []);
         }
       } catch (err) {
         console.error("Gamification error:", err);
@@ -848,10 +850,10 @@ export default function LearnerDashboard() {
                           </div>
 
                           {/* Beautiful circular preview – THEMED GRADIENT */}
-                          {badgesCount && badgesCount > 0 ? (
+                          {badges.length > 0 ? (
                             <div className="flex justify-center">
                               <div className="flex -space-x-4">
-                                {[...Array(Math.min(3, badgesCount))].map(
+                                {[...Array(Math.min(3, badges.length))].map(
                                   (_, i) => (
                                     <div
                                       key={i}
@@ -866,9 +868,9 @@ export default function LearnerDashboard() {
                                   )
                                 )}
 
-                                {badgesCount > 3 && (
+                                {badges.length > 3 && (
                                   <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-900 text-xs font-bold text-gray-700 dark:text-gray-300">
-                                    +{badgesCount - 3}
+                                    +{badges.length - 3}
                                   </div>
                                 )}
                               </div>
@@ -883,18 +885,18 @@ export default function LearnerDashboard() {
                             </div>
                           )}
 
-                          {/* Optional badge tags */}
-                          {badgesCount > 0 && (
-                            <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs text-gray-600 dark:text-gray-400">
-                              <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                                Perfect Score
-                              </div>
-                              <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                                First Quiz
-                              </div>
-                              <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                                First Steps
-                              </div>
+                          {/* Dynamic badge tags */}
+                          {badges.length > 0 && (
+                            <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs">
+                              {badges.map((badge, index) => (
+                                <div 
+                                  key={badge.code || index}
+                                  className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                                  title={badge.description}
+                                >
+                                  {badge.name}
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
