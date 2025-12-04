@@ -264,17 +264,18 @@ export default function AccountSettingsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header setSidebarOpen={setSidebarOpen} />
-          <AccountSettingsSkeleton />
-        </div>
+if (isLoading) {
+  return (
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header setSidebarOpen={setSidebarOpen} />
+        <Nav />
+        <AccountSettingsSkeleton />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
