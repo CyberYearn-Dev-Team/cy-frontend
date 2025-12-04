@@ -102,8 +102,8 @@ export default function EmailVerificationClient() {
   // Show success message
   toast.success(data.message || "Account verified successfully!");
 
-  // Redirect to dashboard with a small delay
-  setTimeout(() => router.push("/learner-dashboard/dashboard"), 800);
+  // Redirect to login with a small delay
+  setTimeout(() => router.push("/auth/login"), 800);
 } else {
   toast.success("Verification completed successfully!");
   router.push("/auth/login");
