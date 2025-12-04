@@ -7,6 +7,7 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import { changePassword } from "@/lib/services/authService";
+import { AccountSettingsSkeleton } from "@/components/ui/AccountSettingsSkeleton";
 import {
   Card,
   CardContent,
@@ -41,7 +42,7 @@ export default function AccountSettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUsernameModified, setIsUsernameModified] = useState(false);
   const [originalUsername, setOriginalUsername] = useState("");
 
@@ -92,12 +93,11 @@ export default function AccountSettingsPage() {
         console.error("Failed to load user:", err);
         toast.error("Unable to load user info");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     fetchUser();
   }, []);
-
 
   const handleUpdateUsername = async () => {
     if (!profile.username) {
@@ -346,6 +346,18 @@ export default function AccountSettingsPage() {
       toast.error(err.message || "Failed to update profile image", { id: toastId });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header setSidebarOpen={setSidebarOpen} />
+          <AccountSettingsSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">

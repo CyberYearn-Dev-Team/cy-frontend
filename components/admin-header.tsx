@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Menu, Moon, Sun } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Menu, Moon, Sun, Camera } from "lucide-react";
 import { getCurrentUser } from "@/lib/api/auth";
+import { toast } from "sonner";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -12,6 +13,8 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load theme from localStorage
   useEffect(() => {
@@ -28,6 +31,10 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
       try {
         const userData = await getCurrentUser();
         setUser(userData);
+        // Set profile image if available
+        if (userData?.data?.profileImage || userData?.profileImage) {
+          setProfileImage(userData.data?.profileImage || userData.profileImage);
+        }
       } catch (error) {
         console.error("Failed to fetch user:", error);
       } finally {
@@ -47,6 +54,85 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
       localStorage.setItem("theme", "dark");
     }
     setDarkMode(!darkMode);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const toastId = toast.loading("Uploading image...");
+    
+    try {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image size should be less than 5MB");
+      }
+
+      // Check file type
+      if (!file.type.match('image.*')) {
+        throw new Error("Only image files are allowed");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Upload the image
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok || !uploadData.url) {
+        throw new Error(uploadData.error || "Failed to upload image");
+      }
+
+      // Update profile with new image URL
+      const updateRes = await fetch(
+        "https://cy-backend.onrender.com/api/v1/me/update",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            profileImage: uploadData.url,
+          }),
+        }
+      );
+
+      const updateData = await updateRes.json();
+
+      if (!updateRes.ok) {
+        throw new Error(
+          updateData.message ||
+          updateData.error ||
+          "Failed to update profile image"
+        );
+      }
+
+      // Update both the profile and profileImage states
+      setProfileImage(uploadData.url);
+      setUser((prev: any) => ({
+        ...prev,
+        data: {
+          ...prev?.data,
+          profileImage: uploadData.url
+        },
+        profileImage: uploadData.url
+      }));
+      
+      toast.success("Profile picture updated successfully!", { id: toastId });
+    } catch (err: any) {
+      console.error("Profile image update failed:", err);
+      toast.error(err.message || "Failed to update profile image", { id: toastId });
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -79,12 +165,38 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
             )}
           </button>
 
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          
           {/* User Avatar & Name */}
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[18px]">
-              {loading
-                ? "..."
-                : (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "A"}
+            <div className="relative group">
+              <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[18px] overflow-hidden">
+                {loading ? (
+                  "..."
+                ) : profileImage ? (
+                  <img 
+                    src={profileImage} 
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "A"
+                )}
+              </div>
+              <button
+                onClick={triggerFileInput}
+                className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#72a210] rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Change profile picture"
+              >
+                <Camera className="w-3 h-3" />
+              </button>
             </div>
             <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
               {loading

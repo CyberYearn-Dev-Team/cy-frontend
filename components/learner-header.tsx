@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, ChevronDown, LogOut, User, Settings, Moon, Sun } from "lucide-react";
+import {
+  Menu,
+  ChevronDown,
+  LogOut,
+  User,
+  Settings,
+  Moon,
+  Sun,
+} from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
@@ -67,15 +75,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
       });
 
       // Keep theme intact
-const theme = localStorage.getItem("theme");
+      const theme = localStorage.getItem("theme");
 
-// Remove everything else
-localStorage.clear();
-sessionStorage.clear();
+      // Remove everything else
+      localStorage.clear();
+      sessionStorage.clear();
 
-// Restore theme
-if (theme) localStorage.setItem("theme", theme);
-
+      // Restore theme
+      if (theme) localStorage.setItem("theme", theme);
 
       // Expire all cookies manually (simple loop)
       document.cookie.split(";").forEach((c) => {
@@ -103,7 +110,10 @@ if (theme) localStorage.setItem("theme", theme);
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     }
@@ -113,8 +123,7 @@ if (theme) localStorage.setItem("theme", theme);
 
   return (
     <>
-    <header className="sticky top-0 z-20 flex items-center h-16 px-3 lg:px-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
-
+      <header className="sticky top-0 z-20 flex items-center h-16 px-3 lg:px-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
         <div className="flex w-full items-center justify-between">
           {/* Mobile sidebar toggle */}
           <button
@@ -144,13 +153,27 @@ if (theme) localStorage.setItem("theme", theme);
                 onClick={() => setDropdownOpen((prev) => !prev)}
                 className="flex items-center space-x-2 focus:outline-none cursor-pointer"
               >
-                <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[20px]">
-                  {loading ? "..." : (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "U"}
+                <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[20px] overflow-hidden">
+                  {loading ? (
+                    "..."
+                  ) : user?.data?.profileImage || user?.profileImage ? (
+                    <img 
+                      src={user?.data?.profileImage || user?.profileImage} 
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "U"
+                  )}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
                   {loading
                     ? "Loading..."
-                    : user?.data?.username || user?.username || user?.data?.email || user?.email || "User"}
+                    : user?.data?.username ||
+                      user?.username ||
+                      user?.data?.email ||
+                      user?.email ||
+                      "User"}
                 </span>
                 <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
@@ -159,10 +182,14 @@ if (theme) localStorage.setItem("theme", theme);
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {loading ? "Loading..." : user?.data?.username || user?.username || "User"}
+                      {loading
+                        ? "Loading..."
+                        : user?.data?.username || user?.username || "User"}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {loading ? "Loading..." : user?.data?.email || user?.email || "user@email.com"}
+                      {loading
+                        ? "Loading..."
+                        : user?.data?.email || user?.email || "user@email.com"}
                     </p>
                   </div>
 
@@ -212,16 +239,13 @@ if (theme) localStorage.setItem("theme", theme);
               >
                 Cancel
               </Button>
-<Button
-  variant="destructive"
-  onClick={handleLogout}
-  className="w-28 bg-destructive hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90 text-white cursor-pointer"
->
-  Logout
-</Button>
-
-
-
+              <Button
+                variant="destructive"
+                onClick={handleLogout}
+                className="w-28 bg-destructive hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90 text-white cursor-pointer"
+              >
+                Logout
+              </Button>
             </div>
           </div>
         </div>

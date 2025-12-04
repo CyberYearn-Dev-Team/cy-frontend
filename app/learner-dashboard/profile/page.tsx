@@ -13,16 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { User, Mail, AtSign, Camera } from "lucide-react";
+import { User, Mail, AtSign } from "lucide-react"; // Removed Camera icon
 
 // Theme Constants
 const primary = "#72a210";
-const primaryDarker = "#507800";
+const primaryDarker = "#507800"; // This constant is now unused but kept for integrity
 
 export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  // const [uploading, setUploading] = useState(false); // Removed state
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
@@ -39,16 +39,19 @@ export default function ProfilePage() {
     const fetchUser = async () => {
       try {
         const res = await getCurrentUser();
-        const u = res?.data || res;
+        const userData = res?.data || res;
         setProfile({
-          fullName: `${u?.firstName || ""} ${u?.lastName || ""}`.trim(),
-          email: u?.email || "",
-          username: u?.username || "",
-          role: u?.role || "Learner",
-          createdAt: u?.createdAt || "",
-          lastLogin: u?.lastLogin || "",
+          fullName: userData?.username || "",
+          email: userData?.email || "",
+          username: userData?.username || "",
+          role: userData?.roles?.[0] || "Learner",
+          createdAt: userData?.createdAt || "",
+          lastLogin: "",
         });
-        setProfileImage(u?.avatar || null); // ✅ keep image persistent after refresh
+        // Set profile image if it exists in the response
+        if (userData?.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
       } catch (err) {
         console.error("Failed to load user:", err);
         toast.error("Failed to load user profile");
@@ -59,63 +62,7 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
-  // Upload to Cloudflare (handled by your /api/upload route)
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    toast.loading("Uploading image...");
-
-    try {
-      //Upload to Cloudflare
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const uploadData = await uploadRes.json();
-
-      if (!uploadRes.ok || !uploadData.url) {
-        throw new Error(uploadData.error || "Upload failed");
-      }
-
-      const imageUrl = uploadData.url;
-
-      //Save Cloudflare image URL in your DB
-const updateRes = await fetch("/api/v1/auth/me/update", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ avatar: imageUrl }),
-});
-
-
-      const text = await updateRes.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Non-JSON response:", text);
-        throw new Error("Unexpected server response");
-      }
-
-      if (!updateRes.ok) {
-        throw new Error(data.error || "Failed to save image URL");
-      }
-
-      setProfileImage(imageUrl);
-      toast.success("Profile photo updated successfully!");
-    } catch (err) {
-      console.error("Upload failed:", err);
-      toast.error("Failed to update profile photo");
-    } finally {
-      toast.dismiss();
-      setUploading(false);
-    }
-  };
+  // Removed handleImageUpload function entirely
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -147,7 +94,7 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                     Profile Picture
                   </CardTitle>
                   <CardDescription className="text-gray-600 dark:text-gray-400">
-                    Upload your profile photo
+                    Your current profile photo
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -170,24 +117,7 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                           </span>
                         )}
                       </div>
-                      <label
-                        htmlFor="profile-upload"
-                        className={`absolute bottom-0 right-0 w-10 h-10 bg-[${primary}] hover:bg-[${primaryDarker}] rounded-full flex items-center justify-center cursor-pointer shadow-lg transition`}
-                      >
-                        <Camera className="w-5 h-5 text-white" />
-                        <input
-                          id="profile-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          disabled={uploading}
-                        />
-                      </label>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                      Click the camera icon to upload a new photo
-                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -228,22 +158,6 @@ const updateRes = await fetch("/api/v1/auth/me/update", {
                         />
                       </div>
                     </div>
-
-                    {/* Full Name (read-only) */}
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={profile.fullName}
-                          disabled
-                          className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400"
-                        />
-                      </div>
-                    </div> */}
 
                     {/* Email (read-only) */}
                     <div>
