@@ -286,8 +286,18 @@ export default function LeaderboardPage() {
                         alt="2nd place trophy"
                         className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
                       />
-                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
-                        {getInitials(topLearners.find(l => l.rank === 2)?.name || '')}
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center overflow-hidden">
+                        {topLearners.find(l => l.rank === 2)?.profileImage ? (
+                          <img 
+                            src={topLearners.find(l => l.rank === 2)?.profileImage || ''} 
+                            alt={topLearners.find(l => l.rank === 2)?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                            {getInitials(topLearners.find(l => l.rank === 2)?.name || '')}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
                         {topLearners.find(l => l.rank === 2)?.name.split(" ")[0]}
@@ -309,8 +319,18 @@ export default function LeaderboardPage() {
                         alt="1st place trophy"
                         className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
                       />
-                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl md:text-4xl font-bold mb-4">
-                        {getInitials(topLearners.find(l => l.rank === 1)?.name || '')}
+                      <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/20 flex items-center justify-center overflow-hidden mb-4">
+                        {topLearners.find(l => l.rank === 1)?.profileImage ? (
+                          <img 
+                            src={topLearners.find(l => l.rank === 1)?.profileImage || ''} 
+                            alt={topLearners.find(l => l.rank === 1)?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-white text-3xl md:text-4xl font-bold">
+                            {getInitials(topLearners.find(l => l.rank === 1)?.name || '')}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-lg font-semibold">
                         {topLearners.find(l => l.rank === 1)?.name.split(" ")[0]}
@@ -332,8 +352,18 @@ export default function LeaderboardPage() {
                         alt="3rd place trophy"
                         className="absolute -top-5 -right-2 w-20 h-16 md:w-25 md:h-20"
                       />
-                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
-                        {getInitials(topLearners.find(l => l.rank === 3)?.name || '')}
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center overflow-hidden">
+                        {topLearners.find(l => l.rank === 3)?.profileImage ? (
+                          <img 
+                            src={topLearners.find(l => l.rank === 3)?.profileImage || ''} 
+                            alt={topLearners.find(l => l.rank === 3)?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[#507800] dark:text-[#a3e635] text-2xl md:text-3xl font-bold">
+                            {getInitials(topLearners.find(l => l.rank === 3)?.name || '')}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-semibold mt-2">
                         {topLearners.find(l => l.rank === 3)?.name.split(" ")[0]}
@@ -419,8 +449,18 @@ export default function LeaderboardPage() {
                           </td>
                           <td className="py-4 px-6 whitespace-nowrap">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center text-[#507800] dark:text-[#a3e635] font-bold flex-shrink-0">
-                                {getInitials(learner.name)}
+                              <div className="w-10 h-10 rounded-full bg-[#72a210]/10 dark:bg-[#72a210]/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                {learner.profileImage ? (
+                                  <img 
+                                    src={learner.profileImage} 
+                                    alt={learner.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-[#507800] dark:text-[#a3e635] font-bold text-sm">
+                                    {getInitials(learner.name)}
+                                  </span>
+                                )}
                               </div>
                               <span className="font-medium text-gray-900 dark:text-gray-100">
                                 {learner.name}

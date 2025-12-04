@@ -171,113 +171,30 @@ export default function AccountSettingsPage() {
       toastId = toast.loading("Updating your password...");
       console.log("Attempting to change password...");
 
-      try {
-        await changePassword(
-          passwords.currentPassword,
-          passwords.newPassword
-        );
+      await changePassword(
+        passwords.currentPassword,
+        passwords.newPassword
+      );
 
-        setPasswords({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
+      setPasswords({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
 
-        toast.success("Password updated successfully!");
-        console.log("Password updated successfully");
-      } catch (error: any) {
-        console.error("Password change failed:", error);
-        toast.error(
-          error.message ||
-            "Failed to update password. Please try again."
-        );
-        throw error;
-      } finally {
-        if (toastId) toast.dismiss(toastId);
-      }
-
-    // Handle profile image upload if needed
-    if (profileImage) {
-      const toastId = toast.loading("Uploading profile image...");
-      
-      try {
-        const imageFormData = new FormData();
-        let finalImageUrl = profileImage;
-
-        if (typeof profileImage === "string") {
-          const imgRes = await fetch(profileImage);
-          const blob = await imgRes.blob();
-          const file = new File([blob], "profile-image.jpg", {
-            type: "image/jpeg",
-          });
-          imageFormData.append("file", file);
-        } else {
-          imageFormData.append("file", profileImage);
-        }
-
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: imageFormData,
-        });
-
-        const uploadData = await uploadRes.json();
-
-        if (!uploadRes.ok || !uploadData.url) {
-          throw new Error(uploadData.error || "Failed to upload image");
-        }
-
-        finalImageUrl = uploadData.url;
-
-        // Update profile with new image
-        const updateRes = await fetch(
-          "https://cy-backend.onrender.com/api/v1/me/update",
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-              profileImage: finalImageUrl,
-            }),
-          }
-        );
-
-        const updateData = await updateRes.json();
-
-        if (!updateRes.ok) {
-          throw new Error(
-            updateData.message ||
-              updateData.error ||
-              "Failed to update profile image"
-          );
-        }
-
-        setProfile(prev => ({ ...prev, profileImage: finalImageUrl }));
-        toast.success("Profile image updated successfully!");
-      } catch (err: any) {
-        console.error("Profile image update failed:", err);
-        toast.error(err.message || "Failed to update profile image");
-        throw err;
-      } finally {
-        toast.dismiss(toastId);
-      }
+      toast.success("Password updated successfully!");
+      console.log("Password updated successfully");
+    } catch (err: any) {
+      console.error("Password update error:", err);
+      toast.error(
+        err.message ||
+        "Failed to update password. Please try again."
+      );
+    } finally {
+      if (toastId) toast.dismiss(toastId);
+      setSaving(false);
     }
-  } catch (err: any) {
-    console.error("Save error:", err);
-
-    let errorMessage = err.message || "Failed to save changes";
-
-    if (errorMessage.includes("Failed to fetch")) {
-      errorMessage = "Network error. Please check your connection.";
-    }
-
-    toast.error(errorMessage);
-  } finally {
-    setSaving(false);
-  }
-};
-
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -654,7 +571,12 @@ export default function AccountSettingsPage() {
                     <div className="flex items-center gap-3 pt-6">
                       <button
                         onClick={handleSaveProfile}
-                        disabled={saving || (!passwords.currentPassword && !passwords.newPassword && !passwords.confirmPassword)}
+                        disabled={
+                          saving || 
+                          !passwords.currentPassword || 
+                          !passwords.newPassword || 
+                          !passwords.confirmPassword
+                        }
                         className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
                       >
                         <Save className="w-5 h-5" />
