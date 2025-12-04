@@ -91,13 +91,18 @@ export default function EmailVerificationClient() {
     body: JSON.stringify({ token: data.token })
   });
 
+  // Also store token in localStorage for immediate client-side access
+  if (typeof window !== "undefined") {
+    localStorage.setItem("cy_token", data.token);
+  }
+
   // Remove pending registration
   localStorage.removeItem("pendingRegistration");
 
   // Show success message
   toast.success(data.message || "Account verified successfully!");
 
-  // Redirect to dashboard (no delay required, but you can keep it)
+  // Redirect to dashboard with a small delay
   setTimeout(() => router.push("/learner-dashboard/dashboard"), 800);
 } else {
   toast.success("Verification completed successfully!");
