@@ -12,12 +12,26 @@ import {
   CheckCircle,
   Clock,
   Circle,
+  ArrowRight,
 } from "lucide-react";
+import Link from "next/link";
 
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
+
+// Theme Constants
+const primary = "#72a210";
+const primaryDarker = "#5a850d";
+const primarySecondary = "#507800";
+
+const bgLight = "bg-white dark:bg-gray-950";
+const cardBg = "bg-gray-50 dark:bg-gray-900";
+
+const textDark = "text-gray-900 dark:text-gray-100";
+const textMedium = "text-gray-700 dark:text-gray-300";
+const textLight = "text-gray-500 dark:text-gray-400";
 
 // Define the Directus URL constant
 const DIRECTUS_URL = "https://cy-directus.onrender.com";
@@ -51,7 +65,6 @@ interface TrackProgress {
   completedModules: number;
   totalModules: number;
 }
-
 
 interface SummaryData {
   totalTracks: number;
@@ -115,14 +128,34 @@ const TrackCard: React.FC<{
           ></div>
         </div>
 
-        {/* MODIFICATION: Flex lessons and modules, justify-between */}
         <div className="mt-2 flex justify-between items-center text-sm text-gray-700 dark:text-gray-300">
           <p>
             {track.completedLessons}/{track.totalLessons} lessons
           </p>
           <p className="font-medium text-gray-900 dark:text-gray-100">
-             {track.totalModules ?? 0} Modules
+            {track.totalModules ?? 0} Modules
           </p>
+        </div>
+
+        {/* View Track Button */}
+        <div className="mt-4">
+          <Link
+            href={`/learner-dashboard/tracks?highlight=${track.trackId}`}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+            style={{
+              backgroundColor: primary,
+              color: "white",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = primaryDarker)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = primary)
+            }
+          >
+            View Track
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </div>

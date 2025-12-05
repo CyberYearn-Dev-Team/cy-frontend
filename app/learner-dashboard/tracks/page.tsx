@@ -205,6 +205,29 @@ function TracksPageInner() {
   const searchParams = useSearchParams();
   const selectedTrackId = searchParams?.get('selected');
   const highlightTrackId = searchParams?.get('highlight');
+  const [highlightedTrackId, setHighlightedTrackId] = useState<string | null>(null);
+  const trackRefs = React.useRef<{[key: string]: HTMLDivElement | null}>({});
+
+  // Scroll to and highlight the track when highlightTrackId changes
+  useEffect(() => {
+    if (highlightTrackId && trackRefs.current[highlightTrackId]) {
+      // Set highlighted track
+      setHighlightedTrackId(highlightTrackId);
+      
+      // Scroll to the track
+      trackRefs.current[highlightTrackId]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+
+      // Remove highlight after 5 seconds
+      const timer = setTimeout(() => {
+        setHighlightedTrackId(null);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [highlightTrackId, tracksFromCMS]);
 
 
 useEffect(() => {
@@ -401,15 +424,33 @@ useEffect(() => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTracks.map((track) => (
-                  <TrackCard 
-                    key={track.id} 
-                    {...track} 
-                    isSelected={highlightTrackId ? track.id?.toString() === highlightTrackId : false}
+                {filteredTracks.map((track, index) => (
+                <div 
+                  key={track.id || index}
+                  ref={el => {
+                    if (track.id) {
+                      trackRefs.current[track.id] = el;
+                    }
+                  }}
+                >
+                  <TrackCard
+                    id={track.id}
+                    title={track.title}
+                    slug={track.slug}
+                    description={track.description}
+                    level={track.level}
+                    topic={track.topic}
+                    modules={track.modules}
+                    duration={track.duration}
+                    progress={track.progress}
+                    buttonText={track.buttonText}
+                    thumbnail={track.thumbnail}
+                    isSelected={highlightTrackId === (track.id?.toString() ?? '')}
                   />
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
+          )}
           </main>
 
           <Nav />
