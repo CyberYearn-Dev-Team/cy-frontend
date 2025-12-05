@@ -229,7 +229,7 @@ export default function LabDetailPage() {
                   onClick={() => {
                     toast.success("Lab marked as completed!");
                   }}
-                  className="flex-1 py-2.5 md:py-3 rounded-md text-white text-base md:text-lg font-semibold shadow cursor-pointer"
+                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-white text-base md:text-lg font-semibold shadow cursor-pointer"
                   style={{ backgroundColor: primary }}
                 >
                   Mark as Completed
@@ -241,7 +241,7 @@ export default function LabDetailPage() {
                   className="
     flex-1 
     py-2.5 md:py-3 
-    rounded-lg
+    rounded-[30px]
     text-base md:text-lg 
     font-semibold 
     bg-red-500 

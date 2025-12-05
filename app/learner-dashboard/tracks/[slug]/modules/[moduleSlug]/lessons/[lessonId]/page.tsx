@@ -155,13 +155,40 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
+
+
+             {/* QUIZ SECTION */}
+              <div
+                className={`${cardBg} shadow rounded-lg p-3 sm:p-6 flex flex-col sm:flex-row justify-between items-center`}
+              >
+                <p className={`${textMedium} mb-3 sm:mb-0 sm:p-[10px]`}>
+                  Test your knowledge before proceeding to labs.
+                </p>
+
+                <Link
+                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
+                  className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
+                >
+                  Take Quiz for this Lesson
+                </Link>
+              </div>
+
+
+
+
               {/* LAB GUIDE SECTION (Updated Design) */}
+              <div
+                className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
+              >
+                <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
+                  Lab Guide
+                </h2>
               {lesson.lab_guides && lesson.lab_guides.length > 0 && (
                 <div className="space-y-4">
                   {lesson.lab_guides.map((guide: any) => (
                     <div
                       key={guide.id}
-                      className={`flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg ${cardBg}`}
+                      className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
                     >
                       <div className="flex-1">
                         <h3 className={`font-semibold ${textDark} mb-2`}>
@@ -198,21 +225,7 @@ export default function LessonDetailPage() {
                 </div>
               )}
 
-              {/* QUIZ SECTION */}
-              <div
-                className={`${cardBg} shadow rounded-lg p-3 sm:p-6 flex flex-col sm:flex-row justify-between items-center`}
-              >
-                <p className={`${textMedium} mb-3 sm:mb-0 sm:p-[10px]`}>
-                  Test your knowledge before proceeding to labs.
-                </p>
-
-                <Link
-                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
-                  className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
-                >
-                  Take Quiz for this Lesson
-                </Link>
-              </div>
+            </div>
             </div>
           )}
         </main>

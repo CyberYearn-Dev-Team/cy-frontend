@@ -196,10 +196,10 @@ export default function LabGuidePage() {
 
 
               {/* Action Buttons */}
-              <div className="flex flex-col md:flex-row gap-4 mt-10 pb-24">
+              <div className="flex flex-col md:flex-row gap-4 mt-10">
                 <button
                   onClick={() => toast.success("Lab marked as completed!")}
-                  className="flex-1 py-2.5 md:py-3 rounded-md text-white text-base md:text-lg font-semibold shadow cursor-pointer"
+                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-white text-base md:text-lg font-semibold shadow cursor-pointer"
                   style={{ backgroundColor: primary }}
                 >
                   Mark as Completed
@@ -207,7 +207,7 @@ export default function LabGuidePage() {
 
                 <button
                   onClick={() => setIssuePopupOpen(true)}
-                  className="flex-1 py-2.5 md:py-3 rounded-lg text-base md:text-lg font-semibold bg-red-500 text-white hover:bg-red-700 active:bg-red-800 transition cursor-pointer shadow-sm"
+                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-base md:text-lg font-semibold bg-red-500 text-white hover:bg-red-700 active:bg-red-800 transition cursor-pointer shadow-sm"
                 >
                   Technical Issues
                 </button>
