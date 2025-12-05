@@ -9,7 +9,7 @@ import {
   BarChart3,
   ToggleLeft,
   Activity,
-  Wrench,
+  Bug,
   User,
   Siren,
   LogOut,
@@ -43,10 +43,11 @@ export default function AdminSidebar({
     { name: "Platform Security", icon: Siren, href: `${basePath}/security` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
     {
-      name: "Technical Issues",
-      icon: Wrench,
-      href: `${basePath}/technical-issues`,
-    },
+  name: "Technical Issues",
+  icon: Bug,
+  href: `${basePath}/technical-issues`,
+},
+
     {
       name: "Switch to Learner",
       icon: User,

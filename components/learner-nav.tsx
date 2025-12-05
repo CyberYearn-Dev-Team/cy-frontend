@@ -33,7 +33,7 @@ export default function UserNav() {
           <div
             className={`flex items-center justify-center w-12 h-12 rounded-2xl mb-1 transition-all duration-300 ${
               isActive(href)
-                ? "bg-[#72a210] text-white dark:bg-[#a3e635]"
+                ? "bg-[#72a210] text-white"
                 : "bg-gray-100 dark:bg-gray-800"
             }`}
           >

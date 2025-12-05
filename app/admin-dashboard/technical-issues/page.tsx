@@ -9,6 +9,8 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  ArrowLeft,
+  Send,
 } from "lucide-react";
 
 import AdminSidebar from "@/components/admin-sidebar";
@@ -31,13 +33,15 @@ interface TechnicalIssue {
   email: string;
   message: string;
   date: string;
-  // status: "pending" | "reviewed" | "resolved";
 }
 
-// Component to handle expandable message
+// Ensure Tailwind can resolve these colors
+const primaryText = { color: primary };
+const primaryBg = { backgroundColor: primary };
+
 const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 150; // Adjust this value as needed
+  const maxLength = 150;
 
   const shouldTruncate = message.length > maxLength;
   const displayedText =
@@ -54,7 +58,8 @@ const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
       <p className={`${textDark}`}>{displayedText}</p>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`mt-3 flex items-center gap-1 text-sm font-medium transition-colors hover:text-[${primary}] ${textMedium}`}
+        className={`mt-3 flex items-center gap-1 text-sm font-medium transition-colors cursor-pointer ${textMedium}`}
+        style={primaryText}
       >
         {isExpanded ? (
           <>
@@ -75,8 +80,8 @@ const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
 const TechnicalIssuesPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
 
-  // Mock data (one very long message added for demo)
   const [issues] = useState<TechnicalIssue[]>([
     {
       id: "TI-001",
@@ -97,7 +102,7 @@ const TechnicalIssuesPage: React.FC = () => {
       user: "John Musa",
       email: "johnmusa@example.com",
       message:
-        "My course progress is not updating even after completing several modules. I've tried refreshing, clearing cache, using different browsers (Chrome, Firefox, Edge), and even different devices but the progress bar remains stuck at 68%. This is affecting my ability to unlock the final exam.",
+        "My course progress is not updating even after completing several modules. I've tried refreshing, clearing cache, using different browsers and devices but the progress bar remains stuck at 68%.",
       date: "2025-10-03 14:22",
     },
     {
@@ -105,7 +110,7 @@ const TechnicalIssuesPage: React.FC = () => {
       user: "Amina Bello",
       email: "amina@example.com",
       message:
-        "I cannot reset my password. It keeps failing with error code 5003. I have tried multiple times over the past 3 days using both email link and SMS verification but nothing works. Please help urgently as I have an exam tomorrow.",
+        "I cannot reset my password. It keeps failing with error code 5003. I have tried multiple times over the past 3 days using both email link and SMS verification.",
       date: "2025-10-04 16:50",
     },
   ]);
@@ -117,107 +122,235 @@ const TechnicalIssuesPage: React.FC = () => {
       issue.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "text-yellow-600 dark:text-yellow-400";
-      case "reviewed":
-        return "text-blue-600 dark:text-blue-400";
-      case "resolved":
-        return "text-green-600 dark:text-green-400";
-      default:
-        return textMedium;
-    }
-  };
+  const activeIssue = issues.find((issue) => issue.id === activeIssueId);
+
+  //  NEW: Determine whether to hide the layout components on mobile
+  const isChatOpenOnMobile = activeIssueId !== null;
 
   return (
     <div className={`flex h-screen ${bgLight}`}>
+      {/* AdminSidebar */}
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader setSidebarOpen={setSidebarOpen} />
+        {/* AdminHeader – hidden on mobile when chat is open */}
+        <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
+          <AdminHeader setSidebarOpen={setSidebarOpen} />
+        </div>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-8 pb-30">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div>
-                <h1 className={`text-3xl font-bold ${textDark}`}>
-                  Technical Issues
-                </h1>
-                <p className={`${textMedium}`}>
-                  View and manage user-submitted technical problems.
-                </p>
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 overflow-hidden p-0 lg:p-4">
+          <div className="h-full max-w-7xl mx-auto flex bg-gray-100 dark:bg-gray-900/40 rounded-none lg:rounded-2xl shadow-sm overflow-hidden">
+            {/* LEFT PANE – ISSUE LIST */}
+            <div
+              className={`w-full flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out lg:w-1/3 border-r border-gray-200 dark:border-gray-800 ${
+                activeIssueId ? "hidden lg:flex" : "flex"
+              }`}
+            >
+              {/* Top header */}
+              <div className="px-4 py-3 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <div>
+                  <h2 className={`font-semibold ${textDark}`}>
+                    Technical Issues
+                  </h2>
+                  <p className={`text-xs ${textLight}`}>
+                    {filteredIssues.length} conversations
+                  </p>
+                </div>
+                <Siren className={`w-5 h-5`} style={primaryText} />
+              </div>
+
+              {/* Search */}
+              <div className="px-3 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search user, email, message"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-full text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210] focus:border-transparent outline-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* List */}
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+                {filteredIssues.length === 0 ? (
+                  <div className="h-full flex items-center justify-center px-4 text-center">
+                    <p className={textMedium}>
+                      No issues found matching your search.
+                    </p>
+                  </div>
+                ) : (
+                  filteredIssues.map((issue) => {
+                    const isActive = activeIssueId === issue.id;
+                    return (
+                      <button
+                        key={issue.id}
+                        onClick={() => setActiveIssueId(issue.id)}
+                        className={`w-full flex gap-3 px-4 py-3 text-left text-sm border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer ${
+                          isActive
+                            ? "bg-[#f4fae7] dark:bg-gray-800/70"
+                            : ""
+                        }`}
+                      >
+                        <div
+                          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white"
+                          style={primaryBg}
+                        >
+                          {issue.user
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p
+                              className={`font-medium text-xs md:text-sm truncate ${textDark}`}
+                            >
+                              {issue.user}
+                            </p>
+                            <span className="text-[10px] text-gray-400">
+                              {issue.date.split(" ")[0]}
+                            </span>
+                          </div>
+                          <p className="text-[13px] text-gray-500 truncate">
+                            {issue.message}
+                          </p>
+                          <p className="text-[10px] font-bold mt-1" style={primaryText}>
+                            {issue.id}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by user, email or message..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-${primary.replace(
-                  "#",
-                  ""
-                )} focus:border-transparent`}
-                style={{ outline: "none" }}
-              />
-            </div>
+            {/* RIGHT PANE – CHAT AREA */}
+            <div
+              className={`w-full flex-1 flex flex-col transition-transform duration-300 ease-in-out bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${
+                activeIssueId ? "flex" : "hidden lg:flex"
+              } lg:w-2/3`}
+            >
+              {activeIssue ? (
+                <>
+                  {/* Chat header */}
+                  <div className="px-5 py-3 flex items-center justify-between bg-white/95 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setActiveIssueId(null)}
+                        className="lg:hidden p-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
 
-            {/* Issues List */}
-            <div className="space-y-4">
-              {filteredIssues.length === 0 ? (
-                <div
-                  className={`${bgCard} rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center`}
-                >
-                  <p className={textMedium}>
-                    No issues found matching your search.
-                  </p>
-                </div>
-              ) : (
-                filteredIssues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    className={`${bgCard} rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-all hover:shadow-md`}
-                  >
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-center justify-between flex-wrap gap-3">
-                        <h3 className={`text-lg font-semibold ${textDark}`}>
-                          {issue.id}
-                        </h3>
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white flex-shrink-0"
+                        style={primaryBg}
+                      >
+                        {activeIssue.user
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()}
                       </div>
-
-                      {/* User Info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-0 gap-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className={`w-4 h-4 ${textLight}`} />
-                          <span className={textMedium}>{issue.user}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className={`w-4 h-4 ${textLight}`} />
-                          <span className={textMedium}>{issue.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className={`w-4 h-4 ${textLight}`} />
-                          <span className={textMedium}>{issue.date}</span>
-                        </div>
+                      <div>
+                        <p className={`font-semibold ${textDark}`}>
+                          {activeIssue.user}
+                        </p>
+                        <p className={`text-xs ${textLight}`}>
+                          {activeIssue.email}
+                        </p>
                       </div>
-
-                      {/* Expandable Message */}
-                      <ExpandableMessage message={issue.message} />
                     </div>
                   </div>
-                ))
+
+                  {/* Messages body */}
+                  <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4 bg-gradient-to-b from-gray-100/80 to-gray-200/60 dark:from-gray-900 dark:to-gray-950">
+                    {/* User message bubble */}
+                    <div className="flex items-start gap-2 max-w-xl">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0"
+                        style={primaryBg}
+                      >
+                        {activeIssue.user[0]}
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                          <p className="text-xs text-gray-500 mb-1">
+                            Issue ID: {activeIssue.id}
+                          </p>
+                          <p className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
+                            {activeIssue.message}
+                          </p>
+                        </div>
+                        <span className="mt-1 text-[10px] text-gray-400">
+                          {activeIssue.date}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Admin reply placeholder */}
+                    <div className="flex justify-end">
+                      <div className="max-w-xl flex flex-col items-end">
+                        <div
+                          className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm"
+                          style={primaryBg}
+                        >
+                          <p>
+                            Type and send a response to this technical issue.
+                          </p>
+                        </div>
+                        <span className="mt-1 text-[10px] text-gray-300">
+                          Not sent yet
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Input area */}
+                  <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                      <textarea
+                        rows={1}
+                        className="flex-1 resize-none rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210] focus:border-transparent outline-none"
+                        placeholder="Type your reply to this issue..."
+                      />
+                      <button
+                        className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition cursor-pointer"
+                        style={primaryBg}
+                      >
+                        <Send className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-center px-6">
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-1 ${textDark}`}>
+                      Select a conversation
+                    </h3>
+                    <p className={`${textMedium} text-sm`}>
+                      Choose a technical issue on the left to view details and
+                      reply.
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </main>
 
-        {/* Mobile Nav */}
-        <Nav />
+
+        {/* Mobile Nav – hidden on mobile when chat is open */}
+        <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
+          <Nav />
+        </div>
       </div>
     </div>
   );
