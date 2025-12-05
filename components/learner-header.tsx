@@ -131,23 +131,27 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
           {/* Right side controls */}
           <div className="flex items-center gap-4 ml-auto">
+            {/* 🔔 Bell icon wrapped with Link */}
+            <Link href="/learner-dashboard/technical-issues-answers">
+              <div className="relative cursor-pointer">
+                {/* Removed the button! */}
+                <div
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 
+      hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                >
+                  <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                </div>
 
-            {/* 🔔 Bell icon w/ badge */}
-            <div className="relative">
-              <button className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition cursor-pointer">
-                <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-              </button>
-
-              {notificationCount > 0 && (
-                <span
-  className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold 
-  px-1.5 py-[2px] rounded-full shadow-md"
->
-  {notificationCount}
-</span>
-
-              )}
-            </div>
+                {notificationCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold
+        px-1.5 py-[2px] rounded-full shadow-md"
+                  >
+                    {notificationCount}
+                  </span>
+                )}
+              </div>
+            </Link>
 
             {/* Theme Toggle */}
             <button
@@ -177,7 +181,9 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    (user?.data?.email || user?.email)?.charAt(0).toUpperCase() || "U"
+                    (user?.data?.email || user?.email)
+                      ?.charAt(0)
+                      .toUpperCase() || "U"
                   )}
                 </div>
                 <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
