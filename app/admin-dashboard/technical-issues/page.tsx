@@ -206,7 +206,7 @@ const TechnicalIssuesPage: React.FC = () => {
             
             {/* LEFT PANE – ISSUE LIST */}
             <div
-              className={`w-full flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out lg:w-1/3 border-r border-gray-200 dark:border-gray-800 ${
+              className={`w-full flex-shrink-0 flex flex-col lg:w-1/3 border-r border-gray-200 dark:border-gray-800 ${
                 activeIssueId ? "hidden lg:flex" : "flex"
               }`}>
 
@@ -324,7 +324,7 @@ const TechnicalIssuesPage: React.FC = () => {
 
             {/* RIGHT PANE – CHAT AREA */}
             <div
-              className={`w-full flex-1 flex flex-col transition-transform duration-300 ease-in-out bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${
+              className={`w-full flex-1 flex flex-col bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${
                 activeIssueId ? "flex" : "hidden lg:flex"
               } lg:w-2/3`}
             >

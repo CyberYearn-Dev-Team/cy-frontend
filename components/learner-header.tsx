@@ -9,6 +9,7 @@ import {
   Settings,
   Moon,
   Sun,
+  Bell,
 } from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/api/auth";
@@ -26,10 +27,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // 🔔 Badge Number
+  const notificationCount = 5;
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Load theme from localStorage
+  // Load theme
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -38,7 +43,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     }
   }, []);
 
-  // Fetch user data
+  // Fetch user
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -53,7 +58,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     fetchUser();
   }, []);
 
-  // Handle theme toggle
+  // Theme toggle
   const toggleTheme = () => {
     if (darkMode) {
       document.documentElement.classList.remove("dark");
@@ -65,41 +70,32 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     setDarkMode(!darkMode);
   };
 
-  // ✅ Enhanced Logout Handler
+  // Logout handler
   const handleLogout = async () => {
     try {
-      // Optional: call your backend logout endpoint
       await fetch("/api/v1/auth/logout", {
         method: "POST",
         credentials: "include",
       });
 
-      // Keep theme intact
       const theme = localStorage.getItem("theme");
-
-      // Remove everything else
       localStorage.clear();
       sessionStorage.clear();
-
-      // Restore theme
       if (theme) localStorage.setItem("theme", theme);
 
-      // Expire all cookies manually (simple loop)
       document.cookie.split(";").forEach((c) => {
         document.cookie = c
           .replace(/^ +/, "")
           .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
       });
 
-      // Show toast message
       toast.info("You have been logged out securely.", {
         description: "Please log in again to continue.",
       });
 
-      // Hide modal and redirect securely
       setShowLogoutConfirm(false);
       setTimeout(() => {
-        router.replace("/auth/login"); // replace prevents going back
+        router.replace("/auth/login");
       }, 1000);
     } catch (err) {
       console.error("Logout failed:", err);
@@ -135,6 +131,24 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
           {/* Right side controls */}
           <div className="flex items-center gap-4 ml-auto">
+
+            {/* 🔔 Bell icon w/ badge */}
+            <div className="relative">
+              <button className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition cursor-pointer">
+                <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              {notificationCount > 0 && (
+                <span
+  className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold 
+  px-1.5 py-[2px] rounded-full shadow-md"
+>
+  {notificationCount}
+</span>
+
+              )}
+            </div>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -157,8 +171,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                   {loading ? (
                     "..."
                   ) : user?.data?.profileImage || user?.profileImage ? (
-                    <img 
-                      src={user?.data?.profileImage || user?.profileImage} 
+                    <img
+                      src={user?.data?.profileImage || user?.profileImage}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
@@ -221,7 +235,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
         </div>
       </header>
 
-      {/* ✅ Logout Confirmation Modal (using shadcn buttons) */}
+      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
