@@ -16,6 +16,7 @@ import { getCurrentUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getTechnicalIssues, TechnicalIssue } from "@/lib/services/technicalIssueService";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -29,7 +30,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // 🔔 Badge Number
-  const notificationCount = 5;
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -43,19 +44,31 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     }
   }, []);
 
-  // Fetch user
+  // Fetch user and notifications
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
         const userData = await getCurrentUser();
         setUser(userData);
+        
+        // Fetch technical issues and count pending ones for the current user
+        const issues = await getTechnicalIssues();
+        const pendingCount = issues.filter(
+          (issue: TechnicalIssue) => 
+            issue.userId === userData?.id && 
+            issue.status === 'PENDING' && 
+            !issue.adminReply
+        ).length;
+        
+        setNotificationCount(pendingCount);
       } catch (error) {
-        console.error("Failed to fetch user:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchUser();
+    
+    fetchData();
   }, []);
 
   // Theme toggle
@@ -134,22 +147,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             {/* 🔔 Bell icon wrapped with Link */}
             <Link href="/learner-dashboard/technical-issues-answers">
               <div className="relative cursor-pointer">
-                {/* Removed the button! */}
-                <div
-                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 
-      hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                >
-                  <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                <div className="relative">
+                  <Bell className="h-6 w-6 text-gray-700 dark:text-gray-300 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" />
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {notificationCount}
+                    </span>
+                  )}
                 </div>
-
-                {notificationCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold
-        px-1.5 py-[2px] rounded-full shadow-md"
-                  >
-                    {notificationCount}
-                  </span>
-                )}
               </div>
             </Link>
 

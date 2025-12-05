@@ -3,20 +3,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Search,
-  User,
-  Mail,
-  Calendar,
   ChevronDown,
   ChevronUp,
   ArrowLeft,
-  Send,
   Loader2,
   MessageCircle,
+  AlertCircle,
 } from "lucide-react";
+import { getAnsweredMessages, TechnicalIssue } from "@/lib/services/technicalIssuesRespnse";
+import { toast } from "sonner";
 
 import LearnerSidebar from "@/components/learner-sidebar";
 import LearnerHeader from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
+import { TechnicalIssuesSkeleton } from "@/components/ui/TechnicalIssuesSkeleton";
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -43,6 +43,7 @@ type Message = {
   sender: "learner" | "admin";
   content: string;
   createdAt: string;
+  status?: "OPEN" | "ANSWERED" | "CLOSED";
 };
 
 type Conversation = {
@@ -145,15 +146,76 @@ const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
 const LearnerPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-  const [activeConvId, setActiveConvId] = useState<string | null>(conversations[0]?.id ?? null);
-  const [replyText, setReplyText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const isChatOpenOnMobile = activeConvId !== null;
 
   // Keep a ref to the messages container to auto-scroll
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Fetch answered messages on component mount
+    const fetchMessages = async () => {
+      try {
+        setIsLoading(true);
+        console.log("Fetching answered messages...");
+        const answeredIssues = await getAnsweredMessages();
+        console.log("API Response:", answeredIssues);
+        
+        // Transform API response to match our Conversation type
+        const formattedConversations: Conversation[] = answeredIssues.map((issue, index) => {
+          console.log(`Processing issue ${index}:`, issue);
+          
+          const conversation: Conversation = {
+            id: `C-${1000 + index}`,
+            username: "ADMIN",
+            status: issue.adminReply ? "ANSWERED" : "OPEN",
+            learner: {
+              username: "You",
+              email: issue.userId || "user@example.com"
+            },
+            messages: [
+              {
+                id: `m-${issue.id}`,
+                sender: "learner" as const,
+                content: issue.message,
+                createdAt: issue.createdAt,
+              }
+            ]
+          };
+
+          // Add admin reply if it exists
+          if (issue.adminReply) {
+            conversation.messages.push({
+              id: `a-${issue.id}`,
+              sender: "admin" as const,
+              content: issue.adminReply,
+              createdAt: issue.updatedAt || issue.createdAt,  // Fallback to createdAt if updatedAt is not available
+            });
+          }
+
+          return conversation;
+        });
+
+        console.log("Formatted conversations:", formattedConversations);
+
+        setConversations(formattedConversations);
+        if (formattedConversations.length > 0 && !activeConvId) {
+          setActiveConvId(formattedConversations[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+        setError("Failed to load messages. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom when active conversation or messages change
@@ -172,48 +234,19 @@ const LearnerPage: React.FC = () => {
 
   const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
 
-  const handleSend = async () => {
-    if (!replyText.trim() || !activeConv) return;
-    setIsSubmitting(true);
-
-    // Simulate network delay
-    await new Promise((res) => setTimeout(res, 400));
-
-    const newMessage: Message = {
-      id: `m-${Date.now()}`,
-      sender: "learner",
-      content: replyText.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === activeConv.id
-          ? { ...conv, messages: [...conv.messages, newMessage], status: "OPEN" }
-          : conv
-      )
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <LearnerSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <LearnerHeader setSidebarOpen={setSidebarOpen} />
+          <div className="flex-1 overflow-auto p-4">
+            <TechnicalIssuesSkeleton />
+          </div>
+        </div>
+      </div>
     );
-
-    setReplyText("");
-    setIsSubmitting(false);
-
-    // OPTIONAL: simulate an admin auto-reply after a short delay to show two-way chat
-    setTimeout(() => {
-      const adminReply: Message = {
-        id: `m-admin-${Date.now()}`,
-        sender: "admin",
-        content: "Thanks for your message — our support will look into this and get back to you shortly.",
-        createdAt: new Date().toISOString(),
-      };
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === activeConv.id
-            ? { ...conv, messages: [...conv.messages, adminReply], status: "ANSWERED" }
-            : conv
-        )
-      );
-    }, 1200);
-  };
+  }
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -254,6 +287,7 @@ const LearnerPage: React.FC = () => {
                 <MessageCircle className="w-5 h-5" style={primaryText} />
               </div>
 
+
               {/* Search */}
               <div className="px-3 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                 <div className="relative">
@@ -268,10 +302,28 @@ const LearnerPage: React.FC = () => {
                 </div>
               </div>
 
+
               <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 pb-25 sm:pb-0">
-                {filteredConvs.length === 0 ? (
-                  <div className="h-full flex items-center justify-center px-4 text-center">
-                    <p className={textMedium}>No conversations found matching your search.</p>
+                {isLoading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin" style={primaryText} />
+                  </div>
+                ) : error ? (
+                  <div className="h-full flex flex-col items-center justify-center p-4 text-center">
+                    <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
+                    <p className="text-red-500">{error}</p>
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="mt-2 text-sm px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : filteredConvs.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center px-4 text-center">
+                    <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
+                    <p className={textMedium}>No support conversations yet.</p>
+                    <p className="text-sm text-gray-500 mt-1">Send a message to get started.</p>
                   </div>
                 ) : (
                   filteredConvs.map((conv) => {
@@ -285,8 +337,10 @@ const LearnerPage: React.FC = () => {
                           isActive ? "bg-[#f4fae7] dark:bg-gray-800/70" : ""
                         }`}
                       >
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white" style={primaryBg}>
-                          {getInitials(conv.learner.username)}
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white overflow-hidden" style={primaryBg}>
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden" style={primaryBg}>
+                            <span className="flex text-[17px] items-center justify-center w-full h-full text-white font-bold">A</span>
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
@@ -311,9 +365,23 @@ const LearnerPage: React.FC = () => {
               </div>
             </div>
 
+
+
             {/* RIGHT PANE – Chat Area */}
             <div className={`w-full flex-1 flex flex-col bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${activeConvId ? "flex" : "hidden lg:flex"} lg:w-2/3`}>
-              {activeConv ? (
+              {!activeConv && !isLoading ? (
+                <div className="flex-1 flex items-center justify-center text-center px-6">
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-1 ${textDark}`}>No conversation selected</h3>
+                    <p className={`${textMedium} text-sm`}>
+                      {conversations.length > 0 
+                        ? "Select a conversation from the list"
+                        : "Send a message to start a new conversation with support"
+                      }
+                    </p>
+                  </div>
+                </div>
+              ) : activeConv ? (
                 <>
                   {/* Chat header */}
                   <div className="px-5 py-3 flex items-center justify-between bg-white/95 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
@@ -325,10 +393,28 @@ const LearnerPage: React.FC = () => {
                       <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white flex-shrink-0 overflow-hidden" style={primaryBg}>
                         {activeConv.learner.profileImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={activeConv.learner.profileImage} alt={activeConv.learner.username} className="h-full w-full object-cover" />
+                          <img 
+                            src={activeConv.learner.profileImage} 
+                            alt={activeConv.learner.username} 
+                            className="h-full w-full object-cover" 
+                            onError={(e) => {
+                              // Fallback to initials if image fails to load
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.src = '';
+                              target.alt = getInitials(activeConv.learner.username);
+                              target.style.display = 'none';
+                              const nextSibling = target.nextSibling as HTMLElement;
+                              if (nextSibling && 'style' in nextSibling) {
+                                nextSibling.style.display = 'block';
+                              }
+                            }}
+                          />
                         ) : (
-                          getInitials(activeConv.learner.username)
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden" style={primaryBg}>
+                            <span className="flex text-[17px] items-center justify-center w-full h-full text-white font-bold">A</span>
+                          </div>
                         )}
+                        <span style={{ display: 'none' }}>{getInitials(activeConv.learner.username)}</span>
                       </div>
 
                       <div>
@@ -336,10 +422,12 @@ const LearnerPage: React.FC = () => {
                         <p className={`text-xs ${textLight}`}>{activeConv.learner.email}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">Status: <span className="font-bold">{activeConv.status}</span></p>
-                      <p className="text-xs text-gray-400">{activeConv.messages.length} messages</p>
-                    </div>
+                    <div className="hidden lg:block text-right">
+  <p className="text-xs text-gray-400">
+    {activeConv.messages.length} messages
+  </p>
+</div>
+
                   </div>
 
                   {/* Messages body */}
@@ -363,11 +451,11 @@ const LearnerPage: React.FC = () => {
                       return (
                         <div key={msg.id} className="flex items-start gap-2 max-w-xl">
                           <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden" style={primaryBg}>
-                            A
+                            <span className="flex text-[14px] items-center justify-center w-full h-full text-white font-bold">A</span>
                           </div>
                           <div className="flex flex-col">
                             <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                              <p className="text-xs text-gray-500 mb-1">Support</p>
+                              <p className="text-xs text-gray-500 mb-1">Admin</p>
                               <p className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{msg.content}</p>
                             </div>
                             <span className="mt-1 text-[10px] text-gray-400">{new Date(msg.createdAt).toLocaleString()}</span>
@@ -378,47 +466,26 @@ const LearnerPage: React.FC = () => {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Input area - learner can send messages */}
-                  <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <textarea
-                        rows={1}
-                        className="flex-1 resize-none rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210] focus:border-transparent outline-none"
-                        placeholder="Type your message to support..."
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={primaryBg}
-                        onClick={handleSend}
-                        disabled={!replyText.trim() || isSubmitting}
-                      >
-                        {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
-                      </button>
-                    </div>
+                  <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 text-center">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Viewing support conversation. To start a new conversation, please contact support.
+                    </p>
                   </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-center px-6">
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-1 ${textDark}`}>Select a conversation</h3>
-                    <p className={`${textMedium} text-sm`}>Choose a conversation on the left to view details and message support.</p>
-                  </div>
-                </div>
-              )}
-            </div>
+              </>
+                     ) : (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-gray-500">No messages to display</p>
+              </div>
+            )}
           </div>
+          <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
+            <Nav />
+          </div>
+      </div>
         </main>
-
-        {/* Mobile nav — hidden when chat open */}
-        <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
-          <Nav />
-        </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default LearnerPage;

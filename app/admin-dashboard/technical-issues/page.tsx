@@ -264,7 +264,7 @@ const TechnicalIssuesPage: React.FC = () => {
 
 
               {/* List of messages */}
-<div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 pb-25 sm:pb-0">
+               <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 pb-25 sm:pb-0">
                 {filteredIssues.length === 0 ? (
                   <div className="h-full flex items-center justify-center px-4 text-center">
                     <p className={textMedium}>
