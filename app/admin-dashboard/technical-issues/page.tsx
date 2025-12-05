@@ -11,11 +11,10 @@ import {
   ChevronUp,
   ArrowLeft,
   Send,
-  Loader2,
   AlertCircle,
   SendHorizontal ,
 } from "lucide-react";
-
+import { TechnicalIssuesSkeleton } from "@/components/ui/TechnicalIssuesSkeleton";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
@@ -162,9 +161,17 @@ const TechnicalIssuesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-        <span className="ml-2">Loading issues...</span>
+      <div className="flex h-screen w-full bg-white dark:bg-gray-950">
+        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 p-4 md:p-6">
+            <TechnicalIssuesSkeleton />
+          </main>
+          <div className="lg:hidden">
+            <Nav />
+          </div>
+        </div>
       </div>
     );
   }
