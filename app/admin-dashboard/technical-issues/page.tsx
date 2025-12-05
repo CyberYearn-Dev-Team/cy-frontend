@@ -12,7 +12,8 @@ import {
   ArrowLeft,
   Send,
   AlertCircle,
-  SendHorizontal ,
+  SendHorizontal,
+  Loader2,
 } from "lucide-react";
 import { TechnicalIssuesSkeleton } from "@/components/ui/TechnicalIssuesSkeleton";
 import AdminSidebar from "@/components/admin-sidebar";
@@ -162,9 +163,9 @@ const TechnicalIssuesPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex h-screen w-full bg-white dark:bg-gray-950">
-        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          <AdminHeader setSidebarOpen={setSidebarOpen} />
           <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 p-4 md:p-6">
             <TechnicalIssuesSkeleton />
           </main>
