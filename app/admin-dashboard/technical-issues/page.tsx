@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   Siren,
   Search,
@@ -11,11 +11,19 @@ import {
   ChevronUp,
   ArrowLeft,
   Send,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
+// Assuming the path to service file is correct and TechnicalIssue type is imported
+import {
+  getTechnicalIssues,
+  updateTechnicalIssue,
+  TechnicalIssue,
+} from "@/lib/services/technicalIssueService";
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -27,18 +35,20 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
 
-interface TechnicalIssue {
-  id: string;
-  user: string;
-  email: string;
-  message: string;
-  date: string;
-}
-
 // Ensure Tailwind can resolve these colors
 const primaryText = { color: primary };
 const primaryBg = { backgroundColor: primary };
 
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .substring(0, 2);
+};
+
+// NOTE: This ExpandableMessage component wasn't used in your provided new code, but keeping it here for completeness
 const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 150;
@@ -81,74 +91,126 @@ const TechnicalIssuesPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
+  const [issues, setIssues] = useState<TechnicalIssue[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [issues] = useState<TechnicalIssue[]>([
-    {
-      id: "TI-001",
-      user: "Samuel Johnson",
-      email: "samuel@example.com",
-      message: "I can’t submit my assignment. The submit button does nothing.",
-      date: "2025-10-01 09:15",
-    },
-    {
-      id: "TI-002",
-      user: "Grace Obi",
-      email: "graceobi@example.com",
-      message: "The quiz loads forever and never starts.",
-      date: "2025-10-02 11:40",
-    },
-    {
-      id: "TI-003",
-      user: "John Musa",
-      email: "johnmusa@example.com",
-      message:
-        "My course progress is not updating even after completing several modules. I've tried refreshing, clearing cache, using different browsers and devices but the progress bar remains stuck at 68%.",
-      date: "2025-10-03 14:22",
-    },
-    {
-      id: "TI-004",
-      user: "Amina Bello",
-      email: "amina@example.com",
-      message:
-        "I cannot reset my password. It keeps failing with error code 5003. I have tried multiple times over the past 3 days using both email link and SMS verification.",
-      date: "2025-10-04 16:50",
-    },
-  ]);
+  // Determine if the chat is open on mobile (small screen)
+  const isChatOpenOnMobile = activeIssueId !== null;
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getTechnicalIssues();
+        // Sort issues by createdAt in descending order (newest first)
+        const sortedIssues = [...data].sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setIssues(sortedIssues);
+        // Automatically select the first (newest) issue if none is active and there are issues
+        if (!activeIssueId && sortedIssues.length > 0) {
+          setActiveIssueId(sortedIssues[0].id);
+        }
+      } catch (err) {
+        console.error("Error fetching technical issues:", err);
+        setError("Failed to load technical issues. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchIssues();
+  }, []);
+
+  const handleReply = async (issueId: string) => {
+    if (!replyText.trim()) return;
+
+    try {
+      setIsSubmitting(true);
+      // Ensure 'ANSWERED' is one of the valid literal types from TechnicalIssue.status
+      await updateTechnicalIssue(issueId, "ANSWERED", replyText);
+
+      setIssues((prevIssues) =>
+        prevIssues.map((issue) =>
+          issue.id === issueId
+            ? { ...issue, status: "ANSWERED", adminReply: replyText }
+            : issue
+        )
+      );
+
+      setReplyText("");
+    } catch (err) {
+      console.error("Error sending reply:", err);
+      setError("Failed to send reply. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredIssues = issues.filter(
     (issue) =>
       issue.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.email.toLowerCase().includes(searchQuery.toLowerCase())
+      issue.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const activeIssue = issues.find((issue) => issue.id === activeIssueId);
 
-  //  NEW: Determine whether to hide the layout components on mobile
-  const isChatOpenOnMobile = activeIssueId !== null;
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+        <span className="ml-2">Loading issues...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center p-6 max-w-md mx-auto">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Error loading issues
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex h-screen ${bgLight}`}>
-      {/* AdminSidebar */}
-      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <div className={`flex h-screen overflow-hidden ${bgLight}`}>
+      {/* 1. Hide AdminSidebar on mobile when chat is open */}
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* AdminHeader – hidden on mobile when chat is open */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* 2. Hide AdminHeader on mobile when chat is open */}
         <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
           <AdminHeader setSidebarOpen={setSidebarOpen} />
         </div>
 
-        {/* MAIN CONTENT AREA */}
-        <main className="flex-1 overflow-hidden p-0 lg:p-4">
+        {/* The main content structure needs to be adjusted to match the old two-pane layout for mobile toggling */}
+        <main className="flex-1 overflow-y-auto p-0 lg:p-4">
           <div className="h-full max-w-7xl mx-auto flex bg-gray-100 dark:bg-gray-900/40 rounded-none lg:rounded-2xl shadow-sm overflow-hidden">
+            
             {/* LEFT PANE – ISSUE LIST */}
             <div
               className={`w-full flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out lg:w-1/3 border-r border-gray-200 dark:border-gray-800 ${
                 activeIssueId ? "hidden lg:flex" : "flex"
               }`}
             >
-              {/* Top header */}
-              <div className="px-4 py-3 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+              {/* Top header (Issue List title) */}
+              <div className="px-4 py-3 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                 <div>
                   <h2 className={`font-semibold ${textDark}`}>
                     Technical Issues
@@ -161,7 +223,7 @@ const TechnicalIssuesPage: React.FC = () => {
               </div>
 
               {/* Search */}
-              <div className="px-3 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+              <div className="px-3 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -199,21 +261,25 @@ const TechnicalIssuesPage: React.FC = () => {
                           className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white"
                           style={primaryBg}
                         >
-                          {issue.user
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()}
+                          {issue.user.profileImage ? (
+                            <img
+                              src={issue.user.profileImage}
+                              alt={issue.user.username}
+                              className="h-full w-full object-cover rounded-full"
+                            />
+                          ) : (
+                            getInitials(issue.user.username)
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <p
                               className={`font-medium text-xs md:text-sm truncate ${textDark}`}
                             >
-                              {issue.user}
+                              {issue.user.username}
                             </p>
                             <span className="text-[10px] text-gray-400">
-                              {issue.date.split(" ")[0]}
+                              {new Date(issue.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                           <p className="text-[13px] text-gray-500 truncate">
@@ -249,35 +315,47 @@ const TechnicalIssuesPage: React.FC = () => {
                       </button>
 
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white flex-shrink-0"
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white flex-shrink-0 overflow-hidden"
                         style={primaryBg}
                       >
-                        {activeIssue.user
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
+                         {activeIssue.user.profileImage ? (
+                            <img
+                              src={activeIssue.user.profileImage}
+                              alt={activeIssue.user.username}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            getInitials(activeIssue.user.username)
+                          )}
                       </div>
                       <div>
                         <p className={`font-semibold ${textDark}`}>
-                          {activeIssue.user}
+                          {activeIssue.user.username}
                         </p>
                         <p className={`text-xs ${textLight}`}>
-                          {activeIssue.email}
+                          {activeIssue.user.email}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Messages body */}
+                  {/* Messages body (Scrollable area) */}
                   <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4 bg-gradient-to-b from-gray-100/80 to-gray-200/60 dark:from-gray-900 dark:to-gray-950">
                     {/* User message bubble */}
                     <div className="flex items-start gap-2 max-w-xl">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden"
                         style={primaryBg}
                       >
-                        {activeIssue.user[0]}
+                         {activeIssue.user.profileImage ? (
+                            <img
+                              src={activeIssue.user.profileImage}
+                              alt={activeIssue.user.username}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            activeIssue.user.username[0]
+                          )}
                       </div>
                       <div className="flex flex-col">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
@@ -289,42 +367,71 @@ const TechnicalIssuesPage: React.FC = () => {
                           </p>
                         </div>
                         <span className="mt-1 text-[10px] text-gray-400">
-                          {activeIssue.date}
+                          {new Date(activeIssue.createdAt).toLocaleString()}
                         </span>
                       </div>
                     </div>
 
-                    {/* Admin reply placeholder */}
-                    <div className="flex justify-end">
-                      <div className="max-w-xl flex flex-col items-end">
-                        <div
-                          className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm"
-                          style={primaryBg}
-                        >
-                          <p>
-                            Type and send a response to this technical issue.
-                          </p>
+                    {/* Admin reply (If sent) */}
+                    {activeIssue.adminReply && (
+                      <div className="flex justify-end">
+                        <div className="max-w-xl flex flex-col items-end">
+                          <div
+                            className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm"
+                            style={primaryBg}
+                          >
+                            <p>
+                              {activeIssue.adminReply}
+                            </p>
+                          </div>
+                          <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-300">
+                            Replied: {new Date(activeIssue.createdAt).toLocaleTimeString()}
+                          </span>
                         </div>
-                        <span className="mt-1 text-[10px] text-gray-300">
-                          Not sent yet
-                        </span>
                       </div>
-                    </div>
+                    )}
+                    
+                    {/* Admin reply placeholder (If not sent yet) - Keeping the old code style for consistency */}
+                    {!activeIssue.adminReply && (
+                        <div className="flex justify-end">
+                            <div className="max-w-xl flex flex-col items-end">
+                                <div
+                                    className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm bg-gray-400 dark:bg-gray-700 opacity-80"
+                                >
+                                    <p>
+                                        Type and send a response to this technical issue.
+                                    </p>
+                                </div>
+                                <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-300">
+                                    Not sent yet
+                                </span>
+                            </div>
+                        </div>
+                    )}
                   </div>
 
-                  {/* Input area */}
+                  {/* 3. Input area - Fixed design to match stored code style */}
                   <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <textarea
-                        rows={1}
+                        rows={1} // Use rows={1} for a single-line look, resize-none
                         className="flex-1 resize-none rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210] focus:border-transparent outline-none"
                         placeholder="Type your reply to this issue..."
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        disabled={isSubmitting}
                       />
                       <button
-                        className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition cursor-pointer"
+                        className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         style={primaryBg}
+                        onClick={() => handleReply(activeIssue.id)}
+                        disabled={!replyText.trim() || isSubmitting}
                       >
-                        <Send className="w-5 h-5" />
+                         {isSubmitting ? (
+                            <Loader2 className="animate-spin w-5 h-5" />
+                          ) : (
+                            <Send className="w-5 h-5" />
+                          )}
                       </button>
                     </div>
                   </div>
@@ -347,7 +454,7 @@ const TechnicalIssuesPage: React.FC = () => {
         </main>
 
 
-        {/* Mobile Nav – hidden on mobile when chat is open */}
+        {/* 4. Hide Mobile Nav when chat is open */}
         <div className={isChatOpenOnMobile ? "hidden lg:block" : "block"}>
           <Nav />
         </div>
