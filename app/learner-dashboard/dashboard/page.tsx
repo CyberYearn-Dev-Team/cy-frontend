@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { getCurrentUser } from "@/lib/api/auth";
 import ComingSoonSection from "@/components/ui/ComingSoonSection";
 import {
@@ -446,6 +447,28 @@ export default function LearnerDashboard() {
 
   const router = useRouter();
 
+  const handleContinueTrack = async (e: React.MouseEvent, trackId: string, trackSlug: string) => {
+    e.stopPropagation();
+    const toastId = toast.loading('Loading track...');
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (apiUrl) {
+        await fetch(`${apiUrl}/tracks/${trackId}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        toast.success('Track loaded successfully!', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Error starting track:', error);
+      toast.dismiss(toastId);
+    } finally {
+      router.push(`/learner-dashboard/tracks/${trackSlug}`);
+    }
+  };
+
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -613,9 +636,12 @@ export default function LearnerDashboard() {
                           {continueLearning.map((item: any) => (
                             <div
                               key={item.id}
-                              className="group cursor-pointer min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
+                              className="group min-w-[280px] max-w-[280px] flex-shrink-0 snap-start"
                             >
-                              <div className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px]">
+                              <div
+                                className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px] cursor-pointer"
+                                onClick={() => router.push(`/learner-dashboard/tracks/${item.slug}`)}
+                              >
                                 <img
                                   src={
                                     item.thumbnail
@@ -626,7 +652,7 @@ export default function LearnerDashboard() {
                                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
-                              <div className="space-y-2 h-[100px] flex flex-col justify-between">
+                              <div className="space-y-2 h-[140px] flex flex-col justify-between">
                                 <div>
                                   <h3
                                     className={`font-semibold text-sm leading-tight ${textDark} group-hover:text-[${primary}] transition-colors line-clamp-3`}
@@ -640,11 +666,30 @@ export default function LearnerDashboard() {
                                     }}
                                   />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                   <p className={`text-xs ${textLight}`}>
                                     {item.progress}% complete
                                   </p>
                                   <Progress value={item.progress} />
+                                  <button
+                                    onClick={(e) => handleContinueTrack(e, item.id, item.slug)}
+                                    className={`w-full text-center text-xs font-medium py-1.5 px-3 rounded-md transition-colors cursor-pointer`}
+                                    style={{
+                                      backgroundColor: primary,
+                                      color: 'white',
+                                      border: `1px solid ${primary}`,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = hover;
+                                      e.currentTarget.style.borderColor = hover;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = primary;
+                                      e.currentTarget.style.borderColor = primary;
+                                    }}
+                                  >
+                                    Continue
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -901,19 +946,6 @@ export default function LearnerDashboard() {
                           )}
                         </div>
                       )}
-
-                      {/* View All (kept neutral) */}
-                      {/* <Link
-                        href="/learner-dashboard/achievements"
-                        className="block"
-                      >
-                        <Button
-                          variant="secondary"
-                          className="w-full py-2.5 text-sm font-semibold rounded-xl cursor-pointer"
-                        >
-                          View All Achievements
-                        </Button>
-                      </Link> */}
                     </CardContent>
                   </Card>
                 </div>
