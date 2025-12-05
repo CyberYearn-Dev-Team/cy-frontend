@@ -127,26 +127,25 @@ export default function LabGuidePage() {
           {/* Lab Content */}
           {lab && (
             <>
-            <div className={`${cardBg} shadow rounded-lg p-6`}>
-              <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
-                {lab.title}
-              </h1>
+              <div className={`${cardBg} shadow rounded-lg p-6`}>
+                <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
+                  {lab.title}
+                </h1>
 
-              {/* Full description from Directus */}
-              {lab.description ? (
-                <div
-                  className="prose dark:prose-invert max-w-none mb-4"
-                  dangerouslySetInnerHTML={{ __html: lab.description }}
-                />
-              ) : (
-                <div className={textLight}>No description available</div>
-              )}
+                {/* Full description from Directus */}
+                {lab.description ? (
+                  <div
+                    className="prose dark:prose-invert max-w-none mb-4"
+                    dangerouslySetInnerHTML={{ __html: lab.description }}
+                  />
+                ) : (
+                  <div className={textLight}>No description available</div>
+                )}
 
-              {lab.levels && (
-                <p className={`${textMedium} mt-2`}>• {lab.levels} •</p>
-              )}
-
-</div>
+                {lab.levels && (
+                  <p className={`${textMedium} mt-2`}>• {lab.levels} •</p>
+                )}
+              </div>
 
               {/* Video */}
               <div className="mt-6">
@@ -170,8 +169,6 @@ export default function LabGuidePage() {
                 )}
               </div>
 
-
-
               {/* PDF */}
               <div className="mt-6 mb-10">
                 <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
@@ -181,7 +178,8 @@ export default function LabGuidePage() {
                   onClick={() => {
                     if (!lab.pdf) {
                       toast.error("No PDF available", {
-                        description: "No PDF is uploaded yet for this lab guide.",
+                        description:
+                          "No PDF is uploaded yet for this lab guide.",
                       });
                     } else {
                       window.open(lab.pdf, "_blank");
@@ -192,8 +190,6 @@ export default function LabGuidePage() {
                   <FileText className="h-5 w-5" /> View Lab PDF
                 </button>
               </div>
-
-
 
               {/* Action Buttons */}
               <div className="flex flex-col md:flex-row gap-4 mt-10">
@@ -218,9 +214,32 @@ export default function LabGuidePage() {
           <TechnicalIssuePopup
             open={issuePopupOpen}
             onClose={() => setIssuePopupOpen(false)}
-            onSubmit={(msg) => {
-              toast.success("Issue submitted!");
-              setIssuePopupOpen(false);
+            onSubmit={async (msg) => {
+              try {
+                const response = await fetch(
+                  "https://cy-backend.onrender.com/api/v1/technical-issues",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ message: msg }),
+                  }
+                );
+
+                if (!response.ok) {
+                  throw new Error("Failed to submit issue");
+                }
+
+                const result = await response.json();
+                toast.success("Issue submitted successfully!");
+              } catch (error) {
+                console.error("Error submitting issue:", error);
+                toast.error("Failed to submit issue. Please try again.");
+              } finally {
+                setIssuePopupOpen(false);
+              }
             }}
           />
         </main>

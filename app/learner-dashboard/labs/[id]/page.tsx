@@ -262,12 +262,29 @@ export default function LabDetailPage() {
           <TechnicalIssuePopup
             open={issuePopupOpen}
             onClose={() => setIssuePopupOpen(false)}
-            onSubmit={(msg) => {
-              toast.success("Issue submitted!");
-              setIssuePopupOpen(false);
+            onSubmit={async (msg) => {
+              try {
+                const response = await fetch('https://cy-backend.onrender.com/api/v1/technical-issues', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  credentials: 'include',
+                  body: JSON.stringify({ message: msg })
+                });
 
-              // OPTIONAL: send to your backend
-              // fetch("/api/issues", { method: "POST", body: JSON.stringify({ msg }) })
+                if (!response.ok) {
+                  throw new Error('Failed to submit issue');
+                }
+
+                const result = await response.json();
+                toast.success("Issue submitted successfully!");
+              } catch (error) {
+                console.error('Error submitting issue:', error);
+                toast.error("Failed to submit issue. Please try again.");
+              } finally {
+                setIssuePopupOpen(false);
+              }
             }}
           />
         </main>
