@@ -233,56 +233,64 @@ export default function ContactUsPage() {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-1">
-              {/* Applied theme colors to sidebar background */}
-              <div className={`rounded-3xl p-6 sm:p-8 text-white bg-[${primaryDarker}]`}>
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                  We are always here to help you.
-                </h3>
-                {/* Applied slightly lighter theme color for secondary text */}
-                <p className={`text-green-50 mb-6 sm:mb-8 text-sm sm:text-base`}>
-                  Get in touch with us for any queries or support.
-                </p>
+           <div className="lg:col-span-1">
+  <div
+    className="rounded-3xl p-6 sm:p-8 text-white"
+    style={{ backgroundColor: primaryDarker }}
+  >
+    <h3 className="text-lg sm:text-xl font-semibold mb-2">
+      We are always here to help you.
+    </h3>
+    <p className="text-green-50 mb-6 sm:mb-8 text-sm sm:text-base">
+      Get in touch with us for any queries or support.
+    </p>
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-3">
-                    {/* Applied theme color to icon background */}
-                    <div className={`flex-shrink-0 w-8 h-8 bg-[${primary}] rounded-full flex items-center justify-center`}>
-                      <Phone className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm sm:text-base">Hotline</p>
-                      {/* Applied slightly lighter theme color for secondary text */}
-                      <p className={`text-green-50 text-sm`}>+84 906 088 009</p>
-                    </div>
-                  </div>
+    <div className="space-y-6">
+      {/* Hotline */}
+      <div className="flex items-start gap-3">
+        <div
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: primary }}
+        >
+          <Phone className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="font-medium text-sm sm:text-base">Hotline</p>
+          <p className="text-green-50 text-sm">+000 000 000 000</p>
+        </div>
+      </div>
 
-                  <div className="flex items-start gap-3">
-                    {/* Applied theme color to icon background */}
-                    <div className={`flex-shrink-0 w-8 h-8 bg-[${primary}] rounded-full flex items-center justify-center`}>
-                      <Phone className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm sm:text-base">WhatsApp</p>
-                      {/* Applied slightly lighter theme color for secondary text */}
-                      <p className={`text-green-50 text-sm`}>+84 374 559 209</p>
-                    </div>
-                  </div>
+      {/* WhatsApp */}
+      <div className="flex items-start gap-3">
+        <div
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: primary }}
+        >
+          <Phone className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="font-medium text-sm sm:text-base">WhatsApp</p>
+          <p className="text-green-50 text-sm">+000 000 000 000</p>
+        </div>
+      </div>
 
-                  <div className="flex items-start gap-3">
-                    {/* Applied theme color to icon background */}
-                    <div className={`flex-shrink-0 w-8 h-8 bg-[${primary}] rounded-full flex items-center justify-center`}>
-                      <Mail className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm sm:text-base">Email</p>
-                      {/* Applied slightly lighter theme color for secondary text */}
-                      <p className={`text-green-50 text-sm`}>info@cyberlearn.com</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Email */}
+      <div className="flex items-start gap-3">
+        <div
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: primary }}
+        >
+          <Mail className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="font-medium text-sm sm:text-base">Email</p>
+          <p className="text-green-50 text-sm">info@cyberlearn.com</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
       </div>
