@@ -36,6 +36,8 @@ import {
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
+import { UsersSkeleton } from "@/components/ui/users-skeleton";
+
 
 interface User {
   id: string;
@@ -65,8 +67,8 @@ type RoleFilter = "all" | "admin" | "instructor" | "learner";
 type StatusFilter = "all" | "active" | "suspended" | "deleted";
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeUsers, setActiveUsers] = useState(0);
   
@@ -121,12 +123,14 @@ export default function UserManagement() {
         }));
 
         // Calculate active users (totalXp >= 500)
-        const activeCount = formattedUsers.filter(user => user.totalXp >= 500).length;
+        const activeCount = formattedUsers.filter((user: User) => (user.totalXp || 0) >= 500).length;
         setActiveUsers(activeCount);
         
         setUsers(formattedUsers);
+        setError(null);
       } catch (error) {
         console.error("Error fetching users:", error);
+        setError("Failed to load users. Please try again later.");
         toast.error("Failed to load users. Please try again later.");
       } finally {
         setIsLoading(false);
@@ -301,10 +305,21 @@ export default function UserManagement() {
     },
   ];
 
+
+  // Import the skeleton component at the top with other imports
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className={`flex h-screen overflow-hidden ${bgLight}`}>
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader setSidebarOpen={setSidebarOpen} />
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
+            <div className="max-w-7xl mx-auto">
+              <UsersSkeleton />
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
@@ -343,6 +358,7 @@ export default function UserManagement() {
               <p className="text-gray-600 dark:text-gray-400">
                 Manage users, roles, and permissions
               </p>
+              
             </div>
 
             {/* Stats */}
