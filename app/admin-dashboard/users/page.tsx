@@ -39,6 +39,7 @@ interface User {
   coursesEnrolled?: number;
   coursesCreated?: number;
   completionRate?: number;
+  totalXp?: number;
 }
 
 // 🎨 Theme Colors
@@ -58,6 +59,7 @@ export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeUsers, setActiveUsers] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -72,7 +74,15 @@ export default function UserManagement() {
         setIsLoading(true);
         const usersData = await getAllUsers();
 
-        const formattedUsers = usersData.map((user: any) => ({
+        const formattedUsers = usersData.map((user: {
+          id: string;
+          username?: string;
+          email?: string;
+          role?: string;
+          suspended?: boolean;
+          createdAt?: string;
+          totalXp?: number;
+        }) => ({
           id: user.id,
           name: user.username || user.email?.split("@")[0] || "Unknown User",
           email: user.email || "No email provided",
@@ -84,8 +94,13 @@ export default function UserManagement() {
             : new Date().toISOString().split("T")[0],
           coursesEnrolled: 0, // These fields might need to be updated based on your data
           coursesCreated: 0,  // These fields might need to be updated based on your data
+          totalXp: user.totalXp || 0, // Add totalXp to track user activity
         }));
 
+        // Calculate active users (totalXp >= 500)
+        const activeCount = formattedUsers.filter(user => user.totalXp >= 500).length;
+        setActiveUsers(activeCount);
+        
         setUsers(formattedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -98,7 +113,7 @@ export default function UserManagement() {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users.filter((user: User) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -221,7 +236,7 @@ export default function UserManagement() {
     },
     {
       label: "Active Users",
-      value: users.filter((u) => u.status === "active").length.toString(),
+      value: activeUsers.toString(),
       icon: User,
       color: "text-green-600",
     },
