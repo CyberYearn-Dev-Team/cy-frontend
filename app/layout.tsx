@@ -34,7 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Client-side inactivity monitor */}
+        {/* Client side inactivity monitor for (loging user out) */}
         <InactivityHandler />
 
         {children}
