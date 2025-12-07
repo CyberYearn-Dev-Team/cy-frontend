@@ -92,7 +92,8 @@ export default function UserManagement() {
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || user.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -145,7 +146,9 @@ export default function UserManagement() {
   };
 
   const handleStatusChange = (userId: string, newStatus: User["status"]) => {
-    setUsers(users.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)));
+    setUsers(
+      users.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+    );
   };
 
   // ✅ Updated stats — Deleted Users replaces Instructors
@@ -196,97 +199,91 @@ export default function UserManagement() {
             </div>
 
             {/* Stats */}
-<div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-  {stats.map((s, i) => (
-    <div
-      key={i}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{s.label}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-            {s.value}
-          </p>
-        </div>
-        <s.icon className={`w-8 h-8 ${s.color}`} />
-      </div>
-    </div>
-  ))}
-</div>
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {stats.map((s, i) => (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {s.label}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                        {s.value}
+                      </p>
+                    </div>
+                    <s.icon className={`w-8 h-8 ${s.color}`} />
+                  </div>
+                </div>
+              ))}
+            </div>
 
+
+            
 
             {/* Search + Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center flex-wrap">
-              {/* Search */}
-              <div className="relative w-full sm:flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search users by name or email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-offset-0"
-                  style={{
-                    outline: "none",
-                    boxShadow: "none",
-                    transition: "border-color 0.2s ease, background-color 0.2s ease",
-                  }}
-                />
-              </div>
+<div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center flex-wrap">
 
-              {/* Filters Container */}
-<div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full">
-  {/* Role + Status Filters (side by side on small screens) */}
-  <div className="flex w-full gap-3 sm:w-auto">
-    {/* Role Filter */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">
-          {roleFilter === "all"
-            ? "All Roles"
-            : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
-          <ChevronDown className="ml-2 w-4 h-4" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {["all", "admin", "instructor", "learner"].map((role) => (
-          <DropdownMenuItem key={role} onClick={() => setRoleFilter(role as RoleFilter)}>
-            {role === "all"
-              ? "All Roles"
-              : role.charAt(0).toUpperCase() + role.slice(1)}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+  {/* Search */}
+  <div className="relative w-full lg:flex-1">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+    <input
+      type="text"
+      placeholder="Search users by name or email..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+      style={{ outline: "none", boxShadow: "none" }}
+    />
+  </div>
 
-    {/* Status Filter */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">
-          {statusFilter === "all"
-            ? "All Status"
-            : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-          <ChevronDown className="ml-2 w-4 h-4" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {["all", "active", "suspended", "deleted"].map((status) => (
-          <DropdownMenuItem
-            key={status}
-            onClick={() => setStatusFilter(status as StatusFilter)}
-          >
-            {status === "all"
-              ? "All Status"
-              : status.charAt(0).toUpperCase() + status.slice(1)}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+  {/* Filters Container */}
+  <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+    <div className="flex w-full gap-3 sm:w-auto">
+
+      {/* Role Filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
+            {roleFilter === "all" ? "All Roles" : roleFilter[0].toUpperCase() + roleFilter.slice(1)}
+            <ChevronDown className="ml-2 w-4 h-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {["all", "admin", "instructor", "learner"].map((role) => (
+            <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
+              {role === "all" ? "All Roles" : role[0].toUpperCase() + role.slice(1)}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Status Filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
+            {statusFilter === "all" ? "All Status" : statusFilter[0].toUpperCase() + statusFilter.slice(1)}
+            <ChevronDown className="ml-2 w-4 h-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {["all", "active", "suspended", "deleted"].map((status) => (
+            <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)}>
+              {status === "all" ? "All Status" : status[0].toUpperCase() + status.slice(1)}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+    </div>
   </div>
 </div>
 
-            </div>
+
+
+
 
             {/* Users Table */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -296,14 +293,23 @@ export default function UserManagement() {
                     <tr>
                       <th className="px-6 py-3 text-left font-medium">User</th>
                       <th className="px-6 py-3 text-left font-medium">Role</th>
-                      <th className="px-6 py-3 text-left font-medium">Status</th>
-                      <th className="px-6 py-3 text-left font-medium">Activity</th>
-                      <th className="px-6 py-3 text-left font-medium">Actions</th>
+                      <th className="px-6 py-3 text-left font-medium">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left font-medium">
+                        Activity
+                      </th>
+                      <th className="px-6 py-3 text-left font-medium">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                      <tr
+                        key={user.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                      >
                         <td className="px-6 py-4 flex items-center">
                           <div
                             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
@@ -319,7 +325,9 @@ export default function UserManagement() {
                             <p className="font-medium text-gray-900 dark:text-gray-100">
                               {user.name}
                             </p>
-                            <p className="text-gray-500 dark:text-gray-400">{user.email}</p>
+                            <p className="text-gray-500 dark:text-gray-400">
+                              {user.email}
+                            </p>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -345,7 +353,8 @@ export default function UserManagement() {
                           <div>
                             <div className="flex items-center">
                               <Clock className="w-4 h-4 mr-1 text-gray-400" />
-                              Joined: {new Date(user.dateJoined).toLocaleDateString()}
+                              Joined:{" "}
+                              {new Date(user.dateJoined).toLocaleDateString()}
                             </div>
                           </div>
                         </td>
@@ -358,17 +367,23 @@ export default function UserManagement() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => handleStatusChange(user.id, "active")}
+                                onClick={() =>
+                                  handleStatusChange(user.id, "active")
+                                }
                               >
                                 Activate
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleStatusChange(user.id, "suspended")}
+                                onClick={() =>
+                                  handleStatusChange(user.id, "suspended")
+                                }
                               >
                                 Suspend
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleStatusChange(user.id, "deleted")}
+                                onClick={() =>
+                                  handleStatusChange(user.id, "deleted")
+                                }
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -384,7 +399,9 @@ export default function UserManagement() {
               {filteredUsers.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500 dark:text-gray-400">No users found</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No users found
+                  </p>
                 </div>
               )}
             </div>
