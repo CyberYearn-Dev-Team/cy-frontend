@@ -477,24 +477,24 @@ export default function UserManagement() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {user.status === "suspended" ? (
+                                <DropdownMenuItem
+                                  onClick={() => handleReactivateUser(user.id)}
+                                  className="text-green-600"
+                                >
+                                  Activate
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() => handleSuspendUser(user.id)}
+                                  className="text-yellow-600"
+                                >
+                                  Suspend
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(user.id, "active")
-                                }
-                              >
-                                Activate
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(user.id, "suspended")
-                                }
-                              >
-                                Suspend
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleStatusChange(user.id, "deleted")
-                                }
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="text-red-600"
                               >
                                 Delete
                               </DropdownMenuItem>
