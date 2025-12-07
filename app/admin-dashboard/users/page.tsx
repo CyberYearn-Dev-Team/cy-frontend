@@ -1,6 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import {
+  getAllUsers,
+  suspendUser,
+  reactivateUser,
+  deleteUser,
+} from "@/lib/services/userManagement";
 import {
   Search,
   MoreVertical,
@@ -48,44 +55,48 @@ type RoleFilter = "all" | "admin" | "instructor" | "learner";
 type StatusFilter = "all" | "active" | "suspended" | "deleted";
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "admin",
-      status: "active",
-      dateJoined: "2024-01-15",
-      // lastSeen: "2025-10-01",
-      coursesEnrolled: 5,
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      role: "instructor",
-      status: "active",
-      dateJoined: "2024-02-20",
-      // lastSeen: "2025-09-30",
-      coursesCreated: 8,
-    },
-    {
-      id: "3",
-      name: "Michael Chen",
-      email: "m.chen@example.com",
-      role: "learner",
-      status: "suspended",
-      dateJoined: "2024-03-10",
-      // lastSeen: "2025-09-28",
-      coursesEnrolled: 12,
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showRoleModal, setShowRoleModal] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const usersData = await getAllUsers();
+
+        const formattedUsers = usersData.map((user: any) => ({
+          id: user.id,
+          name: user.username || user.email?.split("@")[0] || "Unknown User",
+          email: user.email || "No email provided",
+          role: user.role?.includes('ADMIN') ? 'admin' : 
+                user.role?.includes('INSTRUCTOR') ? 'instructor' : 'learner',
+          status: user.suspended ? "suspended" : "active",
+          dateJoined: user.createdAt
+            ? new Date(user.createdAt).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          coursesEnrolled: 0, // These fields might need to be updated based on your data
+          coursesCreated: 0,  // These fields might need to be updated based on your data
+        }));
+
+        setUsers(formattedUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -151,6 +162,55 @@ export default function UserManagement() {
     );
   };
 
+  const handleSuspendUser = async (userId: string) => {
+    try {
+      await suspendUser(userId);
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, status: "suspended" } : user
+        )
+      );
+      toast.success("User suspended successfully");
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      toast.error("Failed to suspend user");
+    }
+  };
+
+  const handleReactivateUser = async (userId: string) => {
+    try {
+      await reactivateUser(userId);
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, status: "active" } : user
+        )
+      );
+      toast.success("User reactivated successfully");
+    } catch (error) {
+      console.error("Error reactivating user:", error);
+      toast.error("Failed to reactivate user");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteUser(userId);
+      setUsers(users.filter((user) => user.id !== userId));
+      toast.success("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error("Failed to delete user");
+    }
+  };
+
   // ✅ Updated stats — Deleted Users replaces Instructors
   const stats = [
     {
@@ -178,6 +238,31 @@ export default function UserManagement() {
       color: "text-yellow-600",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500 text-center p-4">
+          <p className="text-lg font-medium">Error loading users</p>
+          <p className="text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -220,70 +305,81 @@ export default function UserManagement() {
               ))}
             </div>
 
-
-            
-
             {/* Search + Filters */}
-<div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center flex-wrap">
+            <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center flex-wrap">
+              {/* Search */}
+              <div className="relative w-full lg:flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search users by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  style={{ outline: "none", boxShadow: "none" }}
+                />
+              </div>
 
-  {/* Search */}
-  <div className="relative w-full lg:flex-1">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-    <input
-      type="text"
-      placeholder="Search users by name or email..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-      style={{ outline: "none", boxShadow: "none" }}
-    />
-  </div>
+              {/* Filters Container */}
+              <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                <div className="flex w-full gap-3 sm:w-auto">
+                  {/* Role Filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
+                        {roleFilter === "all"
+                          ? "All Roles"
+                          : roleFilter[0].toUpperCase() + roleFilter.slice(1)}
+                        <ChevronDown className="ml-2 w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {(["all", "admin", "instructor", "learner"] as const).map(
+                        (role) => (
+                          <DropdownMenuItem
+                            key={role}
+                            onClick={() => setRoleFilter(role as RoleFilter)}
+                          >
+                            {role === "all"
+                              ? "All Roles"
+                              : role[0].toUpperCase() + role.slice(1)}
+                          </DropdownMenuItem>
+                        )
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-  {/* Filters Container */}
-  <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-    <div className="flex w-full gap-3 sm:w-auto">
-
-      {/* Role Filter */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
-            {roleFilter === "all" ? "All Roles" : roleFilter[0].toUpperCase() + roleFilter.slice(1)}
-            <ChevronDown className="ml-2 w-4 h-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {["all", "admin", "instructor", "learner"].map((role) => (
-            <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
-              {role === "all" ? "All Roles" : role[0].toUpperCase() + role.slice(1)}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Status Filter */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
-            {statusFilter === "all" ? "All Status" : statusFilter[0].toUpperCase() + statusFilter.slice(1)}
-            <ChevronDown className="ml-2 w-4 h-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {["all", "active", "suspended", "deleted"].map((status) => (
-            <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)}>
-              {status === "all" ? "All Status" : status[0].toUpperCase() + status.slice(1)}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-    </div>
-  </div>
-</div>
-
-
-
-
+                  {/* Status Filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center justify-between w-1/2 sm:w-auto px-4 py-2 rounded-lg border bg-white dark:bg-gray-800 cusor-pointer">
+                        {statusFilter === "all"
+                          ? "All Status"
+                          : statusFilter[0].toUpperCase() +
+                            statusFilter.slice(1)}
+                        <ChevronDown className="ml-2 w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {(["all", "active", "suspended", "deleted"] as const).map(
+                        (status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() =>
+                              setStatusFilter(status as StatusFilter)
+                            }
+                          >
+                            {status === "all"
+                              ? "All Status"
+                              : status[0].toUpperCase() + status.slice(1)}
+                          </DropdownMenuItem>
+                        )
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </div>
 
             {/* Users Table */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
