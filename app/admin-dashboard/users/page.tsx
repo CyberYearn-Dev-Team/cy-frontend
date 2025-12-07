@@ -1,13 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import {
   getAllUsers,
   suspendUser,
   reactivateUser,
   deleteUser,
 } from "@/lib/services/userManagement";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   Search,
   MoreVertical,
@@ -60,6 +69,20 @@ export default function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeUsers, setActiveUsers] = useState(0);
+  
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    action: 'delete' | 'suspend' | 'activate' | null;
+    userId: string | null;
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    action: null,
+    userId: null,
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -177,52 +200,76 @@ export default function UserManagement() {
     );
   };
 
-  const handleSuspendUser = async (userId: string) => {
-    try {
-      await suspendUser(userId);
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, status: "suspended" } : user
-        )
-      );
-      toast.success("User suspended successfully");
-    } catch (error) {
-      console.error("Error suspending user:", error);
-      toast.error("Failed to suspend user");
-    }
+  // Show confirmation dialog for suspend action
+  const handleSuspendUser = (userId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Suspend User",
+      description: "Are you sure you want to suspend this user?",
+      action: "suspend",
+      userId,
+    });
   };
 
-  const handleReactivateUser = async (userId: string) => {
-    try {
-      await reactivateUser(userId);
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, status: "active" } : user
-        )
-      );
-      toast.success("User reactivated successfully");
-    } catch (error) {
-      console.error("Error reactivating user:", error);
-      toast.error("Failed to reactivate user");
-    }
+  // Show confirmation dialog for activate action
+  const handleReactivateUser = (userId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Activate User",
+      description: "Are you sure you want to activate this user?",
+      action: "activate",
+      userId,
+    });
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+  // Show confirmation dialog for delete action
+  const handleDeleteUser = (userId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete User",
+      description: "Are you sure you want to delete this user? This action cannot be undone.",
+      action: "delete",
+      userId,
+    });
+  };
+
+  // Handle the confirmed action
+  const confirmAction = async () => {
+    if (!confirmDialog.userId || !confirmDialog.action) return;
 
     try {
-      await deleteUser(userId);
-      setUsers(users.filter((user) => user.id !== userId));
-      toast.success("User deleted successfully");
+      switch (confirmDialog.action) {
+        case 'delete':
+          await deleteUser(confirmDialog.userId);
+          setUsers(users.filter(user => user.id !== confirmDialog.userId));
+          toast.success("User deleted successfully");
+          break;
+        case 'suspend':
+          await suspendUser(confirmDialog.userId);
+          setUsers(users.map(user => 
+            user.id === confirmDialog.userId ? { ...user, status: "suspended" } : user
+          ));
+          toast.success("User suspended successfully");
+          break;
+        case 'activate':
+          await reactivateUser(confirmDialog.userId);
+          setUsers(users.map(user => 
+            user.id === confirmDialog.userId ? { ...user, status: "active" } : user
+          ));
+          toast.success("User activated successfully");
+          break;
+      }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Failed to delete user");
+      console.error(`Error in ${confirmDialog.action} user:`, error);
+      toast.error(`Failed to ${confirmDialog.action} user. Please try again.`);
+    } finally {
+      setConfirmDialog({
+        isOpen: false,
+        title: "",
+        description: "",
+        action: null,
+        userId: null,
+      });
     }
   };
 
@@ -241,7 +288,7 @@ export default function UserManagement() {
       color: "text-green-600",
     },
     {
-      label: "Deleted Users",
+      label: "Deleted",
       value: users.filter((u) => u.status === "deleted").length.toString(),
       icon: Shield,
       color: "text-red-600",
@@ -565,6 +612,37 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.isOpen}
+        onOpenChange={(isOpen) => setConfirmDialog(prev => ({ ...prev, isOpen }))}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{confirmDialog.title}</DialogTitle>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
+              {confirmDialog.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={confirmDialog.action === 'delete' ? 'destructive' : 'default'}
+              onClick={confirmAction}
+              className="px-4"
+            >
+              {confirmDialog.action === 'delete' ? 'Delete' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
