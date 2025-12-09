@@ -45,9 +45,9 @@ interface User {
   name: string;
   email: string;
   role: "admin" | "instructor" | "learner";
+  roles: string[];
   status: "active" | "suspended" | "deleted";
   dateJoined: string;
-  // lastSeen: string;
   coursesEnrolled?: number;
   coursesCreated?: number;
   completionRate?: number;
@@ -115,6 +115,7 @@ export default function UserManagement() {
           email: user.email || "No email provided",
           role: user.role?.includes('ADMIN') ? 'admin' : 
                 user.role?.includes('INSTRUCTOR') ? 'instructor' : 'learner',
+          roles: Array.isArray(user.role) ? user.role : [user.role].filter(Boolean),
           status: user.suspended ? "suspended" : "active",
           dateJoined: user.createdAt
             ? new Date(user.createdAt).toISOString().split("T")[0]
@@ -180,6 +181,11 @@ export default function UserManagement() {
           border: "1px solid #e5e7eb",
         };
     }
+  };
+
+  // Get the count of roles for a user
+  const getUserRoleCount = (user: User) => {
+    return user.roles?.length || 0;
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -518,14 +524,19 @@ export default function UserManagement() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => setShowRoleModal(user)}
-                            className="inline-flex items-center px-3 py-1 rounded-full border text-xs font-medium"
-                            style={getRoleBadgeColor(user.role)}
-                          >
-                            {user.role}
-                            <ChevronDown className="ml-1 w-3 h-3" />
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => setShowRoleModal(user)}
+                              className="inline-flex items-center px-3 py-1 rounded-full border text-xs font-medium"
+                              style={getRoleBadgeColor(user.role)}
+                            >
+                              {user.role}
+                              <ChevronDown className="ml-1 w-3 h-3" />
+                            </button>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {getUserRoleCount(user)}/3
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <span
