@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Server } from "lucide-react";
 import { getCurrentUser } from "@/lib/api/auth";
+import { getOverviewData } from "@/lib/services/overviewService";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
@@ -17,36 +19,32 @@ const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
 
 import {
-  Activity,
   Users,
   TrendingUp,
-  Clock,
   CheckCircle,
-  AlertCircle,
-  Zap,
-  Database,
   Loader2,
+  Database,
+  
   type LucideIcon,
+  BookOpen,
+  UserCheck,
+  BarChart2,
+  RefreshCw,
+  AlertCircle,
+  CheckSquare,
+  Layers,
+  Target
 } from "lucide-react";
 
 // Types
-interface ModuleCompletion {
-  module: string;
-  rate: number;
-}
-interface SystemHealth {
-  apiUptime: number;
-  errorCount: number;
-  status: "healthy" | "warning" | "error" | "loading";
-}
 interface Metrics {
-  totalRegistrations: number;
-  wau: number;
-  mau: number;
+  totalRgistrations: number;
+  usersThatHaveCompletedFirstLesson: number;
+  weeklyActiveUsers: number;
   firstLessonCompletionRate: number;
-  medianTimeToFirstContent: number;
-  moduleCompletionRates: ModuleCompletion[];
-  systemHealth: SystemHealth;
+  totalModules: number;
+  completedModules: number;
+  moduleConpletionRate: number;
 }
 
 // 📊 StatCard
@@ -73,55 +71,86 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle 
 );
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [metrics, setMetrics] = useState<Metrics>({
-    totalRegistrations: 0,
-    wau: 0,
-    mau: 0,
+    totalRgistrations: 0,
+    usersThatHaveCompletedFirstLesson: 0,
+    weeklyActiveUsers: 0,
     firstLessonCompletionRate: 0,
-    medianTimeToFirstContent: 0,
-    moduleCompletionRates: [],
-    systemHealth: {
-      apiUptime: 0,
-      errorCount: 0,
-      status: "loading",
-    },
+    totalModules: 0,
+    completedModules: 0,
+    moduleConpletionRate: 0,
   });
 
-  // API Fetcher (frontend job)
+  // Fetch metrics data
   const fetchMetrics = async () => {
     try {
-      const res = await fetch("/api/admin/overview", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Failed to load dashboard metrics");
-
-      const data: Metrics = await res.json();
+      const data = await getOverviewData();
       setMetrics(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching overview data:", err);
+      setError("Failed to load dashboard data. Please try again later.");
       setLoading(false);
     }
   };
 
+  // Check auth and fetch data on mount
   useEffect(() => {
-    fetchMetrics();
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          router.push("/login");
+        } else {
+          await fetchMetrics();
+        }
+      } catch (error) {
+        console.error("Auth error:", error);
+        router.push("/login");
+      }
+    };
 
-  const getStatusColor = (status: SystemHealth["status"]) => {
-    if (status === "healthy")
-      return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/50";
-    if (status === "warning")
-      return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/50";
-    if (status === "error")
-      return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/50";
-    return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700";
-  };
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-12 w-12 animate-spin" style={{ color: primary }} />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="mt-3 text-lg font-medium text-gray-900 dark:text-gray-100">Error loading dashboard</h3>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{error}</p>
+          <div className="mt-6">
+            <button
+              onClick={fetchMetrics}
+              className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -142,106 +171,136 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Show loader while fetching */}
-          {loading ? (
-            <div className="w-full flex justify-center p-10">
-              <Loader2 className="h-10 w-10 animate-spin text-gray-400" />
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatCard 
+              icon={Users} 
+              title="Total Registrations" 
+              value={metrics.totalRgistrations.toLocaleString()} 
+            />
+              <StatCard 
+                icon={TrendingUp} 
+                title="Weekly Active Users" 
+                value={metrics.weeklyActiveUsers.toLocaleString()} 
+              />
+            <StatCard 
+              icon={UserCheck} 
+              title="First Lesson Completed" 
+              value={metrics.usersThatHaveCompletedFirstLesson.toLocaleString()}
+              subtitle={`${metrics.firstLessonCompletionRate}% completion rate`}
+            />
+            <StatCard 
+              icon={CheckSquare} 
+              title="Module Progress" 
+              value={`${metrics.completedModules}/${metrics.totalModules}`}
+              subtitle={`${metrics.moduleConpletionRate}% completed`}
+            />
+          </div>
+
+
+
+          {/* Module Completion + System Health */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {/* Module Completion */}
+            <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-lg font-semibold ${textDark}`}>Module Completion</h3>
+              </div>
+              
+              <div className="space-y-10">
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-sm font-medium ${textDark}`}>Overall Progress</span>
+                    <span className="text-sm font-medium">{metrics.moduleConpletionRate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-[#72a210] h-2.5 rounded-full" 
+                      style={{ width: `${metrics.moduleConpletionRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-sm font-medium ${textDark}`}>Total Modules</span>
+                    <span className="text-sm font-medium">{metrics.totalModules}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-[#72a210] h-2.5 rounded-full" 
+                      style={{ width: '100%' }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-sm font-medium ${textDark}`}>Completed Modules</span>
+                    <span className="text-sm font-medium">{metrics.completedModules} of {metrics.totalModules}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-[#72a210] h-2.5 rounded-full" 
+                      style={{ width: `${(metrics.completedModules / metrics.totalModules) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-sm font-medium ${textDark}`}>First Lesson Completion</span>
+                    <span className="text-sm font-medium">{metrics.firstLessonCompletionRate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-[#72a210] h-2.5 rounded-full" 
+                      style={{ width: `${metrics.firstLessonCompletionRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <>
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                <StatCard icon={Users} title="Total Registrations" value={metrics.totalRegistrations.toLocaleString()} />
-                <StatCard icon={TrendingUp} title="Weekly Active Users" value={metrics.wau.toLocaleString()} subtitle={`MAU: ${metrics.mau.toLocaleString()}`} />
-                <StatCard icon={CheckCircle} title="First Lesson Completion" value={`${metrics.firstLessonCompletionRate}%`} subtitle="Of new users" />
-                <StatCard icon={Clock} title="Median Time to First Content" value={`${metrics.medianTimeToFirstContent}m`} subtitle="Minutes after signup" />
+
+
+
+
+            {/* System Status */}
+            <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-lg font-semibold ${textDark}`}>System Status</h3>
               </div>
-
-              {/* Module Completion + System Health */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Module Completion */}
-                <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className={`text-lg font-semibold ${textDark}`}>Module Completion Rates</h3>
-                    <Activity className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="flex items-center">
+                    <Database className="w-5 h-5 mr-3" style={{ color: primary }} />
+                    <div>
+                      <p className={`text-sm font-medium ${textDark}`}>API Status</p>
+                      <p className={`text-xs ${textLight}`}>Backend connection</p>
+                    </div>
                   </div>
-
-                  <div className="space-y-5">
-                    {metrics.moduleCompletionRates.map((module, i) => (
-                      <div key={i}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`text-sm font-medium ${textMedium}`}>{module.module}</span>
-                          <span className={`text-sm font-semibold ${textDark}`}>{module.rate}%</span>
-                        </div>
-
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="h-2 rounded-full transition-all duration-500 ease-out"
-                            style={{ width: `${module.rate}%`, backgroundColor: primary }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <span className="text-sm font-semibold text-green-600">
+                    Operational
+                  </span>
                 </div>
-
-                {/* System Health */}
-                <div className={`${bgCard} border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-6`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className={`text-lg font-semibold ${textDark}`}>System Health</h3>
-                    <div
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                        metrics.systemHealth.status
-                      )}`}
-                    >
-                      {metrics.systemHealth.status === "healthy" ? "Operational" : "Issues Detected"}
+                
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="flex items-center">
+                    <Server className="w-5 h-5 mr-3" style={{ color: primary }} />
+                    <div>
+                      <p className={`text-sm font-medium ${textDark}`}>Database</p>
+                      <p className={`text-xs ${textLight}`}>Primary & replicas</p>
                     </div>
                   </div>
-
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                      <div className="flex items-center">
-                        <Zap className="w-5 h-5 mr-3" style={{ color: primary }} />
-                        <div>
-                          <p className={`text-sm font-medium ${textDark}`}>API Uptime</p>
-                          <p className={`text-xs ${textLight}`}>Last 30 days</p>
-                        </div>
-                      </div>
-                      <span className={`text-2xl font-bold`} style={{ color: primary }}>
-                        {metrics.systemHealth.apiUptime}%
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                      <div className="flex items-center">
-                        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-3" />
-                        <div>
-                          <p className={`text-sm font-medium ${textDark}`}>Sentry Errors</p>
-                          <p className={`text-xs ${textLight}`}>Last 24 hours</p>
-                        </div>
-                      </div>
-                      <span className={`text-2xl font-bold ${textDark}`}>
-                        {metrics.systemHealth.errorCount}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                      <div className="flex items-center">
-                        <Database className="w-5 h-5 mr-3" style={{ color: primary }} />
-                        <div>
-                          <p className={`text-sm font-medium ${textDark}`}>Database Status</p>
-                          <p className={`text-xs ${textLight}`}>Primary & replicas</p>
-                        </div>
-                      </div>
-                      <span className={`text-sm font-semibold`} style={{ color: primary }}>
-                        Healthy
-                      </span>
-                    </div>
-                  </div>
+                  <span className="text-sm font-semibold text-green-600">
+                    Healthy
+                  </span>
                 </div>
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </main>
 
         <Nav />
