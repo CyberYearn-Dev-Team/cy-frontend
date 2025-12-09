@@ -27,6 +27,7 @@ import {
   UserX,
   Clock,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +35,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
@@ -625,26 +632,27 @@ export default function UserManagement() {
           const isActive = showRoleModal.roles?.includes(role.toUpperCase());
           return (
             <div key={role} className="relative">
-              <button
-                onClick={() => handleRoleChange(showRoleModal.id, role)}
-                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition cursor-pointer flex justify-between items-center ${
-                  showRoleModal.role === role ? "border-primary" : "border-gray-300 dark:border-gray-600"
-                }`}
-                style={
-                  showRoleModal.role === role
-                    ? {
-                        borderColor: primary,
-                        color: primary,
-                        backgroundColor: `${primary}1a`,
-                      }
-                    : isActive
-                    ? {
-                        borderColor: `${primary}40`,
-                        backgroundColor: `${primary}0d`,
-                      }
-                    : { borderColor: "#d1d5db" }
-                }
-              >
+              <div className="flex items-center gap-2 w-full">
+                <button
+                  onClick={() => handleRoleChange(showRoleModal.id, role)}
+                  className={`flex-1 text-left px-4 py-3 rounded-lg border-2 transition cursor-pointer flex justify-between items-center ${
+                    showRoleModal.role === role ? "border-primary" : "border-gray-300 dark:border-gray-600"
+                  }`}
+                  style={
+                    showRoleModal.role === role
+                      ? {
+                          borderColor: primary,
+                          color: primary,
+                          backgroundColor: `${primary}1a`,
+                        }
+                      : isActive
+                      ? {
+                          borderColor: `${primary}40`,
+                          backgroundColor: `${primary}0d`,
+                        }
+                      : { borderColor: "#d1d5db" }
+                  }
+                >
                 <span>
                   {role.charAt(0).toUpperCase() + role.slice(1)}
                   {isActive && (
@@ -652,13 +660,35 @@ export default function UserManagement() {
                       Active
                     </span>
                   )}
-                </span>
-                {isActive && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {showRoleModal.roles?.length}/3
+                  {isActive && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mr-2">
+                      {showRoleModal.roles?.length}/3
+                    </span>
+                  )}
                   </span>
+                </button>
+                {isActive && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button 
+                          className="p-4 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Will implement the delete functionality later
+                            console.log(`Remove ${role} role from user ${showRoleModal.id}`);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-gray-800 text-white text-sm p-2">
+                        <p>Are you sure you want to remove this role?</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-              </button>
+              </div>
             </div>
           );
         })}
