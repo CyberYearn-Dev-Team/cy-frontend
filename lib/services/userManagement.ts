@@ -64,3 +64,24 @@ export const deleteUser = async (userId: string) => {
     throw error.response?.data || { message: "Failed to delete user" };
   }
 };
+
+
+// UPDATE USER ROLE
+export const updateUserRole = async (userId: string, role: string) => {
+  try {
+    const res = await axios.patch(
+      `${API_BASE}/${userId}/add-role`,
+      { role },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    console.error('Error updating user role:', error);
+    throw error.response?.data || { message: 'Failed to update user role' };
+  }
+};

@@ -7,6 +7,7 @@ import {
   suspendUser,
   reactivateUser,
   deleteUser,
+  updateUserRole,
 } from "@/lib/services/userManagement";
 import {
   Dialog,
@@ -90,6 +91,7 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showRoleModal, setShowRoleModal] = useState<User | null>(null);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch users on component mount
@@ -193,16 +195,27 @@ export default function UserManagement() {
     }
   };
 
-  const handleRoleChange = (userId: string, newRole: User["role"]) => {
-    setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-    setShowRoleModal(null);
-  };
+  const handleRoleChange = async (userId: string, newRole: User["role"]) => {
+  if (!userId || !newRole) return;
 
-  const handleStatusChange = (userId: string, newStatus: User["status"]) => {
-    setUsers(
-      users.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
-    );
-  };
+  try {
+    setIsUpdatingRole(true);
+    await updateUserRole(userId, newRole);
+
+    setUsers(users.map(user =>
+      user.id === userId ? { ...user, role: newRole } : user
+    ));
+
+    setShowRoleModal(null);
+    toast.success(`User role updated to ${newRole} successfully`);
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    toast.error('Failed to update user role. Please try again.');
+  } finally {
+    setIsUpdatingRole(false);
+  }
+};
+
 
   // Show confirmation dialog for suspend action
   const handleSuspendUser = (userId: string) => {
