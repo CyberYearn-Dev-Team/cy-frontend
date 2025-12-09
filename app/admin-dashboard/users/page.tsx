@@ -609,49 +609,77 @@ export default function UserManagement() {
 
       <Nav />
 
-      {/* Role Modal */}
-      {showRoleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-              Change User Role
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Select a new role for {showRoleModal.name}
-            </p>
+ {/* Role Modal */}
+{showRoleModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        Change User Role
+      </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        Select a new role for {showRoleModal.name}
+      </p>
 
-            <div className="space-y-2">
-              {(["admin", "instructor", "learner"] as const).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => handleRoleChange(showRoleModal.id, role)}
-                  className={`w-full text-left px-4 py-3 rounded-lg border-2 transition`}
-                  style={
-                    showRoleModal.role === role
-                      ? {
-                          borderColor: primary,
-                          color: primary,
-                          backgroundColor: `${primary}1a`,
-                        }
-                      : { borderColor: "#d1d5db" }
-                  }
-                >
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-3 mt-6">
+      <div className="space-y-2">
+        {(["admin", "instructor", "learner"] as const).map((role) => {
+          const isActive = showRoleModal.roles?.includes(role.toUpperCase());
+          return (
+            <div key={role} className="relative">
               <button
-                onClick={() => setShowRoleModal(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-center"
+                onClick={() => handleRoleChange(showRoleModal.id, role)}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition cursor-pointer flex justify-between items-center ${
+                  showRoleModal.role === role ? "border-primary" : "border-gray-300 dark:border-gray-600"
+                }`}
+                style={
+                  showRoleModal.role === role
+                    ? {
+                        borderColor: primary,
+                        color: primary,
+                        backgroundColor: `${primary}1a`,
+                      }
+                    : isActive
+                    ? {
+                        borderColor: `${primary}40`,
+                        backgroundColor: `${primary}0d`,
+                      }
+                    : { borderColor: "#d1d5db" }
+                }
               >
-                Cancel
+                <span>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                  {isActive && (
+                    <span className="ml-2 text-xs px-2 py-0.5 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 rounded-full">
+                      Active
+                    </span>
+                  )}
+                </span>
+                {isActive && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {showRoleModal.roles?.length}/3
+                  </span>
+                )}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
+
+      <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+        <p>• Users can have up to 3 roles</p>
+        <p>• Current roles: {showRoleModal.roles?.join(", ")}</p>
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          onClick={() => setShowRoleModal(null)}
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-center"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Confirmation Dialog */}
       <Dialog
