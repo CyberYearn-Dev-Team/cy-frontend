@@ -55,13 +55,15 @@ export default function LoginPage() {
 
     let message = "Login failed! Please check your credentials.";
 
-    // Handle offline / fetch network error
+    // Handle different error cases
     if (!navigator.onLine) {
       message = "Mobile data disconnected. Please reconnect and try again.";
     } else if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
       message = "Network error. Please check your connection.";
     } else if (error.response?.status === 502 || error.response?.status === 504) {
       message = "Server unreachable. Please try again shortly.";
+    } else if (error.isSuspended || error.message === "Your account has been suspended") {
+      message = "Your account has been suspended. Please contact support for assistance.";
     }
 
     toast.error(message);

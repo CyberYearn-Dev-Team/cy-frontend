@@ -264,6 +264,35 @@ export default function UserManagement() {
   };
 
   // Handle the confirmed action
+  // Function to fetch and update user data
+  const fetchAndUpdateUsers = async () => {
+    try {
+      const usersData = await getAllUsers();
+      const formattedUsers = usersData.map((user: any) => ({
+        id: user.id,
+        name: user.username || user.email?.split("@")[0] || "Unknown User",
+        email: user.email || "No email provided",
+        role: user.role?.includes('ADMIN') ? 'admin' : 
+              user.role?.includes('INSTRUCTOR') ? 'instructor' : 'learner',
+        roles: Array.isArray(user.role) ? user.role : [user.role].filter(Boolean),
+        status: user.suspended ? "suspended" : "active",
+        dateJoined: user.createdAt
+          ? new Date(user.createdAt).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        coursesEnrolled: 0,
+        coursesCreated: 0,
+        totalXp: user.totalXp || 0,
+      }));
+      
+      const activeCount = formattedUsers.filter((user: User) => (user.totalXp || 0) >= 500).length;
+      setActiveUsers(activeCount);
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Error updating users:", error);
+      toast.error("Failed to update user data. Please refresh the page.");
+    }
+  };
+
   const confirmAction = async () => {
     if (!confirmDialog.userId || !confirmDialog.action) return;
 
@@ -276,16 +305,12 @@ export default function UserManagement() {
           break;
         case 'suspend':
           await suspendUser(confirmDialog.userId);
-          setUsers(users.map(user => 
-            user.id === confirmDialog.userId ? { ...user, status: "suspended" } : user
-          ));
+          await fetchAndUpdateUsers(); // Fetch fresh data after suspension
           toast.success("User suspended successfully");
           break;
         case 'activate':
           await reactivateUser(confirmDialog.userId);
-          setUsers(users.map(user => 
-            user.id === confirmDialog.userId ? { ...user, status: "active" } : user
-          ));
+          await fetchAndUpdateUsers(); // Fetch fresh data after activation
           toast.success("User activated successfully");
           break;
       }
