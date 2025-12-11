@@ -116,14 +116,23 @@ const FeatureFlagsPage: React.FC = () => {
     }
   };
 
-  const filteredFlags = flags.filter((flag) => {
-    const matchesSearch =
-      flag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      flag.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || flag.stage === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredFlags = flags
+    .filter((flag) => {
+      const matchesSearch =
+        flag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        flag.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" || flag.stage === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      // Sort by enabled status first (enabled comes first)
+      if (a.enabled === b.enabled) {
+        // If both have the same enabled status, sort alphabetically by name
+        return a.name.localeCompare(b.name);
+      }
+      return a.enabled ? -1 : 1;
+    });
 
   const getCategoryColor = (category: string) => {
     switch (category) {
