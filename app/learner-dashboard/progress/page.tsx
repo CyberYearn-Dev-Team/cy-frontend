@@ -15,6 +15,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
@@ -61,9 +63,9 @@ interface TrackProgress {
   progress: number;
   completedLessons: number;
   totalLessons: number;
-
   completedModules: number;
   totalModules: number;
+  slug: string;
 }
 
 interface SummaryData {
@@ -81,6 +83,38 @@ const TrackCard: React.FC<{
   toggleTrack: (id: string) => void;
 }> = ({ track, openTrack, toggleTrack }) => {
   const isTrackOpen = openTrack === track.trackId;
+
+  const router = useRouter();
+
+  const handleStartTrack = async (e: React.MouseEvent, trackId: string) => {
+    e?.stopPropagation?.();
+    const toastId = toast.loading('Loading track...');
+    const trackSlug = track.slug;
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cy-backend.onrender.com/api/v1';
+      const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start track');
+      }
+
+      const data = await response.json();
+      toast.success(data.message || 'Track loaded successfully!', { id: toastId });
+    } catch (error) {
+      console.error('Error starting track:', error);
+      toast.dismiss(toastId);
+      toast.error('Failed to start track. Please try again.');
+    } finally {
+      if (trackSlug) {
+        router.push(`/learner-dashboard/tracks/${trackSlug}`);
+      }
+    }
+  };
 
   // Function to determine the icon based on lesson status
   const getLessonIcon = (status: LessonProgress["status"]) => {
@@ -139,8 +173,8 @@ const TrackCard: React.FC<{
 
         {/* View Track Button */}
         <div className="mt-4">
-          <Link
-            href={`/learner-dashboard/tracks?highlight=${track.trackId}`}
+          <button
+            onClick={(e) => handleStartTrack(e, track.trackId)}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
             style={{
               backgroundColor: primary,
@@ -155,7 +189,7 @@ const TrackCard: React.FC<{
           >
             View Track
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </div>
     </div>

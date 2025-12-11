@@ -688,7 +688,7 @@ export default function LearnerDashboard() {
                                       e.currentTarget.style.borderColor = primary;
                                     }}
                                   >
-                                    Continue
+                                    Continue Learning
                                   </button>
                                 </div>
                               </div>
