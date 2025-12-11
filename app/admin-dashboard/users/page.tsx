@@ -8,6 +8,7 @@ import {
   reactivateUser,
   deleteUser,
   updateUserRole,
+  removeUserRole,
 } from "@/lib/services/userManagement";
 import {
   Dialog,
@@ -101,52 +102,53 @@ export default function UserManagement() {
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Function to fetch users
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const usersData = await getAllUsers();
+
+      const formattedUsers = usersData.map((user: {
+        id: string;
+        username?: string;
+        email?: string;
+        role?: string;
+        suspended?: boolean;
+        createdAt?: string;
+        totalXp?: number;
+      }) => ({
+        id: user.id,
+        name: user.username || user.email?.split("@")[0] || "Unknown User",
+        email: user.email || "No email provided",
+        role: user.role?.includes('ADMIN') ? 'admin' : 
+              user.role?.includes('INSTRUCTOR') ? 'instructor' : 'learner',
+        roles: Array.isArray(user.role) ? user.role : [user.role].filter(Boolean),
+        status: user.suspended ? "suspended" : "active",
+        dateJoined: user.createdAt
+          ? new Date(user.createdAt).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        coursesEnrolled: 0,
+        coursesCreated: 0,
+        totalXp: user.totalXp || 0,
+      }));
+
+      // Calculate active users (totalXp >= 500)
+      const activeCount = formattedUsers.filter((user: User) => (user.totalXp || 0) >= 500).length;
+      setActiveUsers(activeCount);
+      
+      setUsers(formattedUsers);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("Failed to load users. Please try again later.");
+      toast.error("Failed to load users. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch users on component mount
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const usersData = await getAllUsers();
-
-        const formattedUsers = usersData.map((user: {
-          id: string;
-          username?: string;
-          email?: string;
-          role?: string;
-          suspended?: boolean;
-          createdAt?: string;
-          totalXp?: number;
-        }) => ({
-          id: user.id,
-          name: user.username || user.email?.split("@")[0] || "Unknown User",
-          email: user.email || "No email provided",
-          role: user.role?.includes('ADMIN') ? 'admin' : 
-                user.role?.includes('INSTRUCTOR') ? 'instructor' : 'learner',
-          roles: Array.isArray(user.role) ? user.role : [user.role].filter(Boolean),
-          status: user.suspended ? "suspended" : "active",
-          dateJoined: user.createdAt
-            ? new Date(user.createdAt).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          coursesEnrolled: 0, // These fields might need to be updated based on your data
-          coursesCreated: 0,  // These fields might need to be updated based on your data
-          totalXp: user.totalXp || 0, // Add totalXp to track user activity
-        }));
-
-        // Calculate active users (totalXp >= 500)
-        const activeCount = formattedUsers.filter((user: User) => (user.totalXp || 0) >= 500).length;
-        setActiveUsers(activeCount);
-        
-        setUsers(formattedUsers);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setError("Failed to load users. Please try again later.");
-        toast.error("Failed to load users. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
@@ -208,27 +210,46 @@ export default function UserManagement() {
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: User["role"]) => {
-  if (!userId || !newRole) return;
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      await updateUserRole(userId, newRole);
+      // Refresh users after role update
+      fetchUsers();
+      // Update the showRoleModal with the new role
+      if (showRoleModal) {
+        setShowRoleModal(prev => ({
+          ...prev!,
+          role: newRole as User['role'],
+          roles: [...new Set([...prev!.roles, newRole.toUpperCase()])]
+        }));
+      }
+      toast.success("User role updated successfully");
+    } catch (error: any) {
+      console.error("Error updating user role:", error);
+      toast.error(error.message || "Failed to update user role");
+    }
+  };
 
-  try {
-    setIsUpdatingRole(true);
-    await updateUserRole(userId, newRole);
-
-    setUsers(users.map(user =>
-      user.id === userId ? { ...user, role: newRole } : user
-    ));
-
-    setShowRoleModal(null);
-    toast.success(`User role updated to ${newRole} successfully`);
-  } catch (error) {
-    console.error('Error updating user role:', error);
-    toast.error('Failed to update user role. Please try again.');
-  } finally {
-    setIsUpdatingRole(false);
-  }
-};
-
+  const handleRemoveRole = async (userId: string, role: string) => {
+    try {
+      const response = await removeUserRole(userId, role);
+      toast.success(response.message || "Role removed successfully");
+      
+      // Refresh users after role removal
+      fetchUsers();
+      
+      // Update the showRoleModal to reflect the removed role
+      if (showRoleModal) {
+        setShowRoleModal(prev => ({
+          ...prev!,
+          roles: prev!.roles.filter(r => r !== role.toUpperCase())
+        }));
+      }
+    } catch (error: any) {
+      console.error("Error removing role:", error);
+      toast.error(error.message || "Failed to remove role");
+    }
+  };
 
   // Show confirmation dialog for suspend action
   const handleSuspendUser = (userId: string) => {
@@ -698,10 +719,9 @@ export default function UserManagement() {
                       <TooltipTrigger asChild>
                         <button 
                           className="p-4 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            // Will implement the delete functionality later
-                            console.log(`Remove ${role} role from user ${showRoleModal.id}`);
+                            await handleRemoveRole(showRoleModal.id, role);
                           }}
                         >
                           <Trash2 className="w-4 h-4" />
