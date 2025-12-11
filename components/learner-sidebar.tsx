@@ -16,6 +16,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { isFeatureEnabled } from "@/lib/utils/featureFlags";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -52,13 +53,30 @@ if (roles.length > 0) {
 }, []);
 
 
+  const [leaderboardEnabled, setLeaderboardEnabled] = useState(false);
+
+  // Check if leaderboard is enabled
+  useEffect(() => {
+    const checkLeaderboardStatus = async () => {
+      try {
+        const isEnabled = await isFeatureEnabled("Leaderboard");
+        setLeaderboardEnabled(isEnabled);
+      } catch (error) {
+        console.error("Error checking leaderboard status:", error);
+        setLeaderboardEnabled(false);
+      }
+    };
+
+    checkLeaderboardStatus();
+  }, []);
+
   const sidebarItems = [
     { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
     { name: "Learning Tracks", icon: BookOpen, href: `${basePath}/tracks` },
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
     { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
-    { name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` },
+    ...(leaderboardEnabled ? [{ name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` }] : []),
     { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
   ];
 
