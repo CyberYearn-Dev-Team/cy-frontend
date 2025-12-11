@@ -32,8 +32,8 @@ export async function GET(req: Request) {
     const contentType = backendRes.headers.get("content-type") || "application/json";
 
     // Debug logging
-    console.log("🔍 [/me] Backend response status:", backendRes.status);
-    console.log("🔍 [/me] Backend response text:", text);
+    console.log("[/me] Backend response status:", backendRes.status);
+    console.log("[/me] Backend response text:", text);
 
     return new NextResponse(text, {
       status: backendRes.status,

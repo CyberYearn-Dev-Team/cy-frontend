@@ -12,7 +12,7 @@ import {
   Bell,
 } from "lucide-react";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/api/auth";
+import { getCurrentUser, logoutUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -86,16 +86,14 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   // Logout handler
   const handleLogout = async () => {
     try {
-      await fetch("/api/v1/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await logoutUser();
 
       const theme = localStorage.getItem("theme");
       localStorage.clear();
       sessionStorage.clear();
       if (theme) localStorage.setItem("theme", theme);
 
+      // Clear all cookies
       document.cookie.split(";").forEach((c) => {
         document.cookie = c
           .replace(/^ +/, "")
