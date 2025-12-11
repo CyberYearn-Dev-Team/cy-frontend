@@ -61,3 +61,38 @@ export const toggleFeatureFlag = async (id: string, enabled: boolean): Promise<v
     throw error;
   }
 };
+
+
+
+
+// Create feature flag
+export interface CreateFeatureFlagDTO {
+  name: string;
+  description: string;
+  impact: 'low' | 'medium' | 'high';
+  stage: 'experimental' | 'beta';
+}
+
+export const createFeatureFlag = async (data: CreateFeatureFlagDTO): Promise<FeatureFlag> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/feature-flags`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to create feature flag');
+    }
+
+    const responseData = await response.json();
+    return responseData.data;
+  } catch (error) {
+    console.error('Error creating feature flag:', error);
+    throw error;
+  }
+};

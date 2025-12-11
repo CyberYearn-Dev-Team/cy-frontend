@@ -16,8 +16,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getFeatureFlags, toggleFeatureFlag, FeatureFlag as APIFeatureFlag } from "@/lib/services/featureFlagService";
+import { getFeatureFlags, toggleFeatureFlag, createFeatureFlag, FeatureFlag as APIFeatureFlag, CreateFeatureFlagDTO } from "@/lib/services/featureFlagService";
 import { toast } from 'sonner';
+import { PlusIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CreateFeatureFlagDialog } from "@/components/ui/CreateFeatureFlagDialog";
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -43,31 +46,36 @@ const FeatureFlagsPage: React.FC = () => {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const fetchFlagsData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getFeatureFlags();
+      // Map API response to our local interface
+      const mappedFlags = data.map(flag => ({
+        ...flag,
+        category: flag.stage as "core" | "experimental" | "beta",
+        impactLevel: flag.impact as "low" | "medium" | "high",
+        lastModified: new Date(flag.updatedAt).toLocaleString(),
+        modifiedBy: 'System',
+      }));
+      setFlags(mappedFlags);
+    } catch (err) {
+      console.error('Failed to fetch feature flags:', err);
+      setError('Failed to load feature flags. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchFlags = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getFeatureFlags();
-        // Map API response to our local interface
-        const mappedFlags = data.map(flag => ({
-          ...flag,
-          category: flag.stage as "core" | "experimental" | "beta",
-          impactLevel: flag.impact as "low" | "medium" | "high",
-          lastModified: new Date(flag.updatedAt).toLocaleString(),
-          modifiedBy: 'System',
-        }));
-        setFlags(mappedFlags);
-      } catch (err) {
-        console.error('Failed to fetch feature flags:', err);
-        setError('Failed to load feature flags. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFlags();
+    fetchFlagsData();
   }, []);
+
+  const handleCreateSuccess = () => {
+    fetchFlagsData(); // Refresh the list after creating a new flag
+  };
 
   const handleToggle = async (flagId: string, currentState: boolean) => {
     try {
@@ -151,6 +159,8 @@ const FeatureFlagsPage: React.FC = () => {
               </p>
             </div>
 
+
+
             {/* Search + Filter */}
             <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
               <div className="relative flex-1">
@@ -173,7 +183,7 @@ const FeatureFlagsPage: React.FC = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={isLoading}>
                   <button
-                    className={`flex items-center justify-between w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ${bgCard} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`flex items-center justify-between w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ${bgCard} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
                   >
                     {selectedCategory === "all"
                       ? "All Categories"
@@ -195,6 +205,9 @@ const FeatureFlagsPage: React.FC = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+                {/* the creat feature popout  */}
+              <CreateFeatureFlagDialog onSuccess={handleCreateSuccess} />
             </div>
 
             {/* Error Message */}
@@ -291,6 +304,22 @@ const FeatureFlagsPage: React.FC = () => {
             )}
 
 
+          </div>
+
+          {/* Info Banner */}
+          <div className="mt-12">
+            <div className={`border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 rounded-lg p-4 flex items-start gap-3`}>
+              <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium mb-1 text-[#b45309] dark:text-[#fbbf24]">
+                  About Feature Flags
+                </p>
+                <p className={`${textMedium}`}>
+                  Feature flags allow you to safely test new features in
+                  production. All changes are logged for auditability.
+                </p>
+              </div>
+            </div>
           </div>
         </main>
 
