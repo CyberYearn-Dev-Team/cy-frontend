@@ -77,17 +77,16 @@ export function CreateFeatureFlagDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {/* Styled to match All Categories button */}
         <button
           className={`
-            flex items-center justify-center px-4 py-2 rounded-lg border 
+            flex items-center justify-between px-4 py-2 rounded-lg border 
             border-gray-300 dark:border-gray-700 ${bgCard} ${textDark}
             hover:bg-gray-100 dark:hover:bg-gray-700 transition 
             disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
           `}
         >
-          <PlusIcon className="h-4 w-4 mr-2" />
           Create Flag
+          <PlusIcon className="ml-2 w-5 h-5 text-gray-400" />
         </button>
       </DialogTrigger>
 
