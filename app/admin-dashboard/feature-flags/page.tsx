@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Info,
   Search,
   Filter,
+  Loader2
 } from "lucide-react";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
@@ -15,6 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getFeatureFlags, toggleFeatureFlag, FeatureFlag as APIFeatureFlag } from "@/lib/services/featureFlagService";
+import { toast } from 'sonner';
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -26,11 +29,7 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-400";
 const textLight = "text-gray-500 dark:text-gray-300";
 
-interface FeatureFlag {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
+interface FeatureFlag extends APIFeatureFlag {
   category: "core" | "experimental" | "beta";
   impactLevel: "low" | "medium" | "high";
   lastModified: string;
@@ -41,60 +40,61 @@ const FeatureFlagsPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [flags, setFlags] = useState<FeatureFlag[]>([
-    {
-      id: "leaderboard",
-      name: "Leaderboard",
-      description:
-        "Enable the public leaderboard feature showing top performers across the platform",
-      enabled: false,
-      category: "experimental",
-      impactLevel: "medium",
-      lastModified: "2025-09-28 14:23",
-      modifiedBy: "admin@example.com",
-    },
-    {
-      id: "advanced_analytics",
-      name: "Advanced Analytics",
-      description:
-        "Unlock detailed analytics dashboard with custom reports and data export",
-      enabled: false,
-      category: "beta",
-      impactLevel: "low",
-      lastModified: "2025-09-27 10:15",
-      modifiedBy: "admin@example.com",
-    },
-    {
-      id: "ai_suggestions",
-      name: "AI-Powered Suggestions",
-      description:
-        "Enable AI-driven content recommendations and personalized suggestions",
-      enabled: false,
-      category: "experimental",
-      impactLevel: "high",
-      lastModified: "2025-09-26 16:45",
-      modifiedBy: "admin@example.com",
-    },
-    {
-      id: "real_time_collab",
-      name: "Real-time Collaboration",
-      description:
-        "Allow multiple users to collaborate on documents in real-time",
-      enabled: false,
-      category: "beta",
-      impactLevel: "high",
-      lastModified: "2025-09-25 09:30",
-      modifiedBy: "admin@example.com",
-    },
-  ]);
+  useEffect(() => {
+    const fetchFlags = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getFeatureFlags();
+        // Map API response to our local interface
+        const mappedFlags = data.map(flag => ({
+          ...flag,
+          category: flag.stage as "core" | "experimental" | "beta",
+          impactLevel: flag.impact as "low" | "medium" | "high",
+          lastModified: new Date(flag.updatedAt).toLocaleString(),
+          modifiedBy: 'System',
+        }));
+        setFlags(mappedFlags);
+      } catch (err) {
+        console.error('Failed to fetch feature flags:', err);
+        setError('Failed to load feature flags. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleToggle = (flagId: string) => {
-    setFlags((prev) =>
-      prev.map((flag) =>
-        flag.id === flagId ? { ...flag, enabled: !flag.enabled } : flag
-      )
-    );
+    fetchFlags();
+  }, []);
+
+  const handleToggle = async (flagId: string, currentState: boolean) => {
+    try {
+      // Optimistic update
+      const newState = !currentState;
+      setFlags(prev =>
+        prev.map(flag =>
+          flag.id === flagId ? { ...flag, enabled: newState } : flag
+        )
+      );
+      
+      // API call
+      await toggleFeatureFlag(flagId, currentState);
+      
+      // Show success toast
+      toast.success(`Feature flag ${newState ? 'enabled' : 'disabled'} successfully`);
+    } catch (err) {
+      console.error('Failed to toggle feature flag:', err);
+      // Revert on error
+      setFlags(prev =>
+        prev.map(flag =>
+          flag.id === flagId ? { ...flag, enabled: currentState } : flag
+        )
+      );
+      // Show error toast
+      toast.error(err instanceof Error ? err.message : 'Failed to toggle feature flag');
+    }
   };
 
   const filteredFlags = flags.filter((flag) => {
@@ -102,7 +102,7 @@ const FeatureFlagsPage: React.FC = () => {
       flag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       flag.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      selectedCategory === "all" || flag.category === selectedCategory;
+      selectedCategory === "all" || flag.stage === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -165,14 +165,15 @@ const FeatureFlagsPage: React.FC = () => {
                     outline: "none",
                     boxShadow: "none",
                   }}
+                  disabled={isLoading}
                 />
               </div>
 
               {/* Category Dropdown */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild disabled={isLoading}>
                   <button
-                    className={`flex items-center justify-between w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ${bgCard} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-700 transition`}
+                    className={`flex items-center justify-between w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ${bgCard} ${textDark} hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {selectedCategory === "all"
                       ? "All Categories"
@@ -196,84 +197,99 @@ const FeatureFlagsPage: React.FC = () => {
               </DropdownMenu>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+                <span className="font-medium">Error:</span> {error}
+              </div>
+            )}
 
+            {/* Loading State */}
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="animate-spin h-8 w-8 text-[#72a210]" />
+                <span className="ml-2">Loading feature flags...</span>
+              </div>
+            ) : (
+              /* Feature Flags List */
+              <div className="space-y-4">
+                {filteredFlags.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {searchQuery || selectedCategory !== "all"
+                        ? "No feature flags match your filters."
+                        : "No feature flags found."}
+                    </p>
+                  </div>
+                ) : (
+                  filteredFlags.map((flag) => (
+                    <div
+                      key={flag.id}
+                      className={`p-6 rounded-xl ${bgCard} border border-gray-200 dark:border-gray-800`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h3 className={`text-lg font-semibold ${textDark}`}>
+                              {flag.name}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
+                                flag.stage
+                              )}`}
+                            >
+                              {flag.stage.charAt(0).toUpperCase() +
+                                flag.stage.slice(1)}
+                            </span>
+                          </div>
+                          <p className={`mt-1 ${textMedium}`}>
+                            {flag.description}
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-4">
+                            <div className="flex items-center">
+                              <span
+                                className={`text-xs font-medium ${getImpactColor(
+                                  flag.impact
+                                )}`}
+                              >
+                                Impact: {flag.impact}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                Updated: {new Date(flag.updatedAt).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
-            {/* Flags List */}
-            <div className="space-y-4">
-              {filteredFlags.map((flag) => (
-                <div
-                  key={flag.id}
-                  className={`${bgCard} rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className={`text-lg font-semibold ${textDark}`}>
-                          {flag.name}
-                        </h3>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(
-                            flag.category
-                          )}`}
-                        >
-                          {flag.category}
-                        </span>
-                        <span
-                          className={`text-xs font-medium ${getImpactColor(
-                            flag.impactLevel
-                          )}`}
-                        >
-                          {flag.impactLevel.toUpperCase()} IMPACT
-                        </span>
-                      </div>
-                      <p className={`${textMedium} mb-3`}>
-                        {flag.description}
-                      </p>
-                      <div className={`text-sm ${textLight}`}>
-                        Last modified: {flag.lastModified} • {flag.modifiedBy}
+                        <div className="ml-4 flex items-center">
+                          <button
+                            onClick={() => handleToggle(flag.id, flag.enabled)}
+                            disabled={isLoading}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[${primary}] focus:ring-offset-2 ${
+                              flag.enabled ? "bg-[#72a210]" : "bg-gray-200 dark:bg-gray-700"
+                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            role="switch"
+                            aria-checked={flag.enabled}
+                            aria-labelledby={`${flag.id}-status`}
+                          >
+                            <span className="sr-only">Toggle {flag.name} feature</span>
+                            <span
+                              aria-hidden="true"
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                flag.enabled ? "translate-x-5" : "translate-x-0"
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  ))
+                )}
+              </div>
+            )}
 
-                    {/* Toggle */}
-                    <button
-                      onClick={() => handleToggle(flag.id)}
-                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors cursor-pointer ${
-                        flag.enabled
-                          ? "bg-[#72a210]"
-                          : "bg-gray-300 dark:bg-gray-600"
-                      }`}
-                    >
-                      <span className="sr-only">Toggle {flag.name}</span>
-                      <span
-                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                          flag.enabled ? "translate-x-7" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-
-
-{/* Info Banner */}
-<div
-  className={`border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 rounded-lg p-4 flex items-start gap-3`}
->
-  <Info
-    className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
-  />
-  <div className="text-sm">
-    <p className="font-medium mb-1 text-[#b45309] dark:text-[#fbbf24]">
-      About Feature Flags
-    </p>
-    <p className={`${textMedium}`}>
-      Feature flags allow you to safely test new features in
-      production. All changes are logged for auditability.
-    </p>
-  </div>
-</div>
 
           </div>
         </main>
