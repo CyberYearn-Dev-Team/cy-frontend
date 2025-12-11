@@ -222,15 +222,23 @@ const LearnerPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeConvId, conversations]);
 
-  const filteredConvs = conversations.filter((c) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      c.username.toLowerCase().includes(q) ||
-      c.learner.username.toLowerCase().includes(q) ||
-      c.learner.email.toLowerCase().includes(q) ||
-      c.messages.some((m) => m.content.toLowerCase().includes(q))
-    );
-  });
+  const filteredConvs = conversations
+    .filter((c) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        c.username.toLowerCase().includes(q) ||
+        c.learner.username.toLowerCase().includes(q) ||
+        c.learner.email.toLowerCase().includes(q) ||
+        c.messages.some((m) => m.content.toLowerCase().includes(q))
+      );
+    })
+    .sort((a, b) => {
+      // Get the latest message timestamp from each conversation
+      const getLatestTimestamp = (conv: Conversation) => {
+        return Math.max(...conv.messages.map(m => new Date(m.createdAt).getTime()));
+      };
+      return getLatestTimestamp(b) - getLatestTimestamp(a);
+    });
 
   const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
 
