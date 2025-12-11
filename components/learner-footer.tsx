@@ -83,6 +83,16 @@ export default function LearnerFooter() {
           </div>
         </div>
 
+         {/* Logo Row */}
+        <div className="border-t border-gray-200 dark:border-gray-800 pt-8 pb-4">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/-isc-logo-vectorized-.svg" alt="ISC2 Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
+            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/comptia-logo.svg" alt="CompTIA Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
+            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/cisco-2.svg" alt="Cisco Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
+            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/splunk.svg" alt="Splunk Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
+          </div>
+        </div>
+
         {/* Bottom border */}
         <div className="border-t border-gray-200 dark:border-gray-800 pt-6 text-center md:text-left">
           <p className="text-sm text-gray-600 dark:text-gray-400">
