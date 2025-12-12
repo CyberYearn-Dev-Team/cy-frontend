@@ -74,6 +74,7 @@ interface Track {
   title: string;
   description: string;
   thumbnail: string;
+  slug: string;
 }
 
 interface ActivityItem {
@@ -327,11 +328,12 @@ export default function LearnerDashboard() {
 
         // Map to Track format expected by the UI
         setSuggestedTracks(
-          suggestions.map((t: TrackProgress) => ({
+          suggestions.map((t: any) => ({
             id: t.trackId,
             title: t.title,
             description: `Start learning ${t.title}`,
             thumbnail: t.thumbnail || "",
+            slug: t.slug || t.trackId, // Use slug if available, fallback to trackId
           }))
         );
 
@@ -452,20 +454,27 @@ export default function LearnerDashboard() {
     const toastId = toast.loading('Loading track...');
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      if (apiUrl) {
-        await fetch(`${apiUrl}/tracks/${trackId}/start`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        toast.success('Track loaded successfully!', { id: toastId });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cy-backend.onrender.com/api/v1';
+      const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start track');
       }
+
+      const data = await response.json();
+      toast.success(data.message || 'Track loaded successfully!', { id: toastId });
     } catch (error) {
       console.error('Error starting track:', error);
       toast.dismiss(toastId);
+      toast.error('Failed to start track. Please try again.');
     } finally {
-      router.push(`/learner-dashboard/tracks/${trackSlug}`);
+      if (trackSlug) {
+        router.push(`/learner-dashboard/tracks/${trackSlug}`);
+      }
     }
   };
 
@@ -827,10 +836,7 @@ export default function LearnerDashboard() {
                                   </p>
                                 </div> 
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/learner-dashboard/tracks?highlight=${track.id}`);
-                                  }}
+                                  onClick={(e) => handleContinueTrack(e, track.id, track.slug)}
                                   className={`mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-3 rounded-md transition-colors cursor-pointer`}
                                   style={{
                                     backgroundColor: primary,
@@ -848,7 +854,7 @@ export default function LearnerDashboard() {
                                 >
                                   View Track
                                   <ArrowRight className="w-3 h-3 ml-1" />
-                                </button> 
+                                </button>
                               </div>
                             </div>
                           ))}
