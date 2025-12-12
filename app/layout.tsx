@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import CookieConsent from "@/components/ui/CookieConsent";
+// import CookieConsent from "@/components/ui/CookieConsent";
 import InactivityHandler from "@/components/ui/InactivityHandler";
 
 const geistSans = Geist({
@@ -39,7 +39,7 @@ export default function RootLayout({
 
         {children}
         <Toaster position="top-right" richColors /> {/* Sonner Toaster */}
-        <CookieConsent /> {/* shows on every page */}
+        {/* <CookieConsent />  */}
       </body>
     </html>
   );
