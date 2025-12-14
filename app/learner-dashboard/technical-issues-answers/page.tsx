@@ -376,7 +376,7 @@ const LearnerPage: React.FC = () => {
 
 
             {/* RIGHT PANE – Chat Area */}
-            <div className={`w-full flex-1 flex flex-col bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${activeConvId ? "flex" : "hidden lg:flex"} lg:w-2/3`}>
+            <div className={`w-full flex-1 flex flex-col bg-cover dark:bg-gray-950 ${activeConvId ? "flex" : "hidden lg:flex"} lg:w-2/3`}>
               {!activeConv && !isLoading ? (
                 <div className="flex-1 flex items-center justify-center text-center px-6">
                   <div>
