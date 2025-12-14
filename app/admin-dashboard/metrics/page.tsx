@@ -92,11 +92,12 @@ export default function MetricsPage() {
     return (
       <div className={`flex h-screen overflow-x-hidden overflow-y-hidden ${colors.light}`}>
         <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <AdminHeader setSidebarOpen={setSidebarOpen} />
           <main className="flex-1 overflow-y-auto p-6">
             <MetricsSkeleton />
           </main>
+          <Nav />
         </div>
       </div>
     );
