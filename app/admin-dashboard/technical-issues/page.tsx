@@ -332,7 +332,7 @@ const TechnicalIssuesPage: React.FC = () => {
 
             {/* RIGHT PANE – CHAT AREA */}
             <div
-              className={`w-full flex-1 flex flex-col bg-[url('/whatsapp-bg.svg')] bg-cover dark:bg-gray-950 ${
+              className={`w-full flex-1 flex flex-col  bg-cover dark:bg-gray-950 ${
                 activeIssueId ? "flex" : "hidden lg:flex"
               } lg:w-2/3`}
             >
