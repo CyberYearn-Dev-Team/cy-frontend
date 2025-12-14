@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { getTechnicalIssues } from "@/lib/services/technicalIssueService";
+import { logoutUser } from "@/lib/api/auth";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   Users,
@@ -77,9 +79,34 @@ export default function AdminSidebar({
   const isActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`);
 
-  const handleLogout = () => {
-    setShowLogoutConfirm(false);
-    router.push("/auth/login");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+
+      const theme = localStorage.getItem("theme");
+      localStorage.clear();
+      sessionStorage.clear();
+      if (theme) localStorage.setItem("theme", theme);
+
+      // Clear all cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+      });
+
+      toast.info("You have been logged out securely.", {
+        description: "Please log in again to continue.",
+      });
+
+      setShowLogoutConfirm(false);
+      setTimeout(() => {
+        router.replace("/auth/login");
+      }, 1000);
+    } catch (err) {
+      console.error("Logout failed:", err);
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   return (
