@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { fetchMetrics } from "@/lib/services/metricsService";
 import { toast } from "sonner";
+import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 
 // 🎨 Theme Colors
 const colors = {
@@ -86,10 +87,23 @@ export default function MetricsPage() {
     loadMetrics();
   }, []);
 
-  return (
-    // <div className={`flex h-screen overflow-hidden ${colors.light}`}>
-    <div className={`flex h-screen overflow-x-hidden overflow-y-hidden ${colors.light}`}>
+  // Show loading skeleton while data is being fetched
+  if (metrics.loading) {
+    return (
+      <div className={`flex h-screen overflow-x-hidden overflow-y-hidden ${colors.light}`}>
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <AdminHeader setSidebarOpen={setSidebarOpen} />
+          <main className="flex-1 overflow-y-auto p-6">
+            <MetricsSkeleton />
+          </main>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className={`flex h-screen overflow-x-hidden overflow-y-hidden ${colors.light}`}>
       {/* Sidebar */}
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -99,7 +113,6 @@ export default function MetricsPage() {
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
         {/* Main Content */}
-        {/* <main className="flex-1 overflow-y-auto p-4 lg:p-10 space-y-10 pb-30"> */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-10 space-y-10 pb-32">
 
           <div>
