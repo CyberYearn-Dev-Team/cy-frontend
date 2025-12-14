@@ -276,6 +276,7 @@ export default function LearnerDashboard() {
     continueLearning: true,
     recentActivities: true,
     achievements: true,
+    suggestedTracks: true,
   });
 
   useEffect(() => {
@@ -327,6 +328,7 @@ export default function LearnerDashboard() {
         }
 
         // Map to Track format expected by the UI
+        setIsLoading(prev => ({ ...prev, suggestedTracks: false }));
         setSuggestedTracks(
           suggestions.map((t: any) => ({
             id: t.trackId,
@@ -364,6 +366,7 @@ export default function LearnerDashboard() {
       }
     } catch (error) {
       console.error("Error fetching progress:", error);
+      setIsLoading(prev => ({ ...prev, suggestedTracks: false }));
       setIsLoading(prev => ({ ...prev, recentActivities: false }));
     }
   };
@@ -381,11 +384,13 @@ export default function LearnerDashboard() {
         await fetchAndProcessProgress();
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        // Ensure loaders are turned off to avoid infinite spinners
+        toast.error("Failed to load dashboard data. Please try again.");
+        setIsLoading(prev => ({ ...prev, suggestedTracks: false }));
         setIsLoading({
           continueLearning: false,
           recentActivities: false,
           achievements: false,
+          suggestedTracks: false,
         });
       }
     };
@@ -803,7 +808,9 @@ export default function LearnerDashboard() {
                     </CardHeader>
 
                     <CardContent>
-                      {suggestedTracks.length > 0 ? (
+                      {isLoading.suggestedTracks ? (
+                        <SuggestedForYouSkeleton />
+                      ) : suggestedTracks.length > 0 ? (
                         <div
                           ref={suggestedRef}
                           className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
@@ -860,7 +867,11 @@ export default function LearnerDashboard() {
                           ))}
                         </div>
                       ) : (
-                        <SuggestedForYouSkeleton />
+                        <EmptyState
+                          icon={BookOpen}
+                          title="No Recommendations Yet"
+                          message="Complete more lessons to get personalized track recommendations."
+                        />
                       )}
                     </CardContent>
                   </Card>

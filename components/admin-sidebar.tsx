@@ -172,16 +172,16 @@ export default function AdminSidebar({
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to log out of your account?
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-between space-x-4">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition cusor-pointer"
+                className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-md bg-[#72a210] hover:bg-[#507800] text-white transition cusor-pointer"
+                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-900 text-white transition cursor-pointer"
               >
                 Logout
               </button>

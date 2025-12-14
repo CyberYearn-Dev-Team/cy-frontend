@@ -254,7 +254,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to log out of your account?
             </p>
-            <div className="flex justify-center space-x-3">
+            <div className="flex justify-between space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setShowLogoutConfirm(false)}
