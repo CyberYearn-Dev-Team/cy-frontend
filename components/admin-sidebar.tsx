@@ -53,10 +53,10 @@ export default function AdminSidebar({
 
   const sidebarItems = [
     { name: "Overview", icon: LayoutDashboard, href: `${basePath}/overview` },
-    { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
+    // { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
     { name: "Feature Flags", icon: ToggleLeft, href: `${basePath}/feature-flags` },
     { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
-    { name: "Platform Security", icon: Siren, href: `${basePath}/security` },
+    // { name: "Platform Security", icon: Siren, href: `${basePath}/security` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
 
     // Technical Issues with Badge
@@ -92,6 +92,8 @@ export default function AdminSidebar({
         />
       )}
 
+
+
       {/* Sidebar */}
       <aside
         className={`${
@@ -124,13 +126,15 @@ export default function AdminSidebar({
           </button>
         </div>
 
+
+
         {/* Nav Links */}
-        <nav className="px-3 py-6 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
+        <nav className="px-3 py-10 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
           {sidebarItems.map(({ name, icon: Icon, href, count }) => (
             <Link
               key={name}
               href={href}
-              className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors duration-200 ${
+              className={`flex items-center justify-between px-3 py-3 rounded-md transition-colors duration-200 ${
                 isActive(href)
                   ? "text-[#72a210] dark:text-[#a3e635] font-medium bg-gray-100 dark:bg-gray-800"
                   : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
@@ -143,7 +147,7 @@ export default function AdminSidebar({
                 {name}
               </div>
 
-              {/* 🔥 Badge */}
+              {/* Badge */}
               {count !== undefined && (
                 <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
                   {count}
@@ -155,12 +159,15 @@ export default function AdminSidebar({
           {/* Logout Button */}
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="flex items-center w-full px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white transition-colors duration-200 rounded-md cusor-pointer"
+            className="flex items-center w-full px-3 py-3 text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white transition-colors duration-200 rounded-md cusor-pointer"
           >
             <LogOut className="w-5 h-5 mr-2" /> Logout
           </button>
         </nav>
       </aside>
+
+
+
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
