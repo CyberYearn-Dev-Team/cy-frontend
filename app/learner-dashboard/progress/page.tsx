@@ -22,6 +22,8 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
+import { progressService } from "@/lib/api/progress";
+
 
 // Theme Constants
 const primary = "#72a210";
@@ -221,13 +223,8 @@ export default function ProgressPage() {
   useEffect(() => {
     async function loadProgress() {
       try {
-        const res = await fetch(
-          "https://cy-backend.onrender.com/api/v1/me/progress/summary",
-          { credentials: "include" }
-        );
-
-        const json = await res.json();
-        setSummary(json.data);
+        const data = await progressService.getProgressSummary();
+        setSummary(data.data);
       } catch (error) {
         console.error("Error loading progress:", error);
       } finally {

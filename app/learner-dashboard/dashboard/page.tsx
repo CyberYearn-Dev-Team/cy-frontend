@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { getCurrentUser } from "@/lib/api/auth";
+import { progressService } from "@/lib/api/progress";
 import ComingSoonSection from "@/components/ui/ComingSoonSection";
 import {
   ContinueLearningSkeleton,
@@ -66,6 +67,14 @@ interface TrackProgress {
   completedLessons: number;
   totalLessons: number;
   thumbnail?: string;
+  description?: string;
+  slug?: string;
+  track?: {
+    slug?: string;
+    thumbnail?: string;
+    [key: string]: any;
+  };
+  [key: string]: any; // Allow additional properties
 }
 
 interface Track {
@@ -281,13 +290,27 @@ export default function LearnerDashboard() {
   useEffect(() => {
     const fetchAndProcessProgress = async () => {
     try {
-      const response = await fetch("https://cy-backend.onrender.com/api/v1/me/progress/summary", {
-        credentials: "include"
-      });
-      const data = await response.json();
+      const data = await progressService.getProgressSummary();
       
       if (data?.data?.trackProgress) {
         const trackProgress: TrackProgress[] = data.data.trackProgress;
+        
+        // Build Continue Learning directly from trackProgress
+        const continueLearningItems = trackProgress
+          .filter(t => t.status === "IN_PROGRESS")
+          .map(t => ({
+            id: t.trackId,
+            title: t.title,
+            description: t.description || "",
+            thumbnail: t.thumbnail || "/placeholder.png",
+            progress: t.progress || 0,
+            instructor: "Instructor Name", // Default value
+            instructorTitle: "Instructor", // Default value
+            slug: t.slug || t.trackId,
+          }));
+
+        setContinueLearning(continueLearningItems);
+        setIsLoading(prev => ({ ...prev, continueLearning: false }));
         
         // Find main track (IN_PROGRESS with highest progress)
         const inProgressTracks = trackProgress.filter(

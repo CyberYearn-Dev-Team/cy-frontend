@@ -1,4 +1,5 @@
 import { getCurrentUser } from "../api/auth";
+import { progressService } from '../api/progress';
 
 export interface ContinueLearningItem {
   id: string;
@@ -15,26 +16,24 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://cy-backend.onrender
 
 async function fetchCanonicalTrackSlug(trackId: string): Promise<string | null> {
   try {
-    if (!trackId) return null;
-    const res = await fetch(`${API_BASE}/tracks/${trackId}`, {
-      credentials: "include",
-    });
-    if (!res.ok) {
-      console.warn(`Failed to fetch track ${trackId}: ${res.status}`);
+    // This is a placeholder - replace with actual API call to get track by ID
+    const response = await fetch(`${API_BASE}/tracks/${trackId}`);
+    
+    if (!response.ok) {
+      console.error(`Failed to fetch track ${trackId}:`, response.status);
       return null;
     }
-    const json = await res.json();
-    // Try common locations for slug on the returned track object:
-    return json?.data?.slug || json?.slug || json?.data?.attributes?.slug || null;
-  } catch (err) {
-    console.error("Error fetching canonical track slug:", err);
+    
+    const data = await response.json();
+    return data?.data?.slug || null;
+  } catch (error) {
+    console.error(`Error fetching track ${trackId}:`, error);
     return null;
   }
 }
 
 function safeSlugFromTitle(title: string) {
-  return (title || "")
-    .toString()
+  return title
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")
@@ -42,76 +41,68 @@ function safeSlugFromTitle(title: string) {
     .replace(/-+/g, "-");
 }
 
-
-
 export const getContinueLearning = async (): Promise<ContinueLearningItem[]> => {
   try {
-    const res = await fetch(`${API_BASE}/me/progress/summary`, {
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      console.error("Progress API failed:", res.status);
-      return [];
-    }
-
-    const data = await res.json();
+    const response = await progressService.getProgressSummary();
+    const data = response.data;
     const trackProgress = data?.data?.trackProgress || [];
 
-    // Map sequentially but resolve missing slugs by fetching the canonical track resource.
-    const results: Array<ContinueLearningItem | null> = [];
+    // Debug: Log the raw response to see what we're working with
+    console.log("Raw progress data:", data);
+
+    const results: ContinueLearningItem[] = [];
 
     for (let i = 0; i < trackProgress.length; i++) {
       const track = trackProgress[i];
-      if (track.status !== "IN_PROGRESS") continue;
+      
+      // Debug: Log each track's status and progress
+      console.log(`Track ${i}:`, {
+        id: track.id || track.trackId,
+        title: track.title,
+        status: track.status,
+        progress: track.progress,
+        hasSlug: Boolean(track.slug || track.track?.slug)
+      });
 
-      // Possible slug locations (be exhaustive)
-      let slug =
-        track.slug ||
-        track.track?.slug ||
-        track.track?.data?.slug ||
-        track.track?.data?.attributes?.slug ||
-        track.track?.fields?.slug ||
-        null;
+      // Check if track is in progress based on status
+      const isInProgress = track.status === "IN_PROGRESS";
 
-      // If slug looks like a generated title-slug (e.g. contains the whole title),
-      // prefer canonical slug by fetching the track resource (defensive).
+      if (!isInProgress) continue;
+
+      // Get slug from various possible locations
+      const slug = 
+        track.slug || 
+        track.track?.slug || 
+        track.track?.data?.slug || 
+        track.track?.data?.attributes?.slug || 
+        track.track?.fields?.slug || 
+        (track.title ? safeSlugFromTitle(track.title) : null);
+
+      // Skip if we can't get a valid slug
       if (!slug) {
-        // try fetching canonical by trackId
-        const candidateId = track.trackId || track.id || track.track?.id;
-        const canonical = await fetchCanonicalTrackSlug(candidateId);
-        if (canonical) slug = canonical;
-      }
-
-      // Final fallback: safe slugified title (last resort)
-      if (!slug && track.title) {
-        console.warn("Falling back to slugified title for track:", track.title, track);
-        slug = safeSlugFromTitle(track.title);
-      }
-
-      if (!slug) {
-        // Skip items we truly can't build a reliable URL for
-        console.warn("Skipping continue-learning entry: no slug and no title", track);
-        results.push(null);
+        console.warn("Skipping track - no slug and no title:", track);
         continue;
       }
 
-      results.push({
+      // Only push valid ContinueLearningItem objects
+      const continueLearningItem: ContinueLearningItem = {
         id: track.id || track.trackId || `track-${i}`,
         slug,
         title: track.title || "Untitled Track",
         description: track.description || "",
-        thumbnail: track.thumbnail || "/api/placeholder/280/160",
-        progress: typeof track.progress === "number" ? track.progress : 0,
-        instructor: track.instructor || "Instructor Name",
-        instructorTitle: track.instructorTitle || "Title",
-      });
+        thumbnail: track.thumbnail || track.track?.thumbnail || "/api/placeholder/280/160",
+        progress: Math.min(100, Math.max(0, track.progress || 0)), // Ensure progress is between 0-100
+        instructor: track.instructor || track.track?.instructor || "Instructor Name",
+        instructorTitle: track.instructorTitle || track.track?.instructorTitle || "Title",
+      };
+      
+      results.push(continueLearningItem);
     }
 
-    // Filter nulls and return
-    return results.filter(Boolean) as ContinueLearningItem[];
+    console.log(`Found ${results.length} in-progress tracks`);
+    return results;
   } catch (err) {
-    console.error("Error fetching continue learning:", err);
+    console.error("Error in getContinueLearning:", err);
     return [];
   }
 };
