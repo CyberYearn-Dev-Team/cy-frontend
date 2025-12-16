@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://cy-backend.onrender.com/api/v1';
+import { apiClient } from '../api/client';
 
 export interface FeatureFlag {
   id: string;
@@ -13,20 +13,8 @@ export interface FeatureFlag {
 
 export const getFeatureFlags = async (): Promise<FeatureFlag[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/feature-flags`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch feature flags');
-    }
-
-    const data = await response.json();
-    return data.data || [];
+    const response = await apiClient.get('/admin/feature-flags');
+    return response.data.data || [];
   } catch (error) {
     console.error('Error fetching feature flags:', error);
     throw error;
@@ -38,24 +26,10 @@ export const getFeatureFlags = async (): Promise<FeatureFlag[]> => {
 // Toggle feature flag status
 export const toggleFeatureFlag = async (id: string, enabled: boolean): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/feature-flags?id=${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        enabled: !enabled // Toggle the current state
-      }),
+    const response = await apiClient.patch(`/admin/feature-flags?id=${id}`, {
+      enabled: !enabled
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to toggle feature flag');
-    }
-
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error('Error toggling feature flag:', error);
     throw error;
@@ -75,22 +49,8 @@ export interface CreateFeatureFlagDTO {
 
 export const createFeatureFlag = async (data: CreateFeatureFlagDTO): Promise<FeatureFlag> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/feature-flags`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to create feature flag');
-    }
-
-    const responseData = await response.json();
-    return responseData.data;
+    const response = await apiClient.post('/admin/feature-flags', data);
+    return response.data.data;
   } catch (error) {
     console.error('Error creating feature flag:', error);
     throw error;
