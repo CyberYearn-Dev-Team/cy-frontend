@@ -140,6 +140,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
           </button>
 
+
+
           {/* Right side controls */}
           <div className="flex items-center gap-4 ml-auto">
             {/* 🔔 Bell icon wrapped with Link */}
@@ -156,6 +158,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
               </div>
             </Link>
 
+
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -167,6 +171,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                 <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
               )}
             </button>
+
+
 
             {/* User Dropdown */}
             <div className="relative" ref={dropdownRef}>
@@ -216,17 +222,23 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                     </p>
                   </div>
 
+
+
                   <Link href="/learner-dashboard/profile">
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                       <User className="h-4 w-4 mr-2" /> Profile
                     </button>
                   </Link>
 
+
+
                   <Link href="/learner-dashboard/account-setting">
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                       <Settings className="h-4 w-4 mr-2" /> Account Settings
                     </button>
                   </Link>
+
+
 
                   <button
                     onClick={() => {
@@ -243,6 +255,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
           </div>
         </div>
       </header>
+
+
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (

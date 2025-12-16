@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/services/authService";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -26,32 +27,31 @@ interface SidebarProps {
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const pathname = usePathname();
   const basePath = "/learner-dashboard";
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
 
   // Fetch role on mount
-useEffect(() => {
-  async function fetchUserRole() {
-    try {
-      const res = await fetch("https://cy-backend.onrender.com/api/v1/me", {
-        credentials: "include",
-      });
-      const data = await res.json();
 
-      // Handle both possible formats (roles array or single role)
-      let roles = Array.isArray(data?.data?.roles) ? data.data.roles : [];
-
-if (roles.length > 0) {
-  setUserRole(roles.map((r: string) => r.toUpperCase())); // store ALL roles in uppercase
-}
-
-    } catch (err) {
-      console.error("Failed to fetch user role:", err);
+  useEffect(() => {
+    async function fetchUserRole() {
+      try {
+        const response = await getCurrentUser();
+        // The response structure is { message: string, data: { roles: string[] } }
+        const roles = response?.data?.roles || [];
+        console.log('User roles:', roles); // Debug log
+        
+        if (Array.isArray(roles) && roles.length > 0) {
+          setUserRoles(roles.map((r: string) => r.toUpperCase()));
+        } else {
+          setUserRoles([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role:", err);
+        setUserRoles([]);
+      }
     }
-  }
 
-  fetchUserRole();
-}, []);
-
+    fetchUserRole();
+  }, []);
 
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(false);
 
@@ -80,8 +80,8 @@ if (roles.length > 0) {
     { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
   ];
 
-  // Only show "Switch to Admin" if role is admin
-if (userRole && userRole.includes("ADMIN")) {
+  // Only show "Switch to Admin" if user has ADMIN role
+if (userRoles.includes("ADMIN")) {
     sidebarItems.push({
       name: "Switch to Admin",
       icon: UserCog,

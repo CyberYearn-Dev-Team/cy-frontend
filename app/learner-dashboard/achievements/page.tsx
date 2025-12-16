@@ -71,44 +71,63 @@ export default function AchievementsPage() {
     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
   ];
 
-  useEffect(() => {
-    const fetchBadges = async () => {
-      try {
-        setLoading(true);
+ useEffect(() => {
+  const fetchBadges = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        // 1️⃣ Fetch all badges
-        const resAll = await fetch("/api/badges");
-        if (!resAll.ok) throw new Error("Failed to fetch all badges");
-        const allData = await resAll.json();
-        const allBadges = allData.data || [];
+      // First, fetch the badges
+      const badgesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/badges`, {
+        credentials: "include",
+      });
 
-        // 2️⃣ Fetch gamification (unlocked badges)
-        const resGam = await fetch("/api/gamification");
-        if (!resGam.ok) throw new Error("Failed to fetch gamification");
-        const gamData = await resGam.json();
-        const unlocked = gamData.data?.badges?.map((b: any) => b.code) || [];
-
-        // 3️⃣ Merge unlocked state, assign images, and sort to show unlocked first
-        const merged = allBadges
-          .map((badge: Omit<Badge, 'unlocked' | 'image'>, index: number) => ({
-            ...badge,
-            unlocked: unlocked.includes(badge.code),
-            image: badgeImages[index % badgeImages.length],
-          }))
-          .sort((a: Badge, b: Badge) => (a.unlocked === b.unlocked ? 0 : a.unlocked ? -1 : 1));
-
-        setBadges(merged);
-        setError(null);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Failed to load badges");
-      } finally {
-        setLoading(false);
+      if (!badgesRes.ok) {
+        throw new Error(`Request failed: ${badgesRes.status}`);
       }
-    };
 
-    fetchBadges();
-  }, []);
+      const badgesResult = await badgesRes.json();
+      const backendBadges = badgesResult.data ?? [];
+
+      // Fetch gamification data directly from the external API
+      const gamificationRes = await fetch('https://cy-backend.onrender.com/api/v1/me/gamification', {
+        credentials: "include",
+      });
+
+      let unlockedBadgeCodes: string[] = [];
+      
+      if (gamificationRes.ok) {
+        const gamificationData = await gamificationRes.json();
+        unlockedBadgeCodes = (gamificationData.data?.badges || []).map((b: any) => b.code);
+      }
+
+      // Map badges with their unlocked status
+      const normalizedBadges = backendBadges
+        .map((badge: any, index: number) => ({
+          ...badge,
+          unlocked: unlockedBadgeCodes.includes(badge.code),
+          image: badgeImages[index % badgeImages.length],
+        }))
+        // Sort to show unlocked badges first
+        .sort((a: Badge, b: Badge) => 
+          (b.unlocked ? 1 : 0) - (a.unlocked ? 1 : 0)
+        );
+
+      setBadges(normalizedBadges);
+    } catch (err) {
+      console.error("Error fetching badges:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch badges"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBadges();
+}, []);
+
+
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">

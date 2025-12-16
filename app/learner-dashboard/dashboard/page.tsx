@@ -46,7 +46,6 @@ import {
   getContinueLearning,
   ContinueLearningItem,
 } from "@/lib/services/ContinueLearningService";
-import AchievementsSection from "@/components/ui/AchievementsSection";
 
 // Theme Colors
 const primary = "#72a210";
