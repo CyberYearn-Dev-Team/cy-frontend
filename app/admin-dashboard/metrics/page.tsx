@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
+import { Switch } from "@/components/ui/switch";
+import { ChevronDown } from "lucide-react";
+import { fetchMetricsVisibility, updateMetricVisibility } from "@/lib/services/metricsService";
 import {
   Users,
   Activity,
@@ -26,6 +29,7 @@ import {
 import { fetchMetrics } from "@/lib/services/metricsService";
 import { toast } from "sonner";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
+
 
 // 🎨 Theme Colors
 const colors = {
@@ -59,6 +63,9 @@ export default function MetricsPage() {
     loading: true,
     error: null,
   });
+  
+  const [visibility, setVisibility] = useState<Record<string, boolean>>({});
+  const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   useEffect(() => {
     const loadMetrics = async () => {
@@ -94,8 +101,34 @@ export default function MetricsPage() {
       }
     };
 
+    const loadVisibility = async () => {
+      try {
+        const data = await fetchMetricsVisibility();
+        const mapped: Record<string, boolean> = {};
+
+        data.forEach((item) => {
+          mapped[item.key] = item.visible;
+        });
+
+        setVisibility(mapped);
+      } catch (err) {
+        toast.error("Failed to load metric visibility");
+      }
+    };
+
     loadMetrics();
+    loadVisibility();
   }, []);
+
+  const handleToggle = async (key: string, value: boolean) => {
+    try {
+      setVisibility((prev) => ({ ...prev, [key]: value }));
+      await updateMetricVisibility(key, value);
+      toast.success("Visibility updated");
+    } catch {
+      toast.error("Failed to update visibility");
+    }
+  };
 
   // Show loading skeleton while data is being fetched
   if (metrics.loading) {
@@ -132,14 +165,54 @@ export default function MetricsPage() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-10 space-y-10 pb-32">
-          <div>
-            <h1 className={`text-3xl font-bold ${colors.text.dark}`}>
-              Metrics & Reports
-            </h1>
-            <p className={`mt-1 ${colors.text.medium}`}>
-              Analytics dashboards and exportable reports
-            </p>
+<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+  <div>
+    <h1 className={`text-3xl font-bold ${colors.text.dark}`}>
+      Metrics & Reports
+    </h1>
+    <p className={`mt-1 ${colors.text.medium}`}>
+      Analytics dashboards and exportable reports
+    </p>
+  </div>
+
+  {/* Visibility Toggle */}
+  <div className="relative self-end lg:self-auto">
+    <button
+      onClick={() => setVisibilityOpen((p) => !p)}
+      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm shadow-sm"
+    >
+      Toggle Visibility
+      <ChevronDown className="w-4 h-4" />
+    </button>
+
+    {visibilityOpen && (
+      <div className="absolute right-0 mt-2 w-72 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg p-4 space-y-3 z-50">
+        {[
+          { key: "registrations_trend", label: "Registrations Trend" },
+          { key: "wau_mau_ratio", label: "WAU / MAU Ratio" },
+          { key: "module_completion_rate", label: "Module Completion Rate" },
+          { key: "seven_day_activation", label: "7-Day Activation" },
+        ].map((item) => (
+          <div
+            key={item.key}
+            className="flex items-center justify-between"
+          >
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {item.label}
+            </span>
+            <Switch
+              checked={visibility[item.key] ?? true}
+              onCheckedChange={(val) =>
+                handleToggle(item.key, val)
+              }
+            />
           </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+
 
           {metrics.error && (
             <div className="col-span-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
