@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cy-backend.onrender.com/api/v1';
+import { apiClient } from '../api/client';
 
 export interface RegistrationsTrend {
   date: string;
@@ -26,17 +26,6 @@ export interface MetricsData {
 }
 
 export async function fetchMetrics(): Promise<MetricsData> {
-  const response = await fetch(`${API_BASE_URL}/admin/metrics`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch metrics data');
-  }
-
-  return response.json();
+  const response = await apiClient.get<MetricsData>('/admin/metrics');
+  return response.data;
 }
