@@ -76,7 +76,7 @@ export default function LearnerFooter() {
                 Support
               </h3>
               <ul className="space-y-3">
-                <li><Link href="/learner-dashboard/contact" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Help Center</Link></li>
+                <li><Link href="/learner-dashboard/technical-issues-answers" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Help Center</Link></li>
                 <li><Link href="/learner-dashboard/contact" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Contact Support</Link></li>
               </ul>
             </div>

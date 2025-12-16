@@ -10,13 +10,15 @@ import {
   MessageCircle,
   AlertCircle,
 } from "lucide-react";
-import { getAnsweredMessages, TechnicalIssue } from "@/lib/services/technicalIssuesRespnse";
+import { getAnsweredMessages } from "@/lib/services/technicalIssuesRespnse";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/api/client";
 
 import LearnerSidebar from "@/components/learner-sidebar";
 import LearnerHeader from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import { TechnicalIssuesSkeleton } from "@/components/ui/TechnicalIssuesSkeleton";
+import TechnicalIssuePopup from "@/components/ui/technical-issue-popup";
 
 // 🎨 Theme Colors
 const primary = "#72a210";
@@ -150,6 +152,7 @@ const LearnerPage: React.FC = () => {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const isChatOpenOnMobile = activeConvId !== null;
 
@@ -276,23 +279,31 @@ const LearnerPage: React.FC = () => {
               }`}
             >
               <div className="px-4 py-3 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className={`font-semibold ${textDark}`}>My Support Chats</h2>
-                    {filteredConvs.some((c) => c.status === "OPEN") && (
-                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
-                        {filteredConvs.filter((c) => c.status === "OPEN").length}
-                      </span>
-                    )}
+                <div className="flex justify-between items-start w-full">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className={`font-semibold ${textDark}`}>My Support Chats</h2>
+                      {filteredConvs.some((c) => c.status === "OPEN") && (
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
+                          {filteredConvs.filter((c) => c.status === "OPEN").length}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xs ${textLight}`}>
+                      {filteredConvs.length} {filteredConvs.length === 1 ? "conversation" : "conversations"}
+                      {filteredConvs.some((c) => c.status === "OPEN") && (
+                        <span className="ml-2 text-red-500">• {filteredConvs.filter((c) => c.status === "OPEN").length} open</span>
+                      )}
+                    </p>
                   </div>
-                  <p className={`text-xs ${textLight}`}>
-                    {filteredConvs.length} {filteredConvs.length === 1 ? "conversation" : "conversations"}
-                    {filteredConvs.some((c) => c.status === "OPEN") && (
-                      <span className="ml-2 text-red-500">• {filteredConvs.filter((c) => c.status === "OPEN").length} open</span>
-                    )}
-                  </p>
+                  <button
+                    onClick={() => setIsPopupOpen(true)}
+                    className="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors"
+                    style={primaryBg}
+                  >
+                    + New Issue
+                  </button>
                 </div>
-                <MessageCircle className="w-5 h-5" style={primaryText} />
               </div>
 
 
@@ -492,6 +503,65 @@ const LearnerPage: React.FC = () => {
       </div>
         </main>
       </div>
+      
+      {/* Technical Issue Popup */}
+      <TechnicalIssuePopup 
+        open={isPopupOpen} 
+        onClose={() => setIsPopupOpen(false)} 
+        onSubmit={async (message: string) => {
+          try {
+            await apiClient.post('/technical-issues', { message });
+            toast.success('Technical issue submitted successfully!');
+            
+            // Refresh the conversations after successful submission
+            const fetchMessages = async () => {
+            try {
+              setIsLoading(true);
+              const answeredIssues = await getAnsweredMessages();
+              const formattedConversations: Conversation[] = answeredIssues.map((issue, index) => ({
+                id: `C-${1000 + index}`,
+                username: "ADMIN",
+                status: issue.adminReply ? "ANSWERED" : "OPEN",
+                learner: {
+                  username: "You",
+                  email: issue.userId || "user@example.com"
+                },
+                messages: [
+                  {
+                    id: `m-${issue.id}`,
+                    sender: "learner" as const,
+                    content: issue.message,
+                    createdAt: issue.createdAt,
+                  },
+                  ...(issue.adminReply ? [{
+                    id: `a-${issue.id}`,
+                    sender: "admin" as const,
+                    content: issue.adminReply,
+                    createdAt: issue.updatedAt || issue.createdAt,
+                  }] : [])
+                ]
+              }));
+              setConversations(formattedConversations);
+              if (formattedConversations.length > 0) {
+                setActiveConvId(formattedConversations[0].id);
+              }
+            } catch (err) {
+              console.error("Failed to refresh messages:", err);
+              setError("Failed to refresh messages. Please try again later.");
+            } finally {
+              setIsLoading(false);
+            }
+          };
+          await fetchMessages();
+          
+          } catch (error) {
+            console.error('Error submitting technical issue:', error);
+            toast.error('Failed to submit technical issue. Please try again.');
+          } finally {
+            setIsPopupOpen(false);
+          }
+        }} 
+      />
     </div>
   );  
 };
