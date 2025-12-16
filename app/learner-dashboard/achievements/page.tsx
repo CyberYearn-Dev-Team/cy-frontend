@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Trophy, Lock } from "lucide-react";
+import { getBadges, getGamificationData } from "@/lib/services/gamificationService";
 
 interface Badge {
   id: string;
@@ -71,61 +72,46 @@ export default function AchievementsPage() {
     "https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/achievement%204.png",
   ];
 
- useEffect(() => {
-  const fetchBadges = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+   useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      // First, fetch the badges
-      const badgesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/badges`, {
-        credentials: "include",
-      });
+        // Fetch badges and gamification data in parallel
+        const [badgesResult, gamificationResult] = await Promise.all([
+          getBadges(),
+          getGamificationData()
+        ]);
 
-      if (!badgesRes.ok) {
-        throw new Error(`Request failed: ${badgesRes.status}`);
-      }
+        const backendBadges = badgesResult?.data ?? [];
+        const unlockedBadgeCodes = (gamificationResult?.data?.badges || []).map((b: any) => b.code);
 
-      const badgesResult = await badgesRes.json();
-      const backendBadges = badgesResult.data ?? [];
+        // Map badges with their unlocked status
+        const normalizedBadges = backendBadges
+          .map((badge: any, index: number) => ({
+            ...badge,
+            unlocked: unlockedBadgeCodes.includes(badge.code),
+            image: badgeImages[index % badgeImages.length],
+          }))
+          // Sort to show unlocked badges first
+          .sort((a: Badge, b: Badge) => 
+            (b.unlocked ? 1 : 0) - (a.unlocked ? 1 : 0)
+          );
 
-      // Fetch gamification data directly from the external API
-      const gamificationRes = await fetch('https://cy-backend.onrender.com/api/v1/me/gamification', {
-        credentials: "include",
-      });
-
-      let unlockedBadgeCodes: string[] = [];
-      
-      if (gamificationRes.ok) {
-        const gamificationData = await gamificationRes.json();
-        unlockedBadgeCodes = (gamificationData.data?.badges || []).map((b: any) => b.code);
-      }
-
-      // Map badges with their unlocked status
-      const normalizedBadges = backendBadges
-        .map((badge: any, index: number) => ({
-          ...badge,
-          unlocked: unlockedBadgeCodes.includes(badge.code),
-          image: badgeImages[index % badgeImages.length],
-        }))
-        // Sort to show unlocked badges first
-        .sort((a: Badge, b: Badge) => 
-          (b.unlocked ? 1 : 0) - (a.unlocked ? 1 : 0)
+        setBadges(normalizedBadges);
+      } catch (err) {
+        console.error("Error fetching badges:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch badges"
         );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setBadges(normalizedBadges);
-    } catch (err) {
-      console.error("Error fetching badges:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch badges"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchBadges();
-}, []);
+    fetchBadges();
+  }, []);
 
 
 

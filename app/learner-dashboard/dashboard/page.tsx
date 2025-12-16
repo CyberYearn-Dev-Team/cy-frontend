@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { getCurrentUser } from "@/lib/api/auth";
+import { getGamificationData } from "@/lib/services/gamificationService";
+import { getRewards } from "@/lib/services/gamificationService";
 import { progressService } from "@/lib/api/progress";
 import ComingSoonSection from "@/components/ui/ComingSoonSection";
 import {
@@ -42,7 +44,6 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
-import { getRewards } from "@/lib/services/gamificationService";
 import {
   getContinueLearning,
   ContinueLearningItem,
@@ -257,25 +258,30 @@ export default function LearnerDashboard() {
     async function loadGamification() {
       try {
         const currentUser = await getCurrentUser();
-        const email = currentUser?.email || "";
-
-        if (!email) {
+        
+        if (!currentUser?.email) {
           console.warn("No user email found — skipping gamification fetch");
           return;
         }
 
-        const res = await getRewards(email);
-
-        if (res?.data) {
-          const totalXp = res.data.totalXp || 0;
+        const response = await getGamificationData();
+        
+        if (response?.data) {
+          const { totalXp = 0, badges = [], streak = { currentDays: 0 } } = response.data;
+          
           setXp(totalXp);
           setLevel(Math.floor(totalXp / 100));
-          setStreak(res.data.streak?.currentDays || 0);
-          setBadgesCount(res.data.badges?.length || 0);
-          setBadges(res.data.badges || []);
+          setStreak(streak.currentDays || 0);
+          setBadgesCount(badges.length);
+          setBadges(badges);
+          
+          // Update loading state
+          setIsLoading(prev => ({ ...prev, achievements: false }));
         }
       } catch (err) {
-        console.error("Gamification error:", err);
+        console.error("Error loading gamification data:", err);
+        // Ensure loading state is updated even on error
+        setIsLoading(prev => ({ ...prev, achievements: false }));
       }
     }
 
