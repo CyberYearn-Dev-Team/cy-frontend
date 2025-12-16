@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/api/auth";
 import { getGamificationData } from "@/lib/services/gamificationService";
 import { getRewards } from "@/lib/services/gamificationService";
@@ -467,18 +468,7 @@ export default function LearnerDashboard() {
     const toastId = toast.loading('Loading track...');
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cy-backend.onrender.com/api/v1';
-      const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to start track');
-      }
-
-      const data = await response.json();
+      const { data } = await apiClient.post(`/tracks/${trackId}/start`);
       toast.success(data.message || 'Track loaded successfully!', { id: toastId });
     } catch (error) {
       console.error('Error starting track:', error);

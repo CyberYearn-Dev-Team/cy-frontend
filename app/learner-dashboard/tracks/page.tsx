@@ -5,6 +5,7 @@ import { Clock, Filter, ChevronDown, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getProgressSummary } from "@/lib/services/progressSummary";
+import { apiClient } from "@/lib/api/client";
 import { toast } from "sonner";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
@@ -93,20 +94,7 @@ const handleViewTrack = async (e: React.MouseEvent, trackId: number | undefined,
   const toastId = toast.loading('Loading track...');
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (!apiUrl) throw new Error('API URL is not configured');
-
-    const response = await fetch(`${apiUrl}/tracks/${trackId}/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const { data } = await apiClient.post(`/tracks/${trackId}/start`); // Use apiClient
     toast.success(data.message || 'Track loaded successfully!', { id: toastId });
 
     setTimeout(() => {
