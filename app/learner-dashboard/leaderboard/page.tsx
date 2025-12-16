@@ -11,9 +11,8 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
-
 import LeaderboardSkeleton from "@/components/ui/LeaderboardSkeleton";
-
+import { getLeaderboard } from "@/lib/services/leaderboardService";
 
 // Original User interface from the API response
 interface User {
@@ -92,54 +91,41 @@ export default function LeaderboardPage() {
 
   // Fetch leaderboard data
   React.useEffect(() => {
-    const fetchLeaderboard = async () => {
+    const fetchLeaderboardData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://cy-backend.onrender.com/api/v1/leaderboard', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-
-        const data: ApiResponse = await response.json();
+        const data = await getLeaderboard();
 
         // Combine topThree and allUsers, remove duplicates, and sort by XP to ensure correct ranks
         const combinedUsers = [...data.data.topThree, ...(data.data.allUsers || [])]
           .filter((user, index, self) =>
-            index === self.findIndex(u => u.id === user.id) // Filter out duplicates by id
+            index === self.findIndex(u => u.id === user.id)
           )
-          .sort((a, b) => b.totalXp - a.totalXp); // Sort by XP descending
+          .sort((a, b) => b.totalXp - a.totalXp);
 
         // Process all users (including top 3) and assign rank
         const processedAllUsers: LeaderboardUser[] = combinedUsers.map((user, index) => ({
           id: user.id,
           name: user.username,
           xp: user.totalXp,
-          rank: index + 1, // Assign rank based on the sorted index
+          rank: index + 1,
           joined: formatDate(user.createdAt),
           profileImage: user.profileImage,
         }));
 
-        // Set top 3 learners (the first 3 elements)
+        // Set top 3 learners and the rest
         setTopLearners(processedAllUsers.slice(0, 3));
-        // Set all other learners (from rank 4 onwards)
         setAllLearners(processedAllUsers.slice(3));
 
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching leaderboard:', err);
-        setError('Failed to load leaderboard data');
+        setError(err.message || 'Failed to load leaderboard data');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLeaderboard();
+    fetchLeaderboardData();
   }, []);
 
   const handleSort = (key: SortKey) => {
