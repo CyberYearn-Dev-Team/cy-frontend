@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
-
+import { apiClient } from '@/lib/api/client';
 import { BookOpen } from "lucide-react";
 import { TrackDetailSkeleton } from "@/components/ui/TrackDetailSkeleton";
 // import Breadcrumb from "@/components/ui/breadcrumb";
@@ -134,24 +134,15 @@ useEffect(() => {
     fetchTrack();
   }, [slug]);
 
-// ALL about api call to stert module 
-async function startModule(moduleId: string) {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/modules/${moduleId}/start`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const data = await res.json();
-    console.log("Start response:", data);
-
-  } catch (err) {
-    console.error("Start module error:", err);
+  async function startModule(moduleId: string) {
+    try {
+      const { data } = await apiClient.post(`/modules/${moduleId}/start`);
+      console.log("Start response:", data);
+    } catch (err) {
+      console.error("Start module error:", err);
+      throw err; // Re-throw to allow error handling in the calling component
+    }
   }
-}
-
-
 
   return (
     // Applied dark mode background

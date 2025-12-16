@@ -1,53 +1,33 @@
+import { apiClient } from '@/lib/api/client';
+
 export async function startLesson(lessonId: string) {
-  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/me/progress`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      lessonId,
-      status: "IN_PROGRESS",
-      timeSpentDelta: 0
-    })
-  }).then(res => res.json());
+  return apiClient.post('/me/progress', {
+    lessonId,
+    status: "IN_PROGRESS",
+    timeSpentDelta: 0
+  });
 }
 
 export async function trackTime(lessonId: string, delta: number) {
-  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/me/progress`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      lessonId,
-      status: "IN_PROGRESS",
-      timeSpentDelta: delta
-    })
-  }).then(res => res.json());
+  return apiClient.post('/me/progress', {
+    lessonId,
+    status: "IN_PROGRESS",
+    timeSpentDelta: delta
+  });
 }
 
 export async function completeLesson(lessonId: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me/progress`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        lessonId,
-        status: "COMPLETED",
-        timeSpentDelta: 300
-      })
+    console.log("Request sent to backend:", lessonId);
+    
+    const { data } = await apiClient.post('/me/progress', {
+      lessonId,
+      status: "COMPLETED",
+      timeSpentDelta: 300
     });
 
-    console.log("Request sent to backend:", lessonId);
-
-    if (!res.ok) {
-      console.error("Backend error:", await res.text());
-      throw new Error("Failed to update lesson progress");
-    }
-
-    const data = await res.json();
     console.log("Backend responded 200:", data);
+    return data;
     return data;
   } catch (error) {
     console.error("FETCH ERROR:", error);
