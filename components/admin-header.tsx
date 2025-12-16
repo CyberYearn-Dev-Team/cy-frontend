@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Menu, Moon, Sun, Camera } from "lucide-react";
 import { getCurrentUser } from "@/lib/api/auth";
+import { updateUserProfile } from "@/lib/services/userService";
 import { toast } from "sonner";
 
 interface HeaderProps {
@@ -88,24 +89,12 @@ export default function AdminHeader({ setSidebarOpen }: HeaderProps) {
         throw new Error(uploadData.error || "Failed to upload image");
       }
 
-      // Update profile with new image URL
-      const updateRes = await fetch(
-        "https://cy-backend.onrender.com/api/v1/me/update",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            profileImage: uploadData.url,
-          }),
-        }
-      );
+      // Update profile with new image URL using the centralized service
+      const updateData = await updateUserProfile({
+        profileImage: uploadData.url,
+      });
 
-      const updateData = await updateRes.json();
-
-      if (!updateRes.ok) {
+if (!updateData.success) {
         throw new Error(
           updateData.message ||
           updateData.error ||

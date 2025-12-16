@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getCurrentUser } from "@/lib/services/authService";
+import { updateUserProfile } from "@/lib/services/userService";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
@@ -109,23 +110,11 @@ export default function AccountSettingsPage() {
     const toastId = toast.loading("Updating username...");
 
     try {
-      const updateRes = await fetch(
-        "https://cy-backend.onrender.com/api/v1/me/update",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            username: profile.username,
-          }),
-        }
-      );
+      const updateData = await updateUserProfile({
+        username: profile.username,
+      });
 
-      const updateData = await updateRes.json();
-
-      if (!updateRes.ok) {
+      if (!updateData.success) {
         throw new Error(
           updateData.message ||
             updateData.error ||
@@ -229,23 +218,11 @@ export default function AccountSettingsPage() {
       }
 
       // Update profile with new image URL
-      const updateRes = await fetch(
-        "https://cy-backend.onrender.com/api/v1/me/update",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            profileImage: uploadData.url,
-          }),
-        }
-      );
+      const updateData = await updateUserProfile({
+        profileImage: uploadData.url,
+      });
 
-      const updateData = await updateRes.json();
-
-      if (!updateRes.ok) {
+      if (!updateData.success) {
         throw new Error(
           updateData.message ||
           updateData.error ||
@@ -254,8 +231,23 @@ export default function AccountSettingsPage() {
       }
 
       // Update both the profile and profileImage states
-      setProfile(prev => ({ ...prev, profileImage: uploadData.url }));
+      setProfile(prev => ({
+        ...prev,
+        profileImage: uploadData.url
+      }));
       setProfileImage(uploadData.url);
+      
+      // Force a refresh of the user data to ensure consistency
+      try {
+        const res = await getCurrentUser();
+        const u = res?.data || res;
+        setProfile(prev => ({
+          ...prev,
+          profileImage: u?.profileImage || uploadData.url
+        }));
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
       
       toast.success("Profile picture updated successfully!", { id: toastId });
     } catch (err: any) {
