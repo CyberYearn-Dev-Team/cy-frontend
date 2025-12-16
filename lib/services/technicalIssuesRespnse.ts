@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://cy-backend.onrender.com/api/v1/technical-issues';
+import { apiClient } from '../api/client';
 
 export interface TechnicalIssue {
   id: string;
@@ -16,27 +16,10 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Something went wrong');
-  }
-  return response.json();
-};
-
 export const sendMessageToAdmin = async (message: string): Promise<TechnicalIssue> => {
   try {
-    const response = await fetch(API_BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ message }),
-    });
-
-    const result = await handleResponse<ApiResponse<TechnicalIssue>>(response);
-    return result.data!;
+    const response = await apiClient.post<ApiResponse<TechnicalIssue>>('/technical-issues', { message });
+    return response.data.data!;
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -45,16 +28,8 @@ export const sendMessageToAdmin = async (message: string): Promise<TechnicalIssu
 
 export const getAnsweredMessages = async (): Promise<TechnicalIssue[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/answered`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const result = await handleResponse<ApiResponse<TechnicalIssue[]>>(response);
-    return result.data || [];
+    const response = await apiClient.get<ApiResponse<TechnicalIssue[]>>('/technical-issues/answered');
+    return response.data.data || [];
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
