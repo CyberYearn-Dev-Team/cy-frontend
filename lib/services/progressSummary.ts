@@ -1,23 +1,12 @@
+import { apiClient } from '@/lib/api/client';
+
 export async function getProgressSummary(trackId?: string | number) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!API_URL) {
-    throw new Error("NEXT_PUBLIC_API_URL is missing");
+  try {
+    const params = trackId !== undefined ? { trackId } : {};
+    const response = await apiClient.get('/me/progress/summary', { params });
+    return response.data?.data?.trackProgress || [];
+  } catch (error) {
+    console.error('Error fetching progress summary:', error);
+    throw new Error('Failed to fetch progress summary');
   }
-
-  let url = `${API_URL}/me/progress/summary`;
-  if (trackId !== undefined) {
-    url += `?trackId=${trackId}`;
-  }
-
-  const res = await fetch(url, {
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch progress summary: ${res.status}`);
-  }
-
-  const json = await res.json();
-  return json.data?.trackProgress || [];
 }
