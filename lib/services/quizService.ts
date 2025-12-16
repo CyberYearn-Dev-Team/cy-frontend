@@ -1,3 +1,6 @@
+import { apiClient } from '../api/client';
+
+
 interface ApiResponse {
   success: boolean;
   message?: string;
@@ -29,36 +32,32 @@ export async function getQuiz(lessonId: string): Promise<ApiResponse> {
 
 export async function submitQuiz(lessonId: string, score: number, passed: boolean): Promise<ApiResponse> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/submit`;
-    console.log('Submitting quiz to:', url, { score, passed });
+    console.log('Submitting quiz for lesson:', lessonId, { score, passed });
     
-    const response = await fetch(url, {
-      method: 'POST',
-      credentials: 'include', // This sends cookies
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({ 
-        score, 
-        passed,
-        // Add any additional required fields here
-      }),
+    const response = await apiClient.post(`/lessons/${lessonId}/submit`, {
+      score,
+      passed,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Quiz submission failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Quiz submission failed: ${response.status} ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
+    return response.data;
+  } catch (error: any) {
     console.error('Error in submitQuiz:', error);
-    throw error;
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Response error:', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+      throw new Error(error.response.data?.message || 'Failed to submit quiz');
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+      throw new Error('No response from server. Please check your connection.');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Request setup error:', error.message);
+      throw error;
+    }
   }
 }
