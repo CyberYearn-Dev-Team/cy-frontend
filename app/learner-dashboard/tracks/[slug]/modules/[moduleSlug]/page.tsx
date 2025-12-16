@@ -89,15 +89,33 @@ export default function ModuleDetailPage() {
 
   // For backend api to call start lesson
   async function startLesson(lessonId: string) {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/lessons/${lessonId}/start`,
+    const token = typeof window !== 'undefined' ? localStorage.getItem('cy_token') : null;
+    
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(
+      `https://cy-backend.onrender.com/api/v1/lessons/${lessonId}/start`,
       {
         method: "POST",
-        credentials: "include",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       }
     );
 
-    return res.json();
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Handle unauthorized (e.g., redirect to login)
+        window.location.href = '/auth/login';
+        return;
+      }
+      throw new Error('Failed to start lesson');
+    }
+
+    return response.json();
   }
 
   return (
