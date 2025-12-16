@@ -1,13 +1,11 @@
-import axios from "axios";
+import { apiClient } from "@/lib/api/client";
 
-const API_BASE = "https://cy-backend.onrender.com/api/v1/admin/users";
+const API_BASE = "/admin/users";
 
 // ---- GET ALL USERS ----
 export const getAllUsers = async () => {
   try {
-    const res = await axios.get(API_BASE, {
-      withCredentials: true,
-    });
+    const res = await apiClient.get(API_BASE);
     // Return the data array or empty array if not found
     return res.data?.data || [];
   } catch (error: any) {
@@ -22,9 +20,7 @@ export const getAllUsers = async () => {
 // ---- SUSPEND USER ----
 export const suspendUser = async (userId: string) => {
   try {
-    const res = await axios.patch(`${API_BASE}/${userId}/suspend`, null, {
-      withCredentials: true,
-    });
+    const res = await apiClient.patch(`${API_BASE}/${userId}/suspend`);
     return res.data;
   } catch (error: any) {
     console.error("Error suspending user:", error);
@@ -38,9 +34,7 @@ export const suspendUser = async (userId: string) => {
 // ---- REACTIVATE USER ----
 export const reactivateUser = async (userId: string) => {
   try {
-    const res = await axios.patch(`${API_BASE}/${userId}/reactivate`, null, {
-      withCredentials: true,
-    });
+    const res = await apiClient.patch(`${API_BASE}/${userId}/reactivate`);
     return res.data;
   } catch (error: any) {
     console.error("Error reactivating user:", error);
@@ -51,13 +45,10 @@ export const reactivateUser = async (userId: string) => {
 
 
 
-
 // ---- DELETE USER ----
 export const deleteUser = async (userId: string) => {
   try {
-    const res = await axios.delete(`${API_BASE}/${userId}`, {
-      withCredentials: true,
-    });
+    const res = await apiClient.delete(`${API_BASE}/${userId}`);
     return res.data;
   } catch (error: any) {
     console.error("Error deleting user:", error);
@@ -66,19 +57,12 @@ export const deleteUser = async (userId: string) => {
 };
 
 
-
 // UPDATE USER ROLE
 export const updateUserRole = async (userId: string, role: string) => {
   try {
-    const res = await axios.patch(
+    const res = await apiClient.patch(
       `${API_BASE}/${userId}/add-role`,
-      { role },
-      {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { role }
     );
     return res.data;
   } catch (error: any) {
@@ -92,15 +76,9 @@ export const updateUserRole = async (userId: string, role: string) => {
 // ---- REMOVE USER ROLE ----
 export const removeUserRole = async (userId: string, role: string) => {
   try {
-    const res = await axios.patch(
+    const res = await apiClient.patch(
       `${API_BASE}/${userId}/remove-role`,
-      { role },
-      {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { role }
     );
     return res.data;
   } catch (error: any) {
