@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { apiClient } from "@/lib/api/client";
 import { FileText } from "lucide-react";
 import Sidebar from "@/components/learner-sidebar";
 import Nav from "@/components/learner-nav";
@@ -259,35 +260,25 @@ export default function LabDetailPage() {
             </>
           )}
 
-          <TechnicalIssuePopup
-            open={issuePopupOpen}
-            onClose={() => setIssuePopupOpen(false)}
-            onSubmit={async (msg) => {
-              try {
-                const response = await fetch('https://cy-backend.onrender.com/api/v1/technical-issues', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  credentials: 'include',
-                  body: JSON.stringify({ message: msg })
-                });
+        <TechnicalIssuePopup
+          open={issuePopupOpen}
+          onClose={() => setIssuePopupOpen(false)}
+          onSubmit={async (msg) => {
+            try {
+              await apiClient.post('/technical-issues', { message: msg });
+              toast.success('Technical issue submitted successfully!');
+              setIssuePopupOpen(false);
+            } catch (error) {
+              console.error('Error submitting technical issue:', error);
+              toast.error('Failed to submit technical issue. Please try again.');
+            } finally {
+              setIssuePopupOpen(false);
+            }
+          }}
+        />
+      </main>
 
-                if (!response.ok) {
-                  throw new Error('Failed to submit issue');
-                }
-
-                const result = await response.json();
-                toast.success("Issue submitted successfully!");
-              } catch (error) {
-                console.error('Error submitting issue:', error);
-                toast.error("Failed to submit issue. Please try again.");
-              } finally {
-                setIssuePopupOpen(false);
-              }
-            }}
-          />
-        </main>
+      <Nav />
 
         <Nav />
       </div>

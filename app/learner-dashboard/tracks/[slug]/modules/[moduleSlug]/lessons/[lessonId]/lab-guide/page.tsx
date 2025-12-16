@@ -7,6 +7,7 @@ import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import { toast } from "sonner";
 import TechnicalIssuePopup from "@/components/ui/technical-issue-popup";
+import { apiClient } from "@/lib/api/client";
 import { LabDetailSkeleton } from "@/components/ui/LabDetailSkeleton";
 import { FileText, Clapperboard } from "lucide-react";
 
@@ -216,26 +217,11 @@ export default function LabGuidePage() {
             onClose={() => setIssuePopupOpen(false)}
             onSubmit={async (msg) => {
               try {
-                const response = await fetch(
-                  "https://cy-backend.onrender.com/api/v1/technical-issues",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ message: msg }),
-                  }
-                );
-
-                if (!response.ok) {
-                  throw new Error("Failed to submit issue");
-                }
-
-                const result = await response.json();
+                await apiClient.post('/technical-issues', { message: msg });
                 toast.success("Issue submitted successfully!");
+                setIssuePopupOpen(false);
               } catch (error) {
-                console.error("Error submitting issue:", error);
+                console.error("Error submitting technical issue:", error);
                 toast.error("Failed to submit issue. Please try again.");
               } finally {
                 setIssuePopupOpen(false);
