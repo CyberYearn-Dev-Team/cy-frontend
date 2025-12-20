@@ -75,6 +75,7 @@ export default function LabDetailPage() {
           cache: "no-store",
         });
         const json = await res.json();
+        console.log("Fetched steps:", json.data.steps);
 
         if (!res.ok) throw new Error(json?.error || "Failed to load lab");
 
