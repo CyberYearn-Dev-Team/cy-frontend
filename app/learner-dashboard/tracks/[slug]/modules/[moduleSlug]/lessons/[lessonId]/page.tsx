@@ -183,6 +183,17 @@ export default function LessonDetailPage() {
                 <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
                   Lab Guide
                 </h2>
+                
+                {/* Safety Notice */}
+                {/* Safety & Ethics Warning */}
+            <div className="bg-yellow-50 dark:bg-yellow-900/30 mb-5 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                Labs must be performed on your{" "}
+                <strong>own local virtual machine</strong>. Do not target
+                external systems. Use these guides responsibly and ethically.
+              </p>
+            </div>
+
               {lesson.lab_guides && lesson.lab_guides.length > 0 && (
                 <div className="space-y-4">
                   {lesson.lab_guides.map((guide: any) => (

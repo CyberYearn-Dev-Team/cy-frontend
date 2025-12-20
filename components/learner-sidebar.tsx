@@ -11,6 +11,7 @@ import {
   Award,
   LogOut,
   Settings,
+  LayoutGrid,
   Shield,
   User,
   UserCog,
@@ -72,7 +73,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   }, []);
 
   const sidebarItems = [
-    { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
+    { name: "Dashboard", icon: LayoutGrid, href: `${basePath}/dashboard` },
     { name: "Learning Tracks", icon: BookOpen, href: `${basePath}/tracks` },
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },

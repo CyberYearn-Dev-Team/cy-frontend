@@ -147,6 +147,15 @@ export default function LabDetailPage() {
             </BreadcrumbList>
           </Breadcrumb>
 
+          {/* Safety & Ethics Warning */}
+          <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              This lab is for <strong>Educational Purposes Only</strong>. Do not
+              run commands on production systems or systems you do not own.
+              Proceed carefully.
+            </p>
+          </div>
+
           {/* Loading / Error / Empty states */}
           {loading && <LabDetailSkeleton />}
           {error && <div className="p-8 text-red-600">{`Error: ${error}`}</div>}
@@ -260,27 +269,28 @@ export default function LabDetailPage() {
             </>
           )}
 
-        <TechnicalIssuePopup
-          open={issuePopupOpen}
-          onClose={() => setIssuePopupOpen(false)}
-          onSubmit={async (msg) => {
-            try {
-              await apiClient.post('/technical-issues', { message: msg });
-              toast.success('Technical issue submitted successfully!');
-              setIssuePopupOpen(false);
-            } catch (error) {
-              console.error('Error submitting technical issue:', error);
-              toast.error('Failed to submit technical issue. Please try again.');
-            } finally {
-              setIssuePopupOpen(false);
-            }
-          }}
-        />
-      </main>
-
-      <Nav />
+          <TechnicalIssuePopup
+            open={issuePopupOpen}
+            onClose={() => setIssuePopupOpen(false)}
+            onSubmit={async (msg) => {
+              try {
+                await apiClient.post("/technical-issues", { message: msg });
+                toast.success("Technical issue submitted successfully!");
+                setIssuePopupOpen(false);
+              } catch (error) {
+                console.error("Error submitting technical issue:", error);
+                toast.error(
+                  "Failed to submit technical issue. Please try again."
+                );
+              } finally {
+                setIssuePopupOpen(false);
+              }
+            }}
+          />
+        </main>
 
         <Nav />
+
       </div>
     </div>
   );
