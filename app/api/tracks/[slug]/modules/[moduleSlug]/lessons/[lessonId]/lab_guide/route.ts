@@ -45,7 +45,7 @@ export async function GET(
 
     // Fetch the lab guide with steps
     let res = await fetch(
-      `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+      `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
       {
         cache: "no-store",
         headers,
@@ -57,7 +57,7 @@ export async function GET(
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
       delete headers.Authorization;
       res = await fetch(
-        `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,lab_guide_steps.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+        `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
         {
           cache: "no-store",
           headers,
@@ -86,14 +86,11 @@ export async function GET(
       video: data.data.video || null,
       pdf: data.data.pdf || null,
       // Map the steps to the expected format with null checks and defaults
-      steps: data.data.steps?.map((step: any, index: number) => {
-        const stepData = step.lab_guide_steps_id || {};
-        return {
-          ...stepData,
-          text: step.text || stepData.text || '',
-          title: step.title || stepData.title || `Step ${index + 1}`
-        };
-      }) || []
+      steps: data.data.steps?.map((step: any, index: number) => ({
+        id: step.lab_guide_steps_id?.id || index,
+        title: step.lab_guide_steps_id?.title || `Step ${index + 1}`,
+        text: step.lab_guide_steps_id?.text || ''
+      })) || []
     };
 
     return NextResponse.json({ lab });
