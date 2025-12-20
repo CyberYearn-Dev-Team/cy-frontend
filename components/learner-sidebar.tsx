@@ -77,10 +77,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Learning Tracks", icon: BookOpen, href: `${basePath}/tracks` },
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
-    { name: "My Profile", icon: User, href: `${basePath}/profile` },
     ...(leaderboardEnabled ? [{ name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` }] : []),
-    { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
     { name: "Overall Progress", icon: BarChart3, href: `${basePath}/progress` },
+    { name: "My Profile", icon: User, href: `${basePath}/profile` },
+    { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
   ];
 
   // Only show "Switch to Admin" if user has ADMIN role

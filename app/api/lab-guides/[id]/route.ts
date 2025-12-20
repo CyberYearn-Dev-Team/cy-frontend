@@ -4,61 +4,59 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params;
-
-    const url = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const { id } = await params;
+    const url = process.env.NEXT_PUBLIC_DIRECTUS_URL || "https://cy-directus.onrender.com";
     const token = process.env.DIRECTUS_TOKEN;
 
-    const baseHeaders: HeadersInit = {
+    const headers: HeadersInit = {
       "Content-Type": "application/json",
+      ...(token && token.trim() !== "" && token !== "undefined" ? { "Authorization": `Bearer ${token}` } : {})
     };
 
-    const headers: HeadersInit = { ...baseHeaders };
-
-    if (token && token.trim() !== "" && token !== "undefined") {
-      headers["Authorization"] = `Bearer ${token}`;
-      console.log("Using Directus token for authenticated lab detail");
-    } else {
-      console.log("No token — using public access");
-    }
-
-    // ---- Fetch single lab with explicit video/pdf fields ----
+    // First try with authentication if token is available
     let res = await fetch(
-      `${url}/items/lab_guides/${id}?fields=*,video.id,video.filename_disk,pdf.id,pdf.filename_disk,steps.text`,
+      `${url}/items/lab_guides/${id}?fields=*,steps.lab_guide_steps_id.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
       {
         cache: "no-store",
-        next: { revalidate: 0 },
         headers,
       }
     );
 
-    // ---- Retry without token if forbidden ----
+    // If unauthorized/forbidden and we were using a token, try without it
     if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
+      delete headers.Authorization;
       res = await fetch(
-        `${url}/items/lab_guides/${id}?fields=*,video.id,video.filename_disk,pdf.id,pdf.filename_disk,steps.text`,
+        `${url}/items/lab_guides/${id}?fields=*,lab_guide_steps.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
         {
           cache: "no-store",
-          next: { revalidate: 0 },
-          headers: baseHeaders,
+          headers,
         }
       );
     }
 
-    const json = await res.json();
-
     if (!res.ok) {
-      console.error("Directus error:", json);
-      throw new Error(json?.errors?.[0]?.message || "Failed to fetch lab guide");
+      const errorText = await res.text();
+      console.error(`Directus API Error: ${res.status} - ${errorText}`);
+      return NextResponse.json(
+        { data: null, error: `Failed to fetch lab guide: ${res.status}` },
+        { status: res.status }
+      );
     }
 
-    return NextResponse.json({ data: json.data });
-  } catch (error) {
+    const data = await res.json();
+    console.log("✅ Successfully fetched lab guide:", data);
+
+    return NextResponse.json({ data: data.data || null });
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Error fetching lab detail:", message);
-    return NextResponse.json({ data: null, error: message }, { status: 500 });
+    console.error("Error in /api/lab-guides/[id]:", message);
+    return NextResponse.json(
+      { data: null, error: `Internal server error: ${message}` },
+      { status: 500 }
+    );
   }
 }

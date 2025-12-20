@@ -3,14 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
-import { FileText } from "lucide-react";
+import { FileText, Clapperboard } from "lucide-react";
 import Sidebar from "@/components/learner-sidebar";
 import Nav from "@/components/learner-nav";
 import Header from "@/components/learner-header";
 import TechnicalIssuePopup from "@/components/ui/technical-issue-popup";
 import { LabDetailSkeleton } from "@/components/ui/LabDetailSkeleton";
-
-import { Video, Film, Clapperboard } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -26,7 +24,6 @@ import { toast } from "sonner";
 
 // Theme constants
 const primary = "#72a210";
-const primaryDarker = "#5c880d";
 const bgLight = "bg-gray-100 dark:bg-gray-950";
 const cardBg = "bg-white dark:bg-gray-900";
 const textDark = "text-gray-900 dark:text-gray-100";
@@ -50,7 +47,10 @@ interface LabDetail {
   xp: number;
   video?: string | null;
   pdf?: string | null;
-  steps?: { text: string }[];
+  steps?: {
+    text: string;
+    title: string;
+  }[];
   status: "completed" | "in-progress" | "not-started";
 }
 
@@ -62,11 +62,12 @@ export default function LabDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Sidebar state
+  // ✅ REQUIRED: step completion state
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
 
-  // Fetch lab detail
   useEffect(() => {
     async function fetchLab() {
       try {
@@ -77,7 +78,7 @@ export default function LabDetailPage() {
 
         if (!res.ok) throw new Error(json?.error || "Failed to load lab");
 
-        const labData: LabDetail = {
+        setLab({
           id: json.data.id,
           title: json.data.title,
           description: json.data.description,
@@ -86,13 +87,13 @@ export default function LabDetailPage() {
           xp: json.data.xp,
           video: json.data.video ? getFileUrl(json.data.video) : undefined,
           pdf: json.data.pdf ? getFileUrl(json.data.pdf) : undefined,
-          steps: json.data.steps,
+          // steps: json.data.steps,
+          steps: json.data.steps.map(
+  (s: any) => s.lab_guide_steps_id
+),
           status: "not-started",
-        };
-
-        setLab(labData);
+        });
       } catch (err) {
-        console.error("Error fetching lab:", err);
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
@@ -102,26 +103,6 @@ export default function LabDetailPage() {
     if (labId) fetchLab();
   }, [labId]);
 
-  // Make links in description clickable and styled
-  useEffect(() => {
-    if (!lab?.description) return;
-
-    const container = document.querySelector(".lab-description");
-    if (!container) return;
-
-    const links = container.querySelectorAll("a");
-    links.forEach((link) => {
-      const el = link as HTMLAnchorElement;
-      if (!el.getAttribute("href") && el.textContent?.startsWith("http")) {
-        el.setAttribute("href", el.textContent.trim());
-      }
-      el.setAttribute("target", "_blank");
-      el.setAttribute("rel", "noopener noreferrer");
-      el.style.color = primary;
-      el.style.textDecoration = "underline";
-    });
-  }, [lab]);
-
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -130,7 +111,6 @@ export default function LabDetailPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
-          {/* Breadcrumb */}
           <Breadcrumb className="mb-4">
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -147,44 +127,87 @@ export default function LabDetailPage() {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Safety & Ethics Warning */}
+          {/* REQUIRED: Safety Banner */}
           <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              This lab is for <strong>Educational Purposes Only</strong>. Do not
+              This lab is for <strong>educational purposes only</strong>. Do not
               run commands on production systems or systems you do not own.
               Proceed carefully.
             </p>
           </div>
 
-          {/* Loading / Error / Empty states */}
           {loading && <LabDetailSkeleton />}
-          {error && <div className="p-8 text-red-600">{`Error: ${error}`}</div>}
-          {!loading && !error && !lab && (
-            <div className={`${textMedium}`}>Lab not found</div>
-          )}
+          {error && <div className="p-8 text-red-600">{error}</div>}
 
-          {/* Lab content */}
           {lab && (
             <>
-              <div className={`${cardBg} shadow rounded-lg p-6 mb-5`}>
-                <h1 className={`text-2xl mb-2 font-bold ${textDark}`}>
+              <div className={`${cardBg} shadow rounded-lg p-6 mb-6`}>
+                <h1 className={`text-2xl font-bold ${textDark}`}>
                   {lab.title}
                 </h1>
 
                 {lab.description ? (
                   <div
-                    className="lab-description prose max-w-none space-y-6 dark:prose-invert"
+                    className="prose max-w-none mt-4 dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: lab.description }}
                   />
                 ) : (
                   <div className={textLight}>No description available</div>
                 )}
-
-                <p className={`${textMedium} mt-2`}>• {lab.levels} • </p>
               </div>
 
-              {/* -------------------- VIDEO SECTION -------------------- */}
-              <div>
+              {/* ✅ REQUIRED: Step-Based Structure + Checkpoints */}
+              {lab.steps && lab.steps.length > 0 && (
+                <div className={`${cardBg} shadow rounded-lg p-6 mb-10`}>
+                  <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
+                    Lab Steps
+                  </h2>
+
+                  {/* ✅ REQUIRED: Progress Indicator */}
+                  <p className={`${textMedium} mb-4`}>
+                    {completedSteps.length} of {lab.steps.length} steps
+                    completed
+                  </p>
+
+                  <div className="space-y-4">
+                    {lab.steps.map((step, index) => {
+                      const completed = completedSteps.includes(index);
+
+                      return (
+                        <div key={index} className="border rounded-lg p-4">
+                          <p className="font-medium">
+                            Step {index + 1}: {step.title}
+                          </p>
+
+                          <div
+                            className={`${textMedium} mt-2 prose dark:prose-invert max-w-none`}
+                            dangerouslySetInnerHTML={{ __html: step.text }}
+                          />
+
+                          {/* ✅ REQUIRED: Manual Verification */}
+                          <button
+                            onClick={() =>
+                              setCompletedSteps((prev) =>
+                                prev.includes(index) ? prev : [...prev, index]
+                              )
+                            }
+                            disabled={completed}
+                            className="mt-3 px-4 py-2 rounded text-white disabled:opacity-50 cursor-pointer"
+                            style={{ backgroundColor: primary }}
+                          >
+                            {completed
+                              ? "Step Completed"
+                              : "Mark Step as Completed"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Video */}
+              <div className="mb-10">
                 <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
                   Lab Guide Video
                 </h2>
@@ -194,74 +217,44 @@ export default function LabDetailPage() {
                     <source src={lab.video} type="video/mp4" />
                   </video>
                 ) : (
-                  <div
-                    className="w-full h-80 
-    bg-gray-200 dark:bg-gray-900/80 
-    backdrop-blur-sm 
-    rounded-xl flex flex-col items-center justify-center gap-5 text-gray-800 dark:text-white"
-                  >
+                  <div className="w-full h-80 bg-gray-200 dark:bg-gray-900 rounded-xl flex flex-col items-center justify-center">
                     <Clapperboard className="w-16 h-16 text-[#72a210]" />
-
-                    <p className="text-lg font-medium opacity-90">
-                      No video uploaded yet
-                    </p>
+                    <p>No video uploaded yet</p>
                   </div>
                 )}
               </div>
 
-              {/* -------------------- PDF SECTION -------------------- */}
+              {/* PDF */}
               <div className="mb-10">
-                <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
-                  Lab Guide PDF
-                </h2>
-
                 <button
-                  onClick={() => {
-                    if (!lab.pdf) {
-                      toast.error("No PDF available", {
-                        description:
-                          "No PDF is uploaded yet for this lab guide.",
-                      });
-                    } else {
-                      window.open(lab.pdf, "_blank");
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#72a210] dark:bg-[#72a210] text-white text-lg rounded-lg hover:bg-[#5a850d] dark:hover:bg-[#507800] transition cursor-pointer"
-                >
-                  <FileText className="h-5 w-5" /> View Lab PDF
+                  onClick={() =>
+                    lab.pdf
+                      ? window.open(lab.pdf, "_blank")
+                      : toast.error("No PDF available")
+                  }
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#72a210] text-white rounded-lg cursor-pointer"
+                > 
+                  <FileText className="h-5 w-5" />
+                  View Lab PDF
                 </button>
               </div>
 
-              {/* -------------------- ACTION BUTTONS -------------------- */}
-              <div className="flex flex-col md:flex-row gap-4 mt-10">
-                {/* Mark Completed Button */}
+              {/* ✅ Final Action Buttons */}
+              <div className="flex gap-2 mt-10">
                 <button
-                  onClick={() => {
-                    toast.success("Lab marked as completed!");
-                  }}
-                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-white text-base md:text-lg font-semibold shadow cursor-pointer"
+                  disabled={
+                    lab.steps && completedSteps.length !== lab.steps.length
+                  }
+                  onClick={() => toast.success("Lab marked as completed!")}
+                  className="flex-1 py-3 rounded-lg text-white font-semibold disabled:opacity-50 cursor-pointer"
                   style={{ backgroundColor: primary }}
                 >
                   Mark as Completed
                 </button>
 
-                {/* Technical Issues Button */}
                 <button
                   onClick={() => setIssuePopupOpen(true)}
-                  className="
-    flex-1 
-    py-2.5 md:py-3 
-    rounded-[30px]
-    text-base md:text-lg 
-    font-semibold 
-    bg-red-500 
-    text-white
-    hover:bg-red-700
-    active:bg-red-800
-    transition
-    cursor-pointer
-    shadow-sm
-  "
+                  className="flex-1 py-3 rounded-lg bg-red-500 text-white font-semibold cursor-pointer"
                 >
                   Technical Issues
                 </button>
@@ -273,24 +266,14 @@ export default function LabDetailPage() {
             open={issuePopupOpen}
             onClose={() => setIssuePopupOpen(false)}
             onSubmit={async (msg) => {
-              try {
-                await apiClient.post("/technical-issues", { message: msg });
-                toast.success("Technical issue submitted successfully!");
-                setIssuePopupOpen(false);
-              } catch (error) {
-                console.error("Error submitting technical issue:", error);
-                toast.error(
-                  "Failed to submit technical issue. Please try again."
-                );
-              } finally {
-                setIssuePopupOpen(false);
-              }
+              await apiClient.post("/technical-issues", { message: msg });
+              toast.success("Technical issue submitted successfully!");
+              setIssuePopupOpen(false);
             }}
           />
         </main>
 
         <Nav />
-
       </div>
     </div>
   );

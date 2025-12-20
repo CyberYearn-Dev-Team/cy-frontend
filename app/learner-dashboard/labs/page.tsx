@@ -171,11 +171,14 @@ export default function LabGuidesPage() {
                             {truncateDescription(lab.description, 300)}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            •{" "}
-                            <span className="font-semibold uppercase">
+                            •
+                            <span className="ml-1 font-semibold uppercase">
                               {lab.levels}
                             </span>{" "}
                             •
+                            <span className="ml-1 font-semibold uppercase">
+                              {lab.steps?.length || 0} steps
+                            </span>
                           </p>
                         </div>
 
