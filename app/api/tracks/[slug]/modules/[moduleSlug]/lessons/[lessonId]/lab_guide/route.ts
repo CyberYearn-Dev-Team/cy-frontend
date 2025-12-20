@@ -85,13 +85,15 @@ export async function GET(
       ...data.data,
       video: data.data.video || null,
       pdf: data.data.pdf || null,
-      // Map the steps to the expected format
-      steps: data.data.steps?.map((step: any) => ({
-        ...step.lab_guide_steps_id,
-        // If steps are directly in the response, use those
-        ...(step.text && { text: step.text }),
-        ...(step.title && { title: step.title })
-      })) || []
+      // Map the steps to the expected format with null checks and defaults
+      steps: data.data.steps?.map((step: any, index: number) => {
+        const stepData = step.lab_guide_steps_id || {};
+        return {
+          ...stepData,
+          text: step.text || stepData.text || '',
+          title: step.title || stepData.title || `Step ${index + 1}`
+        };
+      }) || []
     };
 
     return NextResponse.json({ lab });
