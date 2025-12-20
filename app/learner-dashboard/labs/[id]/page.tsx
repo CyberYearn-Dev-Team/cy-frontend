@@ -87,10 +87,10 @@ export default function LabDetailPage() {
           xp: json.data.xp,
           video: json.data.video ? getFileUrl(json.data.video) : undefined,
           pdf: json.data.pdf ? getFileUrl(json.data.pdf) : undefined,
-          // steps: json.data.steps,
-          steps: json.data.steps.map(
-  (s: any) => s.lab_guide_steps_id
-),
+          steps: json.data.steps?.map((s: any) => ({
+            title: s.lab_guide_steps_id?.title || "Untitled Step",
+            text: s.lab_guide_steps_id?.text || "",
+          })) || [],
           status: "not-started",
         });
       } catch (err) {
