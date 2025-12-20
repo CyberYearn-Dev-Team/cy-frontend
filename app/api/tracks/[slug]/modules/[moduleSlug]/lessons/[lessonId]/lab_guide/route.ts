@@ -1,33 +1,105 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ lessonId: string }> }
+  context: { params: Promise<{ slug: string; moduleSlug: string; lessonId: string }> }
 ) {
   const { lessonId } = await context.params;
+  const { searchParams } = new URL(request.url);
+  const labGuideId = searchParams.get('labGuideId');
 
   try {
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const token = process.env.DIRECTUS_TOKEN;
 
-   const directusRes = await fetch(
-  `${base}/items/lessons?filter[id][_eq]=${lessonId}&fields=lab_guides.lab_guides_id.*,lab_guides.lab_guides_id.video.id,lab_guides.lab_guides_id.pdf.id`,
-  { cache: "no-store" }
-);
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(token && token.trim() !== "" && token !== "undefined" ? { "Authorization": `Bearer ${token}` } : {})
+    };
 
+    let labGuideIdToFetch = labGuideId;
+    
+    // If no labGuideId is provided, get the first lab guide for the lesson
+    if (!labGuideIdToFetch) {
+      const lessonRes = await fetch(
+        `${base}/items/lessons/${lessonId}?fields=lab_guides.lab_guides_id.id`,
+        { 
+          cache: "no-store",
+          headers
+        }
+      );
+      
+      if (!lessonRes.ok) {
+        throw new Error('Failed to fetch lesson data');
+      }
+      
+      const lessonData = await lessonRes.json();
+      if (!lessonData.data?.lab_guides?.length) {
+        return NextResponse.json({ lab: null }, { status: 404 });
+      }
+      
+      labGuideIdToFetch = lessonData.data.lab_guides[0].lab_guides_id.id;
+    }
 
-    const json = await directusRes.json();
-    const lesson = json.data?.[0];
+    // Fetch the lab guide with steps
+    let res = await fetch(
+      `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+      {
+        cache: "no-store",
+        headers,
+      }
+    );
 
-    if (!lesson || !lesson.lab_guides?.length) {
+    // If unauthorized/forbidden and we were using a token, try without it
+    if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
+      console.warn(`Directus responded ${res.status}. Retrying without token...`);
+      delete headers.Authorization;
+      res = await fetch(
+        `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,lab_guide_steps.*,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+        {
+          cache: "no-store",
+          headers,
+        }
+      );
+    }
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Directus API Error: ${res.status} - ${errorText}`);
+      return NextResponse.json(
+        { lab: null, error: `Failed to fetch lab guide: ${res.status}` },
+        { status: res.status }
+      );
+    }
+
+    const data = await res.json();
+    
+    if (!data.data) {
       return NextResponse.json({ lab: null }, { status: 404 });
     }
 
-    // extract linked lab guide (first one)
-    const lab = lesson.lab_guides.map((lg: any) => lg.lab_guides_id)[0];
+    // Format the response to match the expected structure
+    const lab = {
+      ...data.data,
+      video: data.data.video || null,
+      pdf: data.data.pdf || null,
+      // Map the steps to the expected format
+      steps: data.data.steps?.map((step: any) => ({
+        ...step.lab_guide_steps_id,
+        // If steps are directly in the response, use those
+        ...(step.text && { text: step.text }),
+        ...(step.title && { title: step.title })
+      })) || []
+    };
 
     return NextResponse.json({ lab });
   } catch (e) {
     console.error("Lab guide API error:", e);
-    return NextResponse.json({ lab: null }, { status: 500 });
+    return NextResponse.json(
+      { lab: null, error: e instanceof Error ? e.message : 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

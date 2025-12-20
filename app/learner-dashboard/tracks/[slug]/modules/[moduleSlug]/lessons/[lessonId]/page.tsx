@@ -196,7 +196,7 @@ export default function LessonDetailPage() {
 
               {lesson.lab_guides && lesson.lab_guides.length > 0 && (
                 <div className="space-y-4">
-                  {lesson.lab_guides.map((guide: any) => (
+                  {[...lesson.lab_guides].reverse().map((guide: any) => (
                     <div
                       key={guide.id}
                       className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
@@ -215,10 +215,20 @@ export default function LessonDetailPage() {
                             }}
                           />
                         </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                          •
+                          <span className="ml-1 font-semibold uppercase">
+                            {guide.levels || 'ALL LEVELS'}
+                          </span>{" "}
+                          •
+                          <span className="ml-1 font-semibold uppercase">
+                            {guide.steps?.length || 0} steps
+                          </span>
+                        </p>
                       </div>
 
                       <Link
-                        href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab-guide`}
+                        href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab-guide?labGuideId=${guide.id}`}
                         className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center"
                         style={{ backgroundColor: primary }}
                         onMouseEnter={(e) =>

@@ -47,7 +47,10 @@ interface LabGuide {
   xp: number;
   video?: string | null;
   pdf?: string | null;
-  steps?: { text: string }[];
+  steps?: {
+    text: string;
+    title: string;
+  }[];
   status: "completed" | "in-progress" | "not-started";
 }
 
@@ -63,22 +66,38 @@ export default function LabGuidePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
   // Fetch lab guide
   useEffect(() => {
     async function fetchLab() {
       try {
-        const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab_guide`
+        const url = new URL(
+          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab_guide`,
+          window.location.origin
         );
+        
+        // Add labGuideId from URL search params if it exists
+        const searchParams = new URLSearchParams(window.location.search);
+        const labGuideId = searchParams.get('labGuideId');
+        if (labGuideId) {
+          url.searchParams.set('labGuideId', labGuideId);
+        }
+
+        const res = await fetch(url.toString());
         const json = await res.json();
         if (!res.ok) throw new Error("Failed to fetch lab guide");
+
+        if (!json.lab) {
+          throw new Error("Lab guide not found");
+        }
 
         // Convert video/pdf to URL if Directus file object
         const labData = {
           ...json.lab,
-          video: getFileUrl(json.lab?.video),
-          pdf: getFileUrl(json.lab?.pdf),
+          video: getFileUrl(json.lab.video),
+          pdf: getFileUrl(json.lab.pdf),
+          steps: json.lab.steps || []
         };
 
         setLab(labData);
@@ -119,12 +138,12 @@ export default function LabGuidePage() {
           </Breadcrumb>
 
           {/* Safety & Ethics Warning */}
-            <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                This lab is for{" "}
-                <strong>Educational Purposes Only</strong>. Do not run commands on production systems or systems you do not own. Proceed carefully.
-              </p>
-            </div>
+          <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              This lab is for{" "}
+              <strong>Educational Purposes Only</strong>. Do not run commands on production systems or systems you do not own. Proceed carefully.
+            </p>
+          </div>
 
           {/* Loading / Error */}
           {loading && <LabDetailSkeleton />}
@@ -155,6 +174,53 @@ export default function LabGuidePage() {
                   <p className={`${textMedium} mt-2`}>• {lab.levels} •</p>
                 )}
               </div>
+
+
+              {/* Lab Steps */}
+              {lab.steps && lab.steps.length > 0 && (
+                <div className={`${cardBg} shadow rounded-lg p-6 mt-6`}>
+                  <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
+                    Lab Steps
+                  </h2>
+
+                  <p className={`${textMedium} mb-4`}>
+                    {completedSteps.length} of {lab.steps.length} steps completed
+                  </p>
+
+                  <div className="space-y-4">
+                    {lab.steps.map((step, index) => {
+                      const completed = completedSteps.includes(index);
+                      return (
+                        <div key={index} className="border rounded-lg p-4">
+                          <p className="font-medium">
+                            Step {index + 1}: {step.title}
+                          </p>
+
+                          <div
+                            className={`${textMedium} mt-2 prose dark:prose-invert max-w-none`}
+                            dangerouslySetInnerHTML={{ __html: step.text }}
+                          />
+
+                          <button
+                            onClick={() =>
+                              setCompletedSteps((prev) =>
+                                prev.includes(index) ? prev : [...prev, index]
+                              )
+                            }
+                            disabled={completed}
+                            className="mt-3 px-4 py-2 rounded text-white disabled:opacity-50 cursor-pointer"
+                            style={{ backgroundColor: primary }}
+                          >
+                            {completed ? "Step Completed" : "Mark Step as Completed"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              
 
               {/* Video */}
               <div className="mt-6">
@@ -200,19 +266,29 @@ export default function LabGuidePage() {
                 </button>
               </div>
 
+
               {/* Action Buttons */}
               <div className="flex flex-col md:flex-row gap-4 mt-10">
                 <button
-                  onClick={() => toast.success("Lab marked as completed!")}
-                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-white text-base md:text-lg font-semibold shadow cursor-pointer"
+                  onClick={() => {
+                    if (lab.steps && completedSteps.length !== lab.steps.length) {
+                      toast.warning("Please complete all steps first");
+                    } else {
+                      toast.success("Lab marked as completed!");
+                    }
+                  }}
+                  disabled={lab.steps ? completedSteps.length !== lab.steps.length : false}
+                  className={`flex-1 py-2.5 md:py-3 rounded-lg text-white text-base md:text-lg font-semibold shadow cursor-pointer ${lab.steps && completedSteps.length !== lab.steps.length ? 'opacity-50' : ''}`}
                   style={{ backgroundColor: primary }}
                 >
-                  Mark as Completed
+                  {lab.steps && completedSteps.length !== lab.steps.length 
+                    ? `Complete All Steps (${completedSteps.length}/${lab.steps.length})` 
+                    : 'Mark as Completed'}
                 </button>
 
                 <button
                   onClick={() => setIssuePopupOpen(true)}
-                  className="flex-1 py-2.5 md:py-3 rounded-[30px] text-base md:text-lg font-semibold bg-red-500 text-white hover:bg-red-700 active:bg-red-800 transition cursor-pointer shadow-sm"
+                  className="flex-1 py-2.5 md:py-3 rounded-lg text-base md:text-lg font-semibold bg-red-500 text-white hover:bg-red-700 active:bg-red-800 transition cursor-pointer shadow-sm"
                 >
                   Technical Issues
                 </button>
