@@ -226,7 +226,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
                   <Link href="/learner-dashboard/profile">
                     <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                      <User className="h-4 w-4 mr-2" /> Profile
+                      <User className="h-4 w-4 mr-2" /> My Profile
                     </button>
                   </Link>
 
@@ -245,7 +245,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                       setDropdownOpen(false);
                       setShowLogoutConfirm(true);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    className="flex items-center mb-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </button>

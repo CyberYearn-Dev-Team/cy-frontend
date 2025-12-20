@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react"; // Added useEffect
 import {
   Search,
   ChevronDown,
+  ChevronRight,
   Calendar as CalendarIcon,
   Filter,
-  X,
+  History,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,13 +28,20 @@ import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
 
+// --- TYPES ---
+
+interface AuditDiff {
+  field: string;
+  oldValue: any;
+  newValue: any;
+}
+
 interface AuditLog {
   id: string;
-  // NOTE: This will likely be a string from the API (e.g., ISO 8601).
-  // You will need to convert it to a Date object when fetched.
   timestamp: Date;
   actor: string;
   actorRole: "admin" | "instructor" | "system";
+  entity: string;
   action:
     | "role_change"
     | "feature_flag_toggle"
@@ -44,349 +52,287 @@ interface AuditLog {
   details: string;
   ipAddress: string;
   severity: "low" | "medium" | "high" | "critical";
+  diff?: AuditDiff[];
 }
 
-// 🎨 Theme Colors
+// --- MOCKED DATA ---
+const mockLogs: AuditLog[] = [
+  {
+    id: "1",
+    timestamp: new Date(Date.now() - 1000 * 60 * 30),
+    actor: "Sarah Jenkins",
+    actorRole: "admin",
+    entity: "User: 4421",
+    action: "role_change",
+    actionLabel: "Role Updated",
+    details: "Changed user role from Instructor to Admin",
+    ipAddress: "192.168.1.45",
+    severity: "high",
+    diff: [
+      { field: "role", oldValue: "instructor", newValue: "admin" },
+      { field: "permissions", oldValue: ["read", "write"], newValue: ["all"] }
+    ],
+  },
+  {
+    id: "2",
+    timestamp: new Date(Date.now() - 1000 * 60 * 120),
+    actor: "System",
+    actorRole: "system",
+    entity: "Setting: Auth",
+    action: "feature_flag_toggle",
+    actionLabel: "Feature Toggled",
+    details: "Enabled Multi-Factor Authentication globally",
+    ipAddress: "internal",
+    severity: "critical",
+    diff: [
+      { field: "mfa_enabled", oldValue: false, newValue: true }
+    ],
+  },
+  {
+    id: "3",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
+    actor: "Mark Thompson",
+    actorRole: "instructor",
+    entity: "Lesson: Intro to React",
+    action: "content_edit",
+    actionLabel: "Content Modified",
+    details: "Updated the video URL for Lesson 3",
+    ipAddress: "104.22.11.90",
+    severity: "low",
+    diff: [
+      { field: "video_url", oldValue: "vimeo.com/123", newValue: "vimeo.com/456" },
+      { field: "updated_at", oldValue: "2023-10-01", newValue: "2023-10-25" }
+    ],
+  }
+];
+
 const primary = "#72a210";
-const secondary = "#507800";
 const bgLight = "bg-gray-50 dark:bg-gray-950";
 const bgCard = "bg-white dark:bg-gray-900";
 const textMedium = "text-gray-600 dark:text-gray-400";
 
-const severityOrder: Record<AuditLog["severity"], number> = {
-  critical: 4,
-  high: 3,
-  medium: 2,
-  low: 1,
-};
-
-// --- MOCKED DATA REMOVED ---
-// The original mockLogs array has been removed.
-// --- MOCKED DATA REMOVED ---
-
-type SortKey = keyof AuditLog | "actionLabel" | "actorRole";
-type SortDirection = "ascending" | "descending";
-interface SortConfig {
-  key: SortKey;
-  direction: SortDirection;
-}
-
-type ActionFilter =
-  | "all"
-  | "role_change"
-  | "feature_flag_toggle"
-  | "content_edit"
-  | "user_delete"
-  | "permission_update";
-type SeverityFilter = "all" | "low" | "medium" | "high" | "critical";
-
 export default function AuditLogsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  // 🎯 KEY CHANGE: Initial state is now an empty array.
-  // The 'logs' state must be updated via an API call.
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  // State for tracking loading and error (highly recommended for real data)
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [logs] = useState<AuditLog[]>(mockLogs);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  // Fix for Hydration: Only show dynamic content after mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [actionFilter, setActionFilter] = useState<ActionFilter>("all");
-  const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showFilters, setShowFilters] = useState(false);
-  const [sortConfig] = useState<SortConfig>({
-    key: "timestamp",
-    direction: "descending",
-  });
 
-  // NOTE: In a production app with a large number of logs, you should request
-  // filtered/sorted data from the **backend**. The current useMemo approach
-  // is fine for a few hundred logs, but not thousands.
+  const toggleRow = (id: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) newExpanded.delete(id);
+    else newExpanded.add(id);
+    setExpandedRows(newExpanded);
+  };
+
   const sortedLogs = useMemo(() => {
     let filtered = logs.filter((log) => {
       const matchesSearch =
         log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.actionLabel.toLowerCase().includes(searchTerm.toLowerCase());
+        log.entity.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesAction = actionFilter === "all" || log.action === actionFilter;
       const matchesSeverity =
         severityFilter === "all" || log.severity === severityFilter;
       return matchesSearch && matchesAction && matchesSeverity;
     });
 
-    filtered = filtered.filter((log) => {
-      const logDate = log.timestamp.getTime();
-      let matchesDate = true;
-      if (startDate) matchesDate = matchesDate && logDate >= startDate.getTime();
-      if (endDate) matchesDate = matchesDate && logDate <= endDate.getTime();
-      return matchesDate;
-    });
+    if (startDate || endDate) {
+      filtered = filtered.filter((log) => {
+        const logDate = log.timestamp.getTime();
+        if (startDate && logDate < startDate.getTime()) return false;
+        if (endDate && logDate > endDate.getTime()) return false;
+        return true;
+      });
+    }
 
-    filtered.sort((a, b) => {
-      const aValue = a[sortConfig.key as keyof AuditLog];
-      const bValue = b[sortConfig.key as keyof AuditLog];
+    return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [logs, searchTerm, actionFilter, severityFilter, startDate, endDate]);
 
-      if (sortConfig.key === "timestamp") {
-        const aTime = aValue as Date;
-        const bTime = bValue as Date;
-        return sortConfig.direction === "ascending"
-          ? aTime.getTime() - bTime.getTime()
-          : bTime.getTime() - aTime.getTime();
-      }
-      if (sortConfig.key === "severity") {
-        const aSeverity = aValue as AuditLog["severity"];
-        const bSeverity = bValue as AuditLog["severity"];
-        return sortConfig.direction === "ascending"
-          ? severityOrder[aSeverity] - severityOrder[bSeverity]
-          : severityOrder[bSeverity] - severityOrder[aSeverity];
-      }
-      const comparison = String(aValue).localeCompare(String(bValue));
-      return sortConfig.direction === "ascending" ? comparison : -comparison;
-    });
-    return filtered;
-  }, [logs, searchTerm, actionFilter, severityFilter, startDate, endDate, sortConfig]);
-
-  // --- RENDERING SECTION ---
-  
-  // ... (rest of the component JSX remains the same)
-  
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Audit Logs
+                System Audit Logs
               </h1>
               <p className={`${textMedium}`}>
-                Monitor all sensitive admin and instructor operations.
+                Detailed history of changes to users, content, and system configurations.
               </p>
             </div>
 
-            {/* Search & Filter Toggle */}
-            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            <div className="flex sm:flex-row gap-4 items-center">
               <div className="relative w-full sm:flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search logs..."
+                  placeholder="Search by actor or entity..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210]"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#72a210] outline-none"
                 />
               </div>
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 whitespace-nowrap border-0 text-white font-medium"
-                style={{
-                  backgroundColor: showFilters ? secondary : primary,
-                  transition: "background-color 0.2s ease",
-                }}
+                className="text-white p-5"
+                style={{ backgroundColor: primary }}
               >
-                {showFilters ? (
-                  <>
-                    <X className="w-4 h-4" /> Hide Filters
-                  </>
-                ) : (
-                  <>
-                    <Filter className="w-4 h-4" /> Show Filters
-                  </>
-                )}
+                <Filter className="w-4 h-4 mr-2" /> {showFilters ? "Hide Filters" : "Filters"}
               </Button>
             </div>
 
-            {/* Filters Section */}
             {showFilters && (
-              <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Action Filter */}
+              <div className="flex justify-between md:flex gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center justify-between w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      {actionFilter === "all"
-                        ? "All Actions"
-                        : actionFilter
-                            .split("_")
-                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                            .join(" ")}
-                      <ChevronDown className="ml-2 w-4 h-4" />
-                    </button>
+                    <Button variant="outline" className="w-[160px] justify-between cursor-pointer">
+                      {severityFilter === 'all' ? 'All Severities' : `${severityFilter.charAt(0).toUpperCase() + severityFilter.slice(1)}`}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {[
-                      "role_change",
-                      "feature_flag_toggle",
-                      "content_edit",
-                      "user_delete",
-                      "permission_update",
-                    ].map((action) => (
-                      <DropdownMenuItem
-                        key={action}
-                        onClick={() => setActionFilter(action as ActionFilter)}
-                      >
-                        {action
-                          .split("_")
-                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                          .join(" ")}
-                      </DropdownMenuItem>
-                    ))}
+                  <DropdownMenuContent className="w-[180px]">
+                    <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
+                      All Severities
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('critical')}>
+                      Critical
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
+                      High
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
+                      Medium
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
+                      Low
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Severity Filter */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center justify-between w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      {severityFilter === "all"
-                        ? "All Severities"
-                        : severityFilter.charAt(0).toUpperCase() +
-                          severityFilter.slice(1)}
-                      <ChevronDown className="ml-2 w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {["critical", "high", "medium", "low"].map((sev) => (
-                      <DropdownMenuItem
-                        key={sev}
-                        onClick={() => setSeverityFilter(sev as SeverityFilter)}
-                      >
-                        {sev.charAt(0).toUpperCase() + sev.slice(1)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Date Pickers */}
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal border-gray-300 dark:border-gray-700",
-                        !startDate && "text-gray-500 dark:text-gray-400"
-                      )}
-                    >
+                    <Button variant="outline" className="justify-start text-left font-normal cursor-pointer">
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {startDate ? format(startDate, "PPP") : "Start Date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal border-gray-300 dark:border-gray-700",
-                        !endDate && "text-gray-500 dark:text-gray-400"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : "End Date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                    />
+                    <Calendar mode="single" selected={startDate} onSelect={setStartDate} />
                   </PopoverContent>
                 </Popover>
               </div>
             )}
 
-            {/* Logs Table */}
-            <div
-              className={`${bgCard} rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-800`}
-            >
-              {/* Add loading/error indicators here */}
-              {isLoading && (
-                  <div className="text-center py-10 text-lg text-gray-500 dark:text-gray-400">
-                      Loading audit logs...
-                  </div>
-              )}
-              {error && (
-                  <div className="text-center py-10 text-lg text-red-600 dark:text-red-400">
-                      Error fetching logs: {error}
-                  </div>
-              )}
-              
-              {!isLoading && !error && (
-                  <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                          <thead className="bg-gray-100 dark:bg-gray-700">
-                              <tr>
-                                  <th className="px-6 py-3 text-left">Time</th>
-                                  <th className="px-6 py-3 text-left">Actor</th>
-                                  <th className="px-6 py-3 text-left">Action</th>
-                                  <th className="px-6 py-3 text-left">Details</th>
-                                  <th className="px-6 py-3 text-left">IP</th>
-                                  <th className="px-6 py-3 text-left">Severity</th>
-                              </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                              {sortedLogs.map((log) => (
-                                  <tr
-                                      key={log.id}
-                                      className="hover:bg-gray-50 dark:hover:bg-gray-700/40"
-                                  >
-                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                                          {log.timestamp.toLocaleString()}
-                                      </td>
-                                      <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
-                                          {log.actor}
-                                      </td>
-                                      <td className="px-6 py-4 text-gray-900 dark:text-gray-100">
-                                          {log.actionLabel}
-                                      </td>
-                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                                          {log.details}
-                                      </td>
-                                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                                          {log.ipAddress}
-                                      </td>
-                                      <td className="px-6 py-4">
-                                          <span
-                                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                                  log.severity === "critical"
-                                                      ? "bg-red-100 text-red-700"
-                                                      : log.severity === "high"
-                                                          ? "bg-orange-100 text-orange-700"
-                                                          : log.severity === "medium"
-                                                              ? "bg-yellow-100 text-yellow-700"
-                                                              : "bg-green-100 text-green-700"
-                                              }`}
-                                          >
-                                              {log.severity.charAt(0).toUpperCase() +
-                                                  log.severity.slice(1)}
-                                          </span>
-                                      </td>
-                                  </tr>
-                              ))}
-                          </tbody>
-                      </table>
-                  </div>
-              )}
-              {sortedLogs.length === 0 && !isLoading && !error && (
-                <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-                  No logs found.
-                </div>
-              )}
+            <div className={`${bgCard} rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden`}>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase text-xs font-semibold">
+                    <tr>
+                      <th className="px-6 py-4 w-10"></th>
+                      <th className="px-6 py-4">Actor</th>
+                      <th className="px-6 py-4">Entity</th>
+                      <th className="px-6 py-4">Action</th>
+                      <th className="px-6 py-4">Timestamp</th>
+                      <th className="px-6 py-4">Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    {sortedLogs.map((log) => (
+                      <React.Fragment key={log.id}>
+                        <tr 
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                          onClick={() => toggleRow(log.id)}
+                        >
+                          <td className="px-6 py-4">
+                            {expandedRows.has(log.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">{log.actor}</div>
+                            <div className="text-xs text-gray-500 uppercase">{log.actorRole}</div>
+                          </td>
+                          <td className="px-6 py-4 font-mono text-xs text-blue-600 dark:text-blue-400">
+                            {log.entity}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{log.actionLabel}</div>
+                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{log.details}</div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                            {/* HYDRATION FIX: Use suppression or check for mount */}
+                            {mounted ? format(log.timestamp, "MMM dd, HH:mm:ss") : "Loading..."}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={cn(
+                              "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
+                              log.severity === "critical" ? "bg-red-100 text-red-700" :
+                              log.severity === "high" ? "bg-orange-100 text-orange-700" :
+                              log.severity === "medium" ? "bg-yellow-100 text-yellow-700" :
+                              "bg-green-100 text-green-700"
+                            )}>
+                              {log.severity}
+                            </span>
+                          </td>
+                        </tr>
+                        
+                        {expandedRows.has(log.id) && (
+                          <tr className="bg-gray-50/50 dark:bg-gray-900/50">
+                            <td colSpan={6} className="px-12 py-6 border-l-4 border-[#72a210]">
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                  <History className="w-4 h-4" />
+                                  Change Summary (Diff)
+                                </div>
+                                
+                                {log.diff ? (
+                                  <div className="grid grid-cols-1 gap-2">
+                                    <div className="grid grid-cols-3 text-xs font-bold text-gray-400 uppercase px-3">
+                                      <span>Field</span>
+                                      <span>Before</span>
+                                      <span>After</span>
+                                    </div>
+                                    {log.diff.map((change, idx) => (
+                                      <div key={`${log.id}-diff-${idx}`} className="grid grid-cols-3 items-center bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 text-sm">
+                                        <span className="font-mono font-bold text-gray-600 dark:text-gray-400">{change.field}</span>
+                                        <span className="text-red-500 line-through decoration-red-300/50 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded w-fit">
+                                          {JSON.stringify(change.oldValue)}
+                                        </span>
+                                        <span className="text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded w-fit">
+                                          {JSON.stringify(change.newValue)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-gray-500 italic">No structured diff available for this action.</p>
+                                )}
+                                
+                                <div className="pt-2 text-[11px] text-gray-400">
+                                  IP Address: {log.ipAddress} • Audit ID: {log.id}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </main>

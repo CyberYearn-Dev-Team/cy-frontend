@@ -46,7 +46,7 @@ interface SecurityAlert {
   type:
     | "rate-limit"
     | "suspicious-login"
-    | "data-breach"
+    | "security-incident"
     | "unauthorized-access";
 
   severity: "low" | "medium" | "high" | "critical";
@@ -675,7 +675,7 @@ const SecurityPage: React.FC = () => {
                   className="flex-1 px-4 py-2 text-white rounded-lg transition-colors cursor-pointer hover:bg-[#507800]"
                   style={{ backgroundColor: primary }}
                 >
-                  Take Action
+                  Acknowledge
                 </button>
               </div>
             </div>

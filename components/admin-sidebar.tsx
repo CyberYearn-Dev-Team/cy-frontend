@@ -15,6 +15,7 @@ import {
   Bug,
   User,
   Siren,
+  ShieldAlert,
   LogOut,
   X,
 } from "lucide-react";
@@ -55,11 +56,11 @@ export default function AdminSidebar({
 
   const sidebarItems = [
     { name: "Overview", icon: LayoutDashboard, href: `${basePath}/overview` },
-    // { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
+    { name: "Audit Logs", icon: Activity, href: `${basePath}/audit` },
     { name: "Feature Flags", icon: ToggleLeft, href: `${basePath}/feature-flags` },
     { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
-    // { name: "Platform Security", icon: Siren, href: `${basePath}/security` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
+    { name: "Platform Security", icon: ShieldAlert, href: `${basePath}/security` },
 
     // Technical Issues with Badge
     {
@@ -156,7 +157,7 @@ export default function AdminSidebar({
 
 
         {/* Nav Links */}
-        <nav className="px-3 py-10 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
+        <nav className="px-3 py-6 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
           {sidebarItems.map(({ name, icon: Icon, href, count }) => (
             <Link
               key={name}

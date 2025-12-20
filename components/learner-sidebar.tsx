@@ -12,6 +12,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  User,
   UserCog,
   X,
   Trophy,
@@ -74,10 +75,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Dashboard", icon: Home, href: `${basePath}/dashboard` },
     { name: "Learning Tracks", icon: BookOpen, href: `${basePath}/tracks` },
     { name: "Lab Guides", icon: FlaskConical, href: `${basePath}/labs` },
-    { name: "Progress", icon: BarChart3, href: `${basePath}/progress` },
     { name: "Achievements", icon: Award, href: `${basePath}/achievements` },
+    { name: "My Profile", icon: User, href: `${basePath}/profile` },
     ...(leaderboardEnabled ? [{ name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` }] : []),
     { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
+    { name: "Overall Progress", icon: BarChart3, href: `${basePath}/progress` },
   ];
 
   // Only show "Switch to Admin" if user has ADMIN role
@@ -138,7 +140,7 @@ if (userRoles.includes("ADMIN")) {
             <Link
               key={name}
               href={href}
-              className={`flex items-center px-3 py-2 rounded-md transition-colors duration-200 ${
+              className={`flex items-center px-3 py-3 rounded-md transition-colors duration-200 ${
                 isActive(href)
                   ? "text-[#72a210] dark:text-[#a3e635] font-medium bg-gray-100 dark:bg-gray-800"
                   : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
