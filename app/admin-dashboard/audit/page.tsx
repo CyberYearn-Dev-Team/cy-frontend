@@ -28,6 +28,7 @@ import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
 import { getAuditLogs } from "@/lib/services/auditLogService";
+import { AuditLogsSkeleton } from "@/components/ui/audit-logs-skeleton";
 
 // --- TYPES ---
 
@@ -224,6 +225,25 @@ export default function AuditLogsPage() {
 
     return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }, [logs, searchTerm, actionFilter, severityFilter, startDate, endDate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader setSidebarOpen={setSidebarOpen} />
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">Audit Logs</h1>
+              </div>
+              <AuditLogsSkeleton />
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
