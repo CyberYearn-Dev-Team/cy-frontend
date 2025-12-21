@@ -102,6 +102,7 @@ export default function MetricsPage() {
     loading: true,
     error: null,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [visibility, setVisibility] = useState<Record<string, boolean>>({});
 
@@ -128,6 +129,7 @@ export default function MetricsPage() {
         loading: false,
         error: null,
       }));
+      setIsInitialLoad(false);
     } catch (error) {
       setMetrics((prev) => ({
         ...prev,
@@ -192,43 +194,56 @@ export default function MetricsPage() {
 
   /* Initial load */
   useEffect(() => {
-    loadMetrics();
-
-    const loadVisibility = async () => {
+    const loadAllData = async () => {
       try {
-        const data = await fetchMetricsVisibility();
-        const mapped: Record<string, boolean> = {};
+        // Start both requests in parallel
+        const [metricsData, visibilityData] = await Promise.allSettled([
+          loadMetrics(),
+          (async () => {
+            const data = await fetchMetricsVisibility();
+            const mapped: Record<string, boolean> = {};
 
-        // Populate mapped with API data
-        data.forEach((item) => {
-          mapped[item.key] = item.visible;
-        });
+            // Populate mapped with API data
+            data.forEach((item) => {
+              mapped[item.key] = item.visible;
+            });
 
-        // Ensure all configured metrics exist in state, defaulting to true if not found in API
-        const allKeys = [
-          "registrations_trend",
-          "wau_mau_ratio",
-          "module_completion_rate",
-          "seven_day_activation",
-        ];
+            // Ensure all configured metrics exist in state, defaulting to true if not found in API
+            const allKeys = [
+              "registrations_trend",
+              "wau_mau_ratio",
+              "module_completion_rate",
+              "seven_day_activation",
+            ];
 
-        allKeys.forEach((key) => {
-          if (mapped[key] === undefined) {
-            mapped[key] = true;
-          }
-        });
+            allKeys.forEach((key) => {
+              if (mapped[key] === undefined) {
+                mapped[key] = true;
+              }
+            });
 
-        setVisibility(mapped);
-      } catch {
-        toast.error("Failed to load metric visibility");
+            setVisibility(mapped);
+            return mapped;
+          })(),
+        ]);
+
+        if (metricsData.status === 'rejected') {
+          throw metricsData.reason;
+        }
+        if (visibilityData.status === 'rejected') {
+          throw visibilityData.reason;
+        }
+      } catch (error) {
+        toast.error("Failed to load metrics data");
+        setMetrics(prev => ({ ...prev, loading: false, error: 'Failed to load metrics' }));
       }
     };
 
-    loadVisibility();
-  }, [loadMetrics]); // Depend on loadMetrics to prevent re-creation warnings
+    loadAllData();
+  }, [loadMetrics]);
 
-  /* Skeleton */
-  if (metrics.loading && Object.keys(visibility).length === 0) {
+  // Show skeleton only during initial load
+  if (isInitialLoad || (metrics.loading && Object.keys(visibility).length === 0)) {
     return (
       <div className={`flex h-screen ${colors.light}`}>
         <AdminSidebar
