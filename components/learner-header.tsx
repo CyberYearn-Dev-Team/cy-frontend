@@ -148,7 +148,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             <Link href="/learner-dashboard/technical-issues-answers">
               <div className="relative cursor-pointer">
                 <div className="relative">
-                  <Bell className="h-6 w-6 text-gray-700 dark:text-gray-300 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" />
+                  <Bell className="h-6 w-6 text-gray-700 dark:text-gray-300 cursor-pointer transition-colors" />
                   {notificationCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                       {notificationCount}
