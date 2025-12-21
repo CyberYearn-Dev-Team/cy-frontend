@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react"; // Added useEffect
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -22,11 +22,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
+import { getAuditLogs } from "@/lib/services/auditLogService";
 
 // --- TYPES ---
 
@@ -40,14 +41,9 @@ interface AuditLog {
   id: string;
   timestamp: Date;
   actor: string;
-  actorRole: "admin" | "instructor" | "system";
+  actorRole: string;
   entity: string;
-  action:
-    | "role_change"
-    | "feature_flag_toggle"
-    | "content_edit"
-    | "user_delete"
-    | "permission_update";
+  action: string;
   actionLabel: string;
   details: string;
   ipAddress: string;
@@ -55,56 +51,111 @@ interface AuditLog {
   diff?: AuditDiff[];
 }
 
-// --- MOCKED DATA ---
-const mockLogs: AuditLog[] = [
-  {
-    id: "1",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    actor: "Sarah Jenkins",
-    actorRole: "admin",
-    entity: "User: 4421",
-    action: "role_change",
-    actionLabel: "Role Updated",
-    details: "Changed user role from Instructor to Admin",
-    ipAddress: "192.168.1.45",
-    severity: "high",
-    diff: [
-      { field: "role", oldValue: "instructor", newValue: "admin" },
-      { field: "permissions", oldValue: ["read", "write"], newValue: ["all"] }
-    ],
-  },
-  {
-    id: "2",
-    timestamp: new Date(Date.now() - 1000 * 60 * 120),
-    actor: "System",
-    actorRole: "system",
-    entity: "Setting: Auth",
-    action: "feature_flag_toggle",
-    actionLabel: "Feature Toggled",
-    details: "Enabled Multi-Factor Authentication globally",
-    ipAddress: "internal",
-    severity: "critical",
-    diff: [
-      { field: "mfa_enabled", oldValue: false, newValue: true }
-    ],
-  },
-  {
-    id: "3",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    actor: "Mark Thompson",
-    actorRole: "instructor",
-    entity: "Lesson: Intro to React",
-    action: "content_edit",
-    actionLabel: "Content Modified",
-    details: "Updated the video URL for Lesson 3",
-    ipAddress: "104.22.11.90",
-    severity: "low",
-    diff: [
-      { field: "video_url", oldValue: "vimeo.com/123", newValue: "vimeo.com/456" },
-      { field: "updated_at", oldValue: "2023-10-01", newValue: "2023-10-25" }
-    ],
+const deriveFallbackDiff = (log: any): AuditDiff[] | undefined => {
+  const { actionTitle, actionDescription, entity } = log;
+
+  if (!actionTitle || !actionDescription) return undefined;
+
+  // ROLE UPDATES
+  if (actionTitle === "Role Updated") {
+    const added = actionDescription.match(/Added (.+) role/i);
+    const removed = actionDescription.match(/Removed (.+) role/i);
+
+    if (added) {
+      return [
+        {
+          field: "roles",
+          oldValue: "Role not assigned",
+          newValue: added[1].toUpperCase(),
+        },
+      ];
+    }
+
+    if (removed) {
+      return [
+        {
+          field: "roles",
+          oldValue: removed[1].toUpperCase(),
+          newValue: "Role removed",
+        },
+      ];
+    }
   }
-];
+
+  // USER SUSPENDED
+  if (actionTitle === "User Suspended") {
+    return [
+      {
+        field: "suspended",
+        oldValue: false,
+        newValue: true,
+      },
+    ];
+  }
+
+  // USER REACTIVATED
+  if (actionTitle === "User Reactivated") {
+    return [
+      {
+        field: "suspended",
+        oldValue: true,
+        newValue: false,
+      },
+    ];
+  }
+
+  // FEATURE FLAG UPDATED
+  if (actionTitle === "Updated Feature Flag") {
+    return [
+      {
+        field: entity?.replace("Feature:", "").trim() || "feature",
+        oldValue: "Previous state",
+        newValue: "Updated",
+      },
+    ];
+  }
+
+  return undefined;
+};
+
+const getSeverity = (log: any): "low" | "medium" | "high" | "critical" => {
+  // If there's a backend-provided severity, use it
+  if (log.severity) return log.severity;
+
+  // Otherwise, determine severity based on action type
+  const { actionTitle } = log;
+  
+  if (actionTitle === "User Suspended" || actionTitle === "User Deleted") {
+    return "high";
+  }
+  
+  if (actionTitle === "Role Updated" || actionTitle === "Updated Feature Flag") {
+    return "medium";
+  }
+
+  // Default to low for all other actions
+  return "low";
+};
+
+const mapApiToUiLog = (apiLog: any): AuditLog => {
+  const diff = apiLog.diffJson || deriveFallbackDiff(apiLog);
+  const severity = getSeverity(apiLog);
+  const ipAddress = 'N/A';
+
+  return {
+    id: apiLog.id,
+    timestamp: parseISO(apiLog.createdAt),
+    actor: apiLog.actor?.username || 'System',
+    actorRole: apiLog.actor?.roles?.[0] || 'system',
+    entity: apiLog.entity,
+    action: apiLog.actionTitle ? apiLog.actionTitle.toLowerCase().replace(/\s+/g, '_') : 'unknown',
+    actionLabel: apiLog.actionTitle || 'Unknown Action',
+    details: apiLog.actionDescription || '',
+    ipAddress,
+    severity,
+    diff: diff || undefined
+  };
+};
 
 const primary = "#72a210";
 const bgLight = "bg-gray-50 dark:bg-gray-950";
@@ -113,21 +164,35 @@ const textMedium = "text-gray-600 dark:text-gray-400";
 
 export default function AuditLogsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [logs] = useState<AuditLog[]>(mockLogs);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  // Fix for Hydration: Only show dynamic content after mount
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // Search and Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        setIsLoading(true);
+        const apiLogs = await getAuditLogs();
+        const mappedLogs = apiLogs.map(mapApiToUiLog);
+        setLogs(mappedLogs);
+      } catch (err) {
+        console.error('Failed to fetch audit logs:', err);
+        setError('Failed to load audit logs. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLogs();
+  }, []);
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
@@ -206,21 +271,11 @@ export default function AuditLogsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-[180px]">
-                    <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
-                      All Severities
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSeverityFilter('critical')}>
-                      Critical
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
-                      High
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
-                      Medium
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
-                      Low
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('all')}>All Severities</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('critical')}>Critical</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('high')}>High</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>Medium</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSeverityFilter('low')}>Low</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -252,84 +307,112 @@ export default function AuditLogsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {sortedLogs.map((log) => (
-                      <React.Fragment key={log.id}>
-                        <tr 
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
-                          onClick={() => toggleRow(log.id)}
-                        >
-                          <td className="px-6 py-4">
-                            {expandedRows.has(log.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-gray-900 dark:text-gray-100">{log.actor}</div>
-                            <div className="text-xs text-gray-500 uppercase">{log.actorRole}</div>
-                          </td>
-                          <td className="px-6 py-4 font-mono text-xs text-blue-600 dark:text-blue-400">
-                            {log.entity}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="font-medium">{log.actionLabel}</div>
-                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{log.details}</div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                            {/* HYDRATION FIX: Use suppression or check for mount */}
-                            {mounted ? format(log.timestamp, "MMM dd, HH:mm:ss") : "Loading..."}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={cn(
-                              "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
-                              log.severity === "critical" ? "bg-red-100 text-red-700" :
-                              log.severity === "high" ? "bg-orange-100 text-orange-700" :
-                              log.severity === "medium" ? "bg-yellow-100 text-yellow-700" :
-                              "bg-green-100 text-green-700"
-                            )}>
-                              {log.severity}
-                            </span>
-                          </td>
-                        </tr>
-                        
-                        {expandedRows.has(log.id) && (
-                          <tr className="bg-gray-50/50 dark:bg-gray-900/50">
-                            <td colSpan={6} className="px-12 py-6 border-l-4 border-[#72a210]">
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                  <History className="w-4 h-4" />
-                                  Change Summary (Diff)
-                                </div>
-                                
-                                {log.diff ? (
-                                  <div className="grid grid-cols-1 gap-2">
-                                    <div className="grid grid-cols-3 text-xs font-bold text-gray-400 uppercase px-3">
-                                      <span>Field</span>
-                                      <span>Before</span>
-                                      <span>After</span>
-                                    </div>
-                                    {log.diff.map((change, idx) => (
-                                      <div key={`${log.id}-diff-${idx}`} className="grid grid-cols-3 items-center bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 text-sm">
-                                        <span className="font-mono font-bold text-gray-600 dark:text-gray-400">{change.field}</span>
-                                        <span className="text-red-500 line-through decoration-red-300/50 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded w-fit">
-                                          {JSON.stringify(change.oldValue)}
-                                        </span>
-                                        <span className="text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded w-fit">
-                                          {JSON.stringify(change.newValue)}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-500 italic">No structured diff available for this action.</p>
-                                )}
-                                
-                                <div className="pt-2 text-[11px] text-gray-400">
-                                  IP Address: {log.ipAddress} • Audit ID: {log.id}
-                                </div>
-                              </div>
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#72a210]"></div>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500">Loading audit logs...</p>
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center">
+                          <p className="text-red-500">{error}</p>
+                          <Button 
+                            onClick={() => window.location.reload()}
+                            className="mt-2 bg-[#72a210] text-white cursor-pointer"
+                          >
+                            Retry
+                          </Button>
+                        </td>
+                      </tr>
+                    ) : sortedLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                          No audit logs found
+                        </td>
+                      </tr>
+                    ) : (
+                      sortedLogs.map((log) => (
+                        <React.Fragment key={log.id}>
+                          <tr 
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                            onClick={() => toggleRow(log.id)}
+                          >
+                            <td className="px-6 py-4">
+                              {expandedRows.has(log.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="font-medium text-gray-900 dark:text-gray-100">{log.actor}</div>
+                              <div className="text-xs text-gray-500 uppercase">{log.actorRole}</div>
+                            </td>
+                            <td className="px-6 py-4 font-mono text-xs text-[#72a210] dark:text-[#72a210]">
+                              {log.entity}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="font-medium">{log.actionLabel}</div>
+                              <div className="text-xs text-gray-500 truncate max-w-[200px]">{log.details}</div>
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                              {format(log.timestamp, "MMM dd, HH:mm:ss")}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={cn(
+                                "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
+                                log.severity === "critical" ? "bg-red-100 text-red-700" :
+                                log.severity === "high" ? "bg-orange-100 text-orange-700" :
+                                log.severity === "medium" ? "bg-yellow-100 text-yellow-700" :
+                                "bg-green-100 text-green-700"
+                              )}>
+                                {log.severity}
+                              </span>
                             </td>
                           </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
+                          
+                          {expandedRows.has(log.id) && (
+                            <tr className="bg-gray-50/50 dark:bg-gray-900/50">
+                              <td colSpan={6} className="px-12 py-6 border-l-4 border-[#72a210]">
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    <History className="w-4 h-4" />
+                                    Change Summary (Diff)
+                                  </div>
+                                  
+                                  {log.diff && log.diff.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-2">
+                                      <div className="grid grid-cols-3 text-xs font-bold text-gray-400 uppercase px-3">
+                                        <span>Field</span>
+                                        <span>Before</span>
+                                        <span>After</span>
+                                      </div>
+                                      {log.diff.map((change, idx) => (
+                                        <div key={`${log.id}-diff-${idx}`} className="grid grid-cols-3 items-center bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 text-sm">
+                                          <span className="font-mono font-bold text-gray-600 dark:text-gray-400">{change.field}</span>
+                                          <span className="text-red-500 line-through decoration-red-300/50 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded w-fit">
+                                            {JSON.stringify(change.oldValue)}
+                                          </span>
+                                          <span className="text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded w-fit">
+                                            {JSON.stringify(change.newValue)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-gray-500 italic">No structured diff available for this action.</p>
+                                  )}
+                                  
+                                  <div className="pt-2 text-[11px] text-gray-400">
+                                    IP Address: {log.ipAddress} • Audit ID: {log.id}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
