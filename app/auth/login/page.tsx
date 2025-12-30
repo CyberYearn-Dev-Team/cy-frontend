@@ -64,6 +64,8 @@ export default function LoginPage() {
       message = "Server unreachable. Please try again shortly.";
     } else if (error.isSuspended || error.message === "Your account has been suspended") {
       message = "Your account has been suspended. Please contact support for assistance.";
+    } else if (error.message === "You are already logged in on another session") {
+      message = "You are already logged in on another session. Please log out from other devices or contact support.";
     }
 
     toast.error(message);

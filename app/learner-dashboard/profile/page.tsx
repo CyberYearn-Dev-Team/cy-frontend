@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
-import { getCurrentUser } from "@/lib/services/authService";
+import { getCurrentUser, deleteUserAccount } from "@/lib/services/authService";
 import {
   Card,
   CardContent,
@@ -49,6 +49,8 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
 
   interface UserProfile {
+    id?: string;
+    _id?: string;
     email: string;
     username: string;
     roles: string[];
@@ -73,6 +75,8 @@ export default function ProfilePage() {
         const res = await getCurrentUser();
         const userData = res?.data || res;
         setProfile({
+          id: userData?.id || userData?._id || '',
+          _id: userData?._id || userData?.id || '',
           email: userData?.email || "",
           username: userData?.username || "",
           roles: userData?.roles || [],
@@ -93,6 +97,32 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
+
+
+  // ✅ Handle Account Deletion
+  const handleDeleteAccount = async () => {
+    if (deleting || !profile.id) return;
+    
+    try {
+      setDeleting(true);
+      const result = await deleteUserAccount(profile.id);
+      toast.success(result.message || 'Account deleted successfully');
+      
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+      
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      toast.error(error.message || 'Failed to delete account. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+
+  
   // ✅ Handle Data Export
   const handleExportData = async () => {
     setExporting(true);
@@ -105,16 +135,6 @@ export default function ProfilePage() {
     }, 2000);
   };
 
-  // ✅ Handle Account Deletion
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setDeleting(false);
-      toast.error("Account deleted successfully.");
-      // Logic for redirecting to logout/home would go here
-    }, 2000);
-  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">

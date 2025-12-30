@@ -114,3 +114,73 @@ export const changePassword = async (currentPassword: string, newPassword: strin
     );
   }
 };
+
+
+
+
+/**
+ * Deletes the user's account
+ * @param userId - The ID of the user to delete
+ * @returns Promise with success message
+ */
+export const deleteUserAccount = async (userId: string): Promise<{ message: string }> => {
+  try {
+    // Get token from localStorage
+    const token = typeof window !== "undefined" ? localStorage.getItem("cy_token") : null;
+    console.log('Auth token from localStorage:', token ? 'Token exists' : 'No token found');
+
+    if (!token) {
+      throw new Error("Authentication required. Please log in again.");
+    }
+
+    if (!userId) {
+      throw new Error("User ID is required for account deletion");
+    }
+
+    console.log('Sending account deletion request...');
+    const response = await fetch(
+      `https://cy-backend.onrender.com/api/v1/me?id=${encodeURIComponent(userId)}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        }
+      }
+    );
+
+    // Handle response safely
+    const responseText = await response.text();
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      console.error("Failed to parse response as JSON:", responseText);
+      throw new Error("Invalid response from server. Please try again.");
+    }
+
+    if (!response.ok) {
+      const errorMessage = data.message || data.error || data.errorMessage || "Failed to delete account";
+      console.error('Account deletion failed:', errorMessage);
+      
+      if (response.status === 401) {
+        throw new Error("Authentication required. Please log in again.");
+      } else if (response.status >= 500) {
+        throw new Error("Server error. Please try again later.");
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Clear local storage on successful deletion
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cy_token");
+      localStorage.removeItem("cy_user");
+    }
+
+    return { message: data.message || "Account deleted successfully" };
+  } catch (err: any) {
+    console.error("Failed to delete account:", err);
+    throw new Error(err.message || "Failed to delete account. Please try again.");
+  }
+};
