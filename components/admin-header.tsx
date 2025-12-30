@@ -136,9 +136,9 @@ if (!updateData.success) {
         </button>
 
         {/* Admin Panel title */}
-        <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">
+        {/* <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100 hidden sm:block">
           Admin Panel
-        </h1>
+        </h1> */}
 
         {/* Right side controls */}
         <div className="flex items-center gap-4 ml-auto">
