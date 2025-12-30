@@ -12,6 +12,7 @@ import {
 import Nav from "@/components/admin-nav";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
+import { SecuritySkeleton } from "@/components/ui/security-skeleton";
 
 import {
   AlertTriangle,
@@ -71,7 +72,8 @@ const SecurityPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadSecurityData = async () => {
+    const loadData = async () => {
+      setIsLoading(true);
       try {
         const [metricsData, alertsData] = await Promise.all([
           fetchSecurityMetrics(),
@@ -80,15 +82,17 @@ const SecurityPage: React.FC = () => {
 
         setMetrics(metricsData);
         setApiAlerts(alertsData);
-      } catch (err) {
-        console.error("Failed to load security data:", err);
+      } catch (error) {
+        console.error("Error loading security data:", error);
+        toast.error("Failed to load security data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadSecurityData();
+    loadData();
   }, []);
+
 
   const getAlertType = (alert: APISecurityAlert): SecurityAlert["type"] => {
     if (alert.description.toLowerCase().includes("login"))
@@ -148,8 +152,11 @@ const SecurityPage: React.FC = () => {
         <AdminHeader setSidebarOpen={setSidebarOpen} />
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-30">
-          <div className="max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold">Security Controls</h1>
+          {isLoading ? (
+            <SecuritySkeleton />
+          ) : (
+            <div className="max-w-7xl mx-auto space-y-6">
+              <h1 className="text-3xl font-bold">Security Controls</h1>
 
             {/* METRICS */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -237,7 +244,8 @@ const SecurityPage: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -299,4 +307,5 @@ const Stat = ({
   </div>
 );
 
+// Export the main component
 export default SecurityPage;
