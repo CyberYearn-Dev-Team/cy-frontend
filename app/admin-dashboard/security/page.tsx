@@ -65,7 +65,9 @@ const bgCard = "bg-white dark:bg-gray-900";
 const SecurityPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [selectedAlert, setSelectedAlert] = useState<SecurityAlert | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<SecurityAlert | null>(
+    null
+  );
   const [filterSeverity, setFilterSeverity] = useState<SeverityFilter>("all");
 
   const [metrics, setMetrics] = useState({
@@ -166,8 +168,11 @@ const SecurityPage: React.FC = () => {
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
       {/* Alert Details Modal */}
-      <Dialog open={!!selectedAlert} onOpenChange={(open) => !open && setSelectedAlert(null)}>
-        <DialogContent className="sm:max-w-[600px]">
+      <Dialog
+        open={!!selectedAlert}
+        onOpenChange={(open) => !open && setSelectedAlert(null)}
+      >
+        <DialogContent className={`${bgCard} p-6 rounded-lg border sm:max-w-[600px]`}>
           {selectedAlert && (
             <>
               <DialogHeader>
@@ -196,7 +201,11 @@ const SecurityPage: React.FC = () => {
                         <Server className="h-3.5 w-3.5" />
                         {selectedAlert.source}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(selectedAlert.severity)}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(
+                          selectedAlert.severity
+                        )}`}
+                      >
                         {selectedAlert.severity.toUpperCase()}
                       </span>
                     </div>
@@ -208,36 +217,55 @@ const SecurityPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
                     <div className="space-y-1">
                       <p className="text-sm font-medium">User ID</p>
-                      <p className="text-sm text-muted-foreground">{mockUserData.id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {mockUserData.id}
+                      </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Name</p>
-                      <p className="text-sm text-muted-foreground">{mockUserData.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {mockUserData.name}
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">IP Address</p>
-                      <p className="text-sm text-muted-foreground">{mockUserData.ip}</p>
+                      <p className="text-sm font-medium">User Email</p>
+                      <p className="text-sm text-muted-foreground">
+                        {mockUserData.email}
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Location</p>
-                      <p className="text-sm text-muted-foreground">{mockUserData.location}</p>
+                      <p className="text-sm font-medium">User Roles</p>
+                      <p className="text-sm text-muted-foreground">
+                        Administrator, Security
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setSelectedAlert(null)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedAlert(null)}
+                  >
                     Close
                   </Button>
                   <Button
-                  className="cursor-pointer"
-                    variant={selectedAlert.severity === 'critical' ? 'destructive' : 'default'}
+                    className="cursor-pointer"
+                    variant={
+                      selectedAlert.severity === "critical"
+                        ? "destructive"
+                        : "default"
+                    }
                     onClick={() => {
-                      toast.success(`Action taken on alert: ${selectedAlert.id}`);
+                      toast.success(
+                        `Action taken on alert: ${selectedAlert.id}`
+                      );
                       setSelectedAlert(null);
                     }}
                   >
-                    {selectedAlert.severity === 'critical' ? 'Suspend User' : 'Mark as Resolved'}
+                    {selectedAlert.severity === "critical"
+                      ? "Suspend User"
+                      : "Mark as Resolved"}
                   </Button>
                 </div>
               </div>
@@ -260,17 +288,38 @@ const SecurityPage: React.FC = () => {
 
               {/* METRICS */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Stat label="Critical Alerts" value={metrics.criticalAlerts} Icon={AlertTriangle} />
-                <Stat label="Active Sessions" value={metrics.activeSessions} Icon={Activity} />
-                <Stat label="Blocked IPs" value={metrics.blockedIps} Icon={Ban} />
-                <Stat label="Rate Limits" value={metrics.rateLimits} Icon={TrendingUp} />
+                <Stat
+                  label="Critical Alerts"
+                  value={metrics.criticalAlerts}
+                  Icon={AlertTriangle}
+                />
+                <Stat
+                  label="Active Sessions"
+                  value={metrics.activeSessions}
+                  Icon={Activity}
+                />
+                <Stat
+                  label="Blocked IPs"
+                  value={metrics.blockedIps}
+                  Icon={Ban}
+                />
+                <Stat
+                  label="Rate Limits"
+                  value={metrics.rateLimits}
+                  Icon={TrendingUp}
+                />
               </div>
 
               {/* GLOBAL LOGOUT */}
               <div className={`${bgCard} p-6 rounded-lg border`}>
                 <h3 className="font-semibold mb-2">Force Global Logout</h3>
-                <p className="text-sm mb-4">End all active sessions immediately.</p>
-                <Button variant="destructive" onClick={() => setShowLogoutConfirm(true)}>
+                <p className="text-sm mb-4">
+                  End all active sessions immediately.
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
                   Initiate Global Logout
                 </Button>
               </div>
@@ -288,11 +337,18 @@ const SecurityPage: React.FC = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {["all", "critical", "high", "medium", "low"].map((s) => (
-                          <DropdownMenuItem key={s} onClick={() => setFilterSeverity(s as SeverityFilter)}>
-                            {s.toUpperCase()}
-                          </DropdownMenuItem>
-                        ))}
+                        {["all", "critical", "high", "medium", "low"].map(
+                          (s) => (
+                            <DropdownMenuItem
+                              key={s}
+                              onClick={() =>
+                                setFilterSeverity(s as SeverityFilter)
+                              }
+                            >
+                              {s.toUpperCase()}
+                            </DropdownMenuItem>
+                          )
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -306,7 +362,11 @@ const SecurityPage: React.FC = () => {
                         className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                         onClick={() => setSelectedAlert(alert)}
                       >
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${getSeverityColor(alert.severity)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded font-medium ${getSeverityColor(
+                            alert.severity
+                          )}`}
+                        >
                           {alert.severity.toUpperCase()}
                         </span>
                         <p className="mt-2 font-medium">{alert.message}</p>
@@ -339,11 +399,19 @@ const SecurityPage: React.FC = () => {
           <div className={`${bgCard} p-6 rounded-lg max-w-md w-full`}>
             <h3 className="font-semibold mb-2">Confirm Global Logout</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              This action will immediately log out <strong>all users</strong>. Active sessions will be terminated. This cannot be undone.
+              This action will immediately log out <strong>all users</strong>.
+              Active sessions will be terminated. This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setShowLogoutConfirm(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={handleGlobalLogout}>Confirm</Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleGlobalLogout}>
+                Confirm
+              </Button>
             </div>
           </div>
         </div>
@@ -353,7 +421,15 @@ const SecurityPage: React.FC = () => {
 };
 
 // Internal Sub-component
-const Stat = ({ label, value, Icon }: { label: string; value: number; Icon: React.ElementType }) => (
+const Stat = ({
+  label,
+  value,
+  Icon,
+}: {
+  label: string;
+  value: number;
+  Icon: React.ElementType;
+}) => (
   <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
     <div className="flex justify-between items-center">
       <span className="text-sm text-gray-500">{label}</span>
