@@ -52,6 +52,7 @@ interface LabDetail {
     title: string;
   }[];
   status: "completed" | "in-progress" | "not-started";
+  completed: boolean;
 }
 
 export default function LabDetailPage() {
@@ -61,9 +62,28 @@ export default function LabDetailPage() {
   const [lab, setLab] = useState<LabDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ✅ REQUIRED: step completion state
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  const markAsCompleted = async () => {
+    if (!lab) return;
+    
+    try {
+      setIsSubmitting(true);
+      await apiClient.patch(`/lab-guides?id=${lab.id}`, { completed: true });
+
+      // Update local state to reflect the change
+      setLab(prev => prev ? { ...prev, completed: true } : null);
+      toast.success('Lab marked as completed!');
+    } catch (error) {
+      console.error('Error marking lab as completed:', error);
+      toast.error('Failed to mark lab as completed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
@@ -93,6 +113,7 @@ export default function LabDetailPage() {
             text: s.lab_guide_steps_id?.text || "",
           })) || [],
           status: "not-started",
+          completed: json.data.completed || false,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -193,7 +214,7 @@ export default function LabDetailPage() {
                               )
                             }
                             disabled={completed}
-                            className="mt-3 px-4 py-2 rounded text-white disabled:opacity-50 cursor-pointer"
+                            className="mt-3 px-4 py-2 rounded-lg text-white disabled:opacity-50 cursor-pointer"
                             style={{ backgroundColor: primary }}
                           >
                             {completed
@@ -241,16 +262,24 @@ export default function LabDetailPage() {
               </div>
 
               {/* ✅ Final Action Buttons */}
-              <div className="flex gap-2 mt-10">
+              <div className="flex gap-5 mt-10">
                 <button
                   disabled={
-                    lab.steps && completedSteps.length !== lab.steps.length
+                    (lab.steps && completedSteps.length !== lab.steps.length) || 
+                    lab.completed ||
+                    isSubmitting
                   }
-                  onClick={() => toast.success("Lab marked as completed!")}
-                  className="flex-1 py-3 rounded-lg text-white font-semibold disabled:opacity-50 cursor-pointer"
-                  style={{ backgroundColor: primary }}
+                  onClick={markAsCompleted}
+                  className={`flex-1 py-3 rounded-lg text-white font-semibold disabled:opacity-50 ${
+                    lab.completed ? 'bg-green-600' : ''
+                  }`}
+                  style={{ backgroundColor: lab.completed ? undefined : primary }}
                 >
-                  Mark as Completed
+                  {isSubmitting 
+                    ? 'Updating...' 
+                    : lab.completed 
+                      ? 'Lab Completed' 
+                      : 'Mark as Completed'}
                 </button>
 
                 <button
