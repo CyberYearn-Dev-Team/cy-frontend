@@ -167,7 +167,7 @@ const TrackCard: React.FC<{
         <div className="mt-4">
           <button
             onClick={(e) => handleStartTrack(e, track.trackId)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer"
             style={{
               backgroundColor: primary,
               color: "white",
