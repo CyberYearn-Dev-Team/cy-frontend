@@ -45,7 +45,6 @@ export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   interface UserProfile {
@@ -123,18 +122,6 @@ export default function ProfilePage() {
 
 
   
-  // ✅ Handle Data Export
-  const handleExportData = async () => {
-    setExporting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setExporting(false);
-      toast.success(
-        "Your data export has started. You will receive an email shortly."
-      );
-    }, 2000);
-  };
-
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -299,35 +286,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* SECTION 1: DATA EXPORT */}
-              <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-gray-100">
-                    Data Export
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-400">
-                    Request a copy of all your personal data, progress, and
-                    account history.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    onClick={handleExportData}
-                    disabled={exporting}
-                    className="flex items-center gap-2 text-white cursor-pointer"
-                    style={{ backgroundColor: primary }}
-                  >
-                    {exporting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )}
-                    {exporting ? "Exporting..." : "Export my data"}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* SECTION 2: ACCOUNT DELETION */}
+{/* SECTION 2: ACCOUNT DELETION */}
               <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-red-600 dark:text-red-500 flex items-center gap-2">
