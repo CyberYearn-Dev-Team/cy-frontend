@@ -8,11 +8,15 @@ export interface SecurityMetrics {
 }
 
 export interface SecurityAlert {
+  id: string;
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   description: string;
-  createdAt: string;
   source: string;
+  details?: string;
+  ipAddress: string | null;
+  userId: string | null;
   timestamp: string;
+  createdAt: string;
 }
 
 
