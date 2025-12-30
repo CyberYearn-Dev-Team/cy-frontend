@@ -30,11 +30,9 @@ const textDark = "text-gray-900 dark:text-gray-100";
 const textMedium = "text-gray-600 dark:text-gray-300";
 const textLight = "text-gray-500 dark:text-gray-400";
 
-// Convert Directus file object to public URL
 const getFileUrl = (file: any) => {
   if (!file) return null;
-  const directusUrl =
-    process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+  const directusUrl = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
   return `${directusUrl}/assets/${file.id}`;
 };
 
@@ -63,10 +61,10 @@ export default function LabDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [issuePopupOpen, setIssuePopupOpen] = useState(false);
 
-  // Step completion state with local storage persistence
   const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
-    // Load completed steps from local storage on initial render
     if (typeof window !== 'undefined' && labId) {
       const saved = localStorage.getItem(`lab-${labId}-completed-steps`);
       return saved ? JSON.parse(saved) : [];
@@ -74,7 +72,6 @@ export default function LabDetailPage() {
     return [];
   });
 
-  // Save completed steps to local storage whenever they change
   useEffect(() => {
     if (typeof window !== 'undefined' && labId) {
       localStorage.setItem(`lab-${labId}-completed-steps`, JSON.stringify(completedSteps));
@@ -83,19 +80,14 @@ export default function LabDetailPage() {
 
   const markAsCompleted = async () => {
     if (!lab) return;
-    
     try {
       setIsSubmitting(true);
-      await apiClient.patch(`/lab-guides?id=${lab.id}`, { completed: true });
-
-      // Update local state to reflect the change
-      setLab(prev => prev ? { ...prev, completed: true } : null);
-      
-      // Clear the completed steps from local storage
-      if (typeof window !== 'undefined' && labId) {
-        localStorage.removeItem(`lab-${labId}-completed-steps`);
+      if (lab.steps && completedSteps.length !== lab.steps.length) {
+        toast.warning("Please complete all steps first");
+        return;
       }
-      
+      await apiClient.patch(`/lab-guides?id=${lab.id}`, { completed: true });
+      setLab(prev => prev ? { ...prev, completed: true } : null);
       toast.success('Lab marked as completed!');
     } catch (error) {
       console.error('Error marking lab as completed:', error);
@@ -105,18 +97,11 @@ export default function LabDetailPage() {
     }
   };
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [issuePopupOpen, setIssuePopupOpen] = useState(false);
-
   useEffect(() => {
     async function fetchLab() {
       try {
-        const res = await fetch(`/api/lab-guides/${labId}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/lab-guides/${labId}`, { cache: "no-store" });
         const json = await res.json();
-        console.log("Fetched steps:", json.data.steps);
-
         if (!res.ok) throw new Error(json?.error || "Failed to load lab");
 
         setLab({
@@ -141,7 +126,6 @@ export default function LabDetailPage() {
         setLoading(false);
       }
     }
-
     if (labId) fetchLab();
   }, [labId]);
 
@@ -162,19 +146,15 @@ export default function LabDetailPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {lab ? lab.title : "Loading..."}
-                </BreadcrumbPage>
+                <BreadcrumbPage>{lab ? lab.title : "Loading..."}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* REQUIRED: Safety Banner */}
           <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
               This lab is for <strong>educational purposes only</strong>. Do not
-              run commands on production systems or systems you do not own.
-              Proceed carefully.
+              run commands on production systems. Proceed carefully.
             </p>
           </div>
 
@@ -184,77 +164,57 @@ export default function LabDetailPage() {
           {lab && (
             <>
               <div className={`${cardBg} shadow rounded-lg p-6 mb-6`}>
-                <h1 className={`text-2xl font-bold ${textDark}`}>
-                  {lab.title}
-                </h1>
-
+                <h1 className={`text-2xl font-bold ${textDark}`}>{lab.title}</h1>
                 {lab.description ? (
                   <div
                     className="prose max-w-none mt-4 dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: lab.description }}
                   />
                 ) : (
-                  <div className={textLight}>No description available</div>
+                  <div className={textLight + " mt-4"}>No description available</div>
                 )}
               </div>
 
-              {/* ✅ REQUIRED: Step-Based Structure + Checkpoints */}
               {lab.steps && lab.steps.length > 0 && (
                 <div className={`${cardBg} shadow rounded-lg p-6 mb-10`}>
-                  <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
-                    Lab Steps
-                  </h2>
-
-                  {/* ✅ REQUIRED: Progress Indicator */}
+                  <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>Lab Steps</h2>
                   <p className={`${textMedium} mb-4`}>
-                    {completedSteps.length} of {lab.steps.length} steps
-                    completed
+                    {completedSteps.length} of {lab.steps.length} steps completed
                   </p>
-
                   <div className="space-y-4">
-                    {lab.steps.map((step, index) => {
-                      const completed = completedSteps.includes(index);
-
-                      return (
-                        <div key={index} className="border rounded-lg p-4">
-                          <p className="font-medium">
-                            Step {index + 1}: {step.title}
-                          </p>
-
-                          <div
-                            className={`${textMedium} mt-2 prose dark:prose-invert max-w-none`}
-                            dangerouslySetInnerHTML={{ __html: step.text }}
-                          />
-
-                          {/* ✅ REQUIRED: Manual Verification */}
-                          <button
-                            onClick={() => {
-                              const newCompletedSteps = completedSteps.includes(index)
-                                ? completedSteps.filter(i => i !== index)
-                                : [...completedSteps, index];
-                              setCompletedSteps(newCompletedSteps);
-                            }}
-                            disabled={lab.completed}
-                            className={`mt-3 px-4 py-2 rounded-lg text-white ${lab.completed ? 'bg-gray-400' : ''} cursor-pointer`}
-                            style={{ backgroundColor: lab.completed ? '' : primary }}
-                          >
-                            {completedSteps.includes(index) || lab.completed
-                              ? "Step Completed"
-                              : "Mark Step as Completed"}
-                          </button>
-                        </div>
-                      );
-                    })}
+                    {lab.steps.map((step, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <p className="font-medium">Step {index + 1}: {step.title}</p>
+                        <div
+                          className={`${textMedium} mt-2 prose dark:prose-invert max-w-none`}
+                          dangerouslySetInnerHTML={{ __html: step.text }}
+                        />
+                        <button
+                          onClick={() => {
+                            const newCompletedSteps = completedSteps.includes(index)
+                              ? completedSteps.filter(i => i !== index)
+                              : [...completedSteps, index];
+                            setCompletedSteps(newCompletedSteps);
+                            if (!completedSteps.includes(index)) {
+                              toast.success(`Step ${index + 1} marked as completed!`);
+                            }
+                          }}
+                          disabled={lab.completed}
+                          className="mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
+                          style={{ 
+                            backgroundColor: completedSteps.includes(index) || lab.completed ? '#5a850d' : primary 
+                          }}
+                        >
+                          {completedSteps.includes(index) || lab.completed ? "Step Completed" : "Mark Step as Completed"}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Video */}
               <div className="mb-10">
-                <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
-                  Lab Guide Video
-                </h2>
-
+                <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>Lab Guide Video</h2>
                 {lab.video ? (
                   <video controls className="w-full rounded-xl shadow bg-black">
                     <source src={lab.video} type="video/mp4" />
@@ -267,14 +227,9 @@ export default function LabDetailPage() {
                 )}
               </div>
 
-              {/* PDF */}
               <div className="mb-10">
                 <button
-                  onClick={() =>
-                    lab.pdf
-                      ? window.open(lab.pdf, "_blank")
-                      : toast.error("No PDF available")
-                  }
+                  onClick={() => lab.pdf ? window.open(lab.pdf, "_blank") : toast.error("No PDF available")}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#72a210] text-white rounded-lg cursor-pointer"
                 > 
                   <FileText className="h-5 w-5" />
@@ -282,31 +237,21 @@ export default function LabDetailPage() {
                 </button>
               </div>
 
-              {/* ✅ Final Action Buttons */}
-              <div className="flex gap-5 mt-10">
+              <div className="flex flex-col md:flex-row gap-4 mt-10">
                 <button
-                  disabled={
-                    (lab.steps && completedSteps.length < lab.steps.length) || 
-                    lab.completed ||
-                    isSubmitting ||
-                    lab.steps?.length === 0
-                  }
                   onClick={markAsCompleted}
-                  className={`flex-1 py-3 rounded-lg text-white font-semibold disabled:opacity-50 ${
-                    lab.completed ? 'bg-green-600' : ''
+                  disabled={lab.completed || isSubmitting || lab.steps?.length === 0}
+                  className={`flex-1 py-2.5 md:py-3 rounded-lg text-white text-base md:text-lg font-semibold shadow transition ${
+                    ((lab.steps && completedSteps.length !== lab.steps.length) || lab.completed) && !isSubmitting ? 'opacity-50' : ''
                   }`}
-                  style={{ backgroundColor: lab.completed ? undefined : primary }}
+                  style={{ backgroundColor: lab.completed ? '#5a850d' : primary }}
                 >
-                  {isSubmitting 
-                    ? 'Updating...' 
-                    : lab.completed 
-                      ? 'Lab Completed' 
-                      : 'Mark as Completed'}
+                  {isSubmitting ? 'Updating...' : lab.completed ? 'Lab Completed' : 'Mark as Completed'}
                 </button>
 
                 <button
                   onClick={() => setIssuePopupOpen(true)}
-                  className="flex-1 py-3 rounded-lg bg-red-500 text-white font-semibold cursor-pointer"
+                  className="flex-1 py-2.5 md:py-3 rounded-lg text-base md:text-lg font-semibold bg-red-500 text-white hover:bg-red-600 transition cursor-pointer shadow-sm"
                 >
                   Technical Issues
                 </button>
@@ -324,7 +269,6 @@ export default function LabDetailPage() {
             }}
           />
         </main>
-
         <Nav />
       </div>
     </div>

@@ -52,6 +52,7 @@ interface LabGuide {
     title: string;
   }[];
   status: "completed" | "in-progress" | "not-started";
+  completed: boolean;
 }
 
 export default function LabGuidePage() {
@@ -66,7 +67,52 @@ export default function LabGuidePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
+    if (typeof window !== 'undefined' && lessonId) {
+      const saved = localStorage.getItem(`lab-guide-${lessonId}-completed-steps`);
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Save completed steps to local storage when they change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && lessonId) {
+      localStorage.setItem(`lab-guide-${lessonId}-completed-steps`, JSON.stringify(completedSteps));
+    }
+  }, [completedSteps, lessonId]);
+
+  // Mark lab as completed in the API
+ const markAsCompleted = async () => {
+  if (!lab) return;
+  try {
+    setIsSubmitting(true);
+    if (lab.steps && completedSteps.length !== lab.steps.length) {
+      toast.warning("Please complete all steps first");
+      return;
+    }
+    
+    // Get the labGuideId from URL search params
+    const searchParams = new URLSearchParams(window.location.search);
+    const labGuideId = searchParams.get('labGuideId');
+    
+    if (!labGuideId) {
+      throw new Error('Lab guide ID not found');
+    }
+
+    // Use apiClient which includes auth headers
+    await apiClient.patch(`/lab-guides?id=${labGuideId}`, { completed: true });
+
+    setLab(prev => prev ? { ...prev, completed: true } : null);
+    toast.success('Lab marked as completed!');
+  } catch (error) {
+    console.error('Error marking lab as completed:', error);
+    toast.error('Failed to mark lab as completed');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Fetch lab guide
   useEffect(() => {
@@ -97,7 +143,9 @@ export default function LabGuidePage() {
           ...json.lab,
           video: getFileUrl(json.lab.video),
           pdf: getFileUrl(json.lab.pdf),
-          steps: json.lab.steps || []
+          steps: json.lab.steps || [],
+          completed: json.lab.completed || false,
+          status: json.lab.completed ? "completed" : "not-started"
         };
 
         setLab(labData);
@@ -202,16 +250,22 @@ export default function LabGuidePage() {
                           />
 
                           <button
-                            onClick={() =>
-                              setCompletedSteps((prev) =>
-                                prev.includes(index) ? prev : [...prev, index]
-                              )
-                            }
-                            disabled={completed}
-                            className="mt-3 px-4 py-2 rounded text-white disabled:opacity-50 cursor-pointer"
-                            style={{ backgroundColor: primary }}
+                            onClick={() => {
+                              const newCompletedSteps = completedSteps.includes(index)
+                                ? completedSteps.filter(i => i !== index)
+                                : [...completedSteps, index];
+                              setCompletedSteps(newCompletedSteps);
+                              if (!completedSteps.includes(index)) {
+                                toast.success(`Step ${index + 1} marked as completed!`);
+                              }
+                            }}
+                            disabled={lab.status === 'completed'}
+                            className="mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
+                            style={{ 
+                              backgroundColor: completed || lab.status === 'completed' ? '#5a850d' : primary 
+                            }}
                           >
-                            {completed ? "Step Completed" : "Mark Step as Completed"}
+                            {completed || lab.status === 'completed' ? "Step Completed" : "Mark Step as Completed"}
                           </button>
                         </div>
                       );
@@ -270,20 +324,14 @@ export default function LabGuidePage() {
               {/* Action Buttons */}
               <div className="flex flex-col md:flex-row gap-4 mt-10">
                 <button
-                  onClick={() => {
-                    if (lab.steps && completedSteps.length !== lab.steps.length) {
-                      toast.warning("Please complete all steps first");
-                    } else {
-                      toast.success("Lab marked as completed!");
-                    }
-                  }}
-                  disabled={lab.steps ? completedSteps.length !== lab.steps.length : false}
-                  className={`flex-1 py-2.5 md:py-3 rounded-lg text-white text-base md:text-lg font-semibold shadow cursor-pointer ${lab.steps && completedSteps.length !== lab.steps.length ? 'opacity-50' : ''}`}
-                  style={{ backgroundColor: primary }}
+                  onClick={markAsCompleted}
+                  disabled={lab.completed || isSubmitting || lab.steps?.length === 0}
+                  className={`flex-1 py-2.5 md:py-3 rounded-lg text-white text-base md:text-lg font-semibold shadow transition ${
+                    ((lab.steps && completedSteps.length !== lab.steps.length) || lab.completed) && !isSubmitting ? 'opacity-50' : ''
+                  }`}
+                  style={{ backgroundColor: lab.completed ? '#5a850d' : primary }}
                 >
-                  {lab.steps && completedSteps.length !== lab.steps.length 
-                    ? `Complete All Steps (${completedSteps.length}/${lab.steps.length})` 
-                    : 'Mark as Completed'}
+                  {isSubmitting ? 'Updating...' : lab.completed ? 'Lab Completed' : 'Mark as Completed'}
                 </button>
 
                 <button

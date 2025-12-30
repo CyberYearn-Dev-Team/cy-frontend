@@ -182,22 +182,8 @@ export default function LabGuidesPage() {
                           </p>
                         </div>
 
-                        {/* Status + Button Row */}
-                        <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                          {/* Status */}
-                          {lab.status === "completed" ? (
-                            <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
-                              <CheckCircle2 className="h-4 w-4" /> Completed
-                            </span>
-                          ) : lab.status === "in-progress" ? (
-                            <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 text-sm font-medium">
-                              <Clock className="h-4 w-4" /> In Progress
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                              <Clock className="h-4 w-4" /> Not Started
-                            </span>
-                          )}
+                        {/* Button Row */}
+                        <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
 
                           {/* Start Button */}
                           <Link
