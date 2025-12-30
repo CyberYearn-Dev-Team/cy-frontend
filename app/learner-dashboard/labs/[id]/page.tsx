@@ -64,8 +64,22 @@ export default function LabDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ REQUIRED: step completion state
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  // Step completion state with local storage persistence
+  const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
+    // Load completed steps from local storage on initial render
+    if (typeof window !== 'undefined' && labId) {
+      const saved = localStorage.getItem(`lab-${labId}-completed-steps`);
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Save completed steps to local storage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && labId) {
+      localStorage.setItem(`lab-${labId}-completed-steps`, JSON.stringify(completedSteps));
+    }
+  }, [completedSteps, labId]);
 
   const markAsCompleted = async () => {
     if (!lab) return;
@@ -76,6 +90,12 @@ export default function LabDetailPage() {
 
       // Update local state to reflect the change
       setLab(prev => prev ? { ...prev, completed: true } : null);
+      
+      // Clear the completed steps from local storage
+      if (typeof window !== 'undefined' && labId) {
+        localStorage.removeItem(`lab-${labId}-completed-steps`);
+      }
+      
       toast.success('Lab marked as completed!');
     } catch (error) {
       console.error('Error marking lab as completed:', error);
@@ -208,16 +228,17 @@ export default function LabDetailPage() {
 
                           {/* ✅ REQUIRED: Manual Verification */}
                           <button
-                            onClick={() =>
-                              setCompletedSteps((prev) =>
-                                prev.includes(index) ? prev : [...prev, index]
-                              )
-                            }
-                            disabled={completed}
-                            className="mt-3 px-4 py-2 rounded-lg text-white disabled:opacity-50 cursor-pointer"
-                            style={{ backgroundColor: primary }}
+                            onClick={() => {
+                              const newCompletedSteps = completedSteps.includes(index)
+                                ? completedSteps.filter(i => i !== index)
+                                : [...completedSteps, index];
+                              setCompletedSteps(newCompletedSteps);
+                            }}
+                            disabled={lab.completed}
+                            className={`mt-3 px-4 py-2 rounded-lg text-white ${lab.completed ? 'bg-gray-400' : ''} cursor-pointer`}
+                            style={{ backgroundColor: lab.completed ? '' : primary }}
                           >
-                            {completed
+                            {completedSteps.includes(index) || lab.completed
                               ? "Step Completed"
                               : "Mark Step as Completed"}
                           </button>
@@ -265,9 +286,10 @@ export default function LabDetailPage() {
               <div className="flex gap-5 mt-10">
                 <button
                   disabled={
-                    (lab.steps && completedSteps.length !== lab.steps.length) || 
+                    (lab.steps && completedSteps.length < lab.steps.length) || 
                     lab.completed ||
-                    isSubmitting
+                    isSubmitting ||
+                    lab.steps?.length === 0
                   }
                   onClick={markAsCompleted}
                   className={`flex-1 py-3 rounded-lg text-white font-semibold disabled:opacity-50 ${
