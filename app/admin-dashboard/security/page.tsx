@@ -97,7 +97,6 @@ const SecurityPage: React.FC = () => {
     loadData();
   }, []);
 
-
   const getAlertType = (alert: APISecurityAlert): SecurityAlert["type"] => {
     if (alert.description.toLowerCase().includes("login"))
       return "suspicious-login";
@@ -117,7 +116,7 @@ const SecurityPage: React.FC = () => {
     ipAddress: alert.ipAddress,
     userId: alert.userId,
     description: alert.description,
-    createdAt: alert.createdAt
+    createdAt: alert.createdAt,
   }));
 
   const filteredAlerts =
@@ -166,110 +165,147 @@ const SecurityPage: React.FC = () => {
             <div className="max-w-7xl mx-auto space-y-6">
               <h1 className="text-3xl font-bold">Security Controls</h1>
 
-            {/* METRICS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Stat
-                label="Critical Alerts"
-                value={metrics.criticalAlerts}
-                Icon={AlertTriangle}
-              />
-              <Stat
-                label="Active Sessions"
-                value={metrics.activeSessions}
-                Icon={Activity}
-              />
-              <Stat label="Blocked IPs" value={metrics.blockedIps} Icon={Ban} />
-              <Stat
-                label="Rate Limits"
-                value={metrics.rateLimits}
-                Icon={TrendingUp}
-              />
-            </div>
-
-            {/* GLOBAL LOGOUT */}
-            <div className={`${bgCard} p-6 rounded-lg border`}>
-              <h3 className="font-semibold mb-2">Force Global Logout</h3>
-              <p className="text-sm mb-4">
-                End all active sessions immediately.
-              </p>
-              <Button
-                className="cursor-pointer"
-                variant="destructive"
-                onClick={() => setShowLogoutConfirm(true)}
-              >
-                Initiate Global Logout
-              </Button>
-            </div>
-
-            {/* ALERTS */}
-            <div className={`${bgCard} rounded-lg border`}>
-              <div className="p-4 flex justify-between items-center">
-                <h2 className="font-semibold">Security Alerts</h2>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      {filterSeverity.toUpperCase()}
-                      <ChevronDown className="ml-2 w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {["all", "critical", "high", "medium", "low"].map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onClick={() => setFilterSeverity(s as SeverityFilter)}
-                      >
-                        {s.toUpperCase()}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              {/* METRICS */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Stat
+                  label="Critical Alerts"
+                  value={metrics.criticalAlerts}
+                  Icon={AlertTriangle}
+                />
+                <Stat
+                  label="Active Sessions"
+                  value={metrics.activeSessions}
+                  Icon={Activity}
+                />
+                <Stat
+                  label="Blocked IPs"
+                  value={metrics.blockedIps}
+                  Icon={Ban}
+                />
+                <Stat
+                  label="Rate Limits"
+                  value={metrics.rateLimits}
+                  Icon={TrendingUp}
+                />
               </div>
 
-              <div className="divide-y">
-                {filteredAlerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    onClick={() => setSelectedAlert(alert)}
-                    className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
+              {/* GLOBAL LOGOUT */}
+              <div className={`${bgCard} p-6 rounded-lg border`}>
+                <h3 className="font-semibold mb-2">Force Global Logout</h3>
+                <p className="text-sm mb-4">
+                  End all active sessions immediately.
+                </p>
+                <Button
+                  className="cursor-pointer"
+                  variant="destructive"
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
+                  Initiate Global Logout
+                </Button>
+              </div>
+
+              {/* ALERTS */}
+              <div className={`${bgCard} rounded-lg border`}>
+                <div className="p-4 flex justify-between items-center">
+                  <h2 className="font-semibold">Security Alerts</h2>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        {filterSeverity.toUpperCase()}
+                        <ChevronDown className="ml-2 w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {["all", "critical", "high", "medium", "low"].map((s) => (
+                        <DropdownMenuItem
+                          key={s}
+                          onClick={() => setFilterSeverity(s as SeverityFilter)}
+                        >
+                          {s.toUpperCase()}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="divide-y border-t border-b sm:border-none">
+                  {filteredAlerts.map((alert) => (
+                    <div
+                      key={alert.id}
+                      onClick={() => setSelectedAlert(alert)}
+                      className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      {/* Header: Severity and ID */}
+                      <div className="flex gap-10 justify-between items-center mb-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded ${getSeverityColor(
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${getSeverityColor(
                             alert.severity
                           )}`}
                         >
-                          {alert.severity.toUpperCase()}
+                          {alert.severity}
                         </span>
-                        <p className="mt-2 font-medium">{alert.message}</p>
-                        <div className="mt-1 space-y-1">
-                          {alert.details && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300">{alert.details}</p>
-                          )}
-                          <div className="text-xs text-gray-500 flex flex-wrap gap-4">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {new Date(alert.timestamp).toLocaleString()}
+                        <span className="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded sm:bg-transparent">
+                          ID: {alert.id}
+                        </span>
+                      </div>
+
+                      {/* Main Content */}
+                      <div className="space-y-1">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+                          {alert.message}
+                        </p>
+
+                        {alert.details && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 sm:line-clamp-none">
+                            {alert.details}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Meta Information Grid */}
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 min-w-fit">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>
+                            {new Date(alert.timestamp).toLocaleString([], {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 min-w-fit">
+                          <span className="text-xs text-gray-500">
+                            Created At: {new Date(alert.createdAt).toLocaleString([], {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-100 dark:border-gray-700">
+                            Source: {alert.source}
+                          </span>
+
+                          {alert.ipAddress && (
+                            <span className="hidden sm:inline-block">
+                              • IP: {alert.ipAddress}
                             </span>
-                            <span>Source: {alert.source}</span>
-                            {alert.ipAddress && (
-                              <span>IP: {alert.ipAddress}</span>
-                            )}
-                            {alert.userId && (
-                              <span>User ID: {alert.userId}</span>
-                            )}
-                          </div>
+                          )}
+
+                          {alert.userId && (
+                            <span className="text-blue-600 dark:text-blue-400">
+                              User id: {alert.userId}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="text-xs text-gray-400">
-                        ID: {alert.id}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
             </div>
           )}
         </main>
@@ -280,36 +316,35 @@ const SecurityPage: React.FC = () => {
       {/* LOGOUT CONFIRM */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-  <div
-    className={`${bgCard} p-6 rounded-lg max-w-md w-full sm:w-auto`}
-  >
-    <h3 className="font-semibold mb-2">Confirm Global Logout</h3>
+          <div className={`${bgCard} p-6 rounded-lg max-w-md w-full sm:w-auto`}>
+            <h3 className="font-semibold mb-2">Confirm Global Logout</h3>
 
-    <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-      This action will immediately log out <strong>all users</strong> across the
-      platform, including administrators. Active sessions will be terminated
-      and users will be required to sign in again. This action cannot be undone.
-    </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              This action will immediately log out <strong>all users</strong>{" "}
+              across the platform, including administrators. Active sessions
+              will be terminated and users will be required to sign in again.
+              This action cannot be undone.
+            </p>
 
-    <div className="flex gap-3">
-      <Button
-      className="cursor-pointer"
-        variant="outline"
-        onClick={() => setShowLogoutConfirm(false)}
-      >
-        Cancel
-      </Button>
+            <div className="flex gap-3">
+              <Button
+                className="cursor-pointer"
+                variant="outline"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </Button>
 
-      <Button
-      className="cursor-pointer"
-       variant="destructive"
-        onClick={handleGlobalLogout}>
-        Confirm
-      </Button>
-    </div>
-  </div>
-</div>
-
+              <Button
+                className="cursor-pointer"
+                variant="destructive"
+                onClick={handleGlobalLogout}
+              >
+                Confirm
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
