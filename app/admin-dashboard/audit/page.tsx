@@ -105,6 +105,28 @@ const deriveFallbackDiff = (log: any): AuditDiff[] | undefined => {
     ];
   }
 
+  // USER DELETED
+  if (actionTitle === "User Deleted") {
+    return [
+      {
+        field: "status",
+        oldValue: "Active",
+        newValue: "Deleted",
+      },
+    ];
+  }
+
+  // GLOBAL LOGOUT INITIATED
+  if (actionTitle === "Initiated Global Logout") {
+    return [
+      {
+        field: "session",
+        oldValue: "Active",
+        newValue: "Terminated",
+      },
+    ];
+  }
+
   // FEATURE FLAG UPDATED
   if (actionTitle === "Updated Feature Flag") {
     return [
