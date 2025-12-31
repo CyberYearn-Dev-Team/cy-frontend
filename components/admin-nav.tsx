@@ -7,7 +7,7 @@ import {
   BarChart3,
   Flag,
   Activity,
-  Bug,
+  // Activity,
   ToggleLeft,
   Users,
 } from "lucide-react";
@@ -17,9 +17,9 @@ export default function UserNav() {
 
   const navItems = [
     { name: "Overview", href: "/admin-dashboard/overview", icon: LayoutGrid },
-    { name: "Toggles", href: "/admin-dashboard/feature-flags", icon: ToggleLeft },
+    { name: "Audit Logs", href: "/admin-dashboard/audit", icon: Activity },
     { name: "Metrics", href: "/admin-dashboard/metrics", icon: BarChart3 },
-    { name: "Bugs", href: "/admin-dashboard/technical-issues", icon: Bug },
+    { name: "Toggles", href: "/admin-dashboard/feature-flags", icon: ToggleLeft },
     { name: "All Users", href: "/admin-dashboard/users", icon: Users },
   ];
 

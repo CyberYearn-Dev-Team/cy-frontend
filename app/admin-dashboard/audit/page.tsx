@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { TechnicalIssuesSkeleton } from "@/components/ui/TechnicalIssuesSkeleton";
 import {
   Search,
   ChevronDown,
@@ -250,18 +251,16 @@ export default function AuditLogsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen w-full bg-white dark:bg-gray-950">
         <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <AdminHeader setSidebarOpen={setSidebarOpen} />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Audit Logs</h1>
-              </div>
-              <AuditLogsSkeleton />
-            </div>
+          <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 p-4 md:p-6">
+            <AuditLogsSkeleton />
           </main>
+        </div>
+        <div className="lg:hidden">
+          <Nav />
         </div>
       </div>
     );

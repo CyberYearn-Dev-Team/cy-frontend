@@ -37,6 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { ProfileSkeleton } from "@/components/ui/ProfileSkeleton";
 
 // Theme Constants
 const primary = "#72a210";
@@ -120,8 +121,18 @@ export default function ProfilePage() {
     }
   };
 
-
-  
+  if (loading) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header setSidebarOpen={setSidebarOpen} />
+          <ProfileSkeleton />
+          <Nav />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -133,9 +144,7 @@ export default function ProfilePage() {
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 pb-20 md:pb-8 mb-[50px] md:mb-0">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              {loading
-                ? "Loading..."
-                : profile.username
+              {profile.username
                 ? `Hi, ${profile.username}`
                 : "Your Profile"}
             </h1>

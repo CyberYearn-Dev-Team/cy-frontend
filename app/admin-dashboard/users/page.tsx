@@ -386,6 +386,7 @@ export default function UserManagement() {
         <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <AdminHeader setSidebarOpen={setSidebarOpen} />
+          <Nav />
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
             <div className="max-w-7xl mx-auto">
               <UsersSkeleton />
