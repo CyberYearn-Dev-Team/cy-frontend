@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/learner-sidebar";
+import { completeLabGuide, getLabGuideStatus } from "@/lib/services/labGuideService";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import { toast } from "sonner";
@@ -64,9 +65,12 @@ export default function LabGuidePage() {
 
   const [lab, setLab] = useState<LabGuide | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [issuePopupOpen, setIssuePopupOpen] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [labId, setLabId] = useState<string | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
     if (typeof window !== 'undefined' && lessonId) {
       const saved = localStorage.getItem(`lab-guide-${lessonId}-completed-steps`);
@@ -74,7 +78,6 @@ export default function LabGuidePage() {
     }
     return [];
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Save completed steps to local storage when they change
   useEffect(() => {
@@ -83,46 +86,59 @@ export default function LabGuidePage() {
     }
   }, [completedSteps, lessonId]);
 
-  // Mark lab as completed in the API
- const markAsCompleted = async () => {
-  if (!lab) return;
-  try {
-    setIsSubmitting(true);
-    if (lab.steps && completedSteps.length !== lab.steps.length) {
-      toast.warning("Please complete all steps first");
-      return;
-    }
-    
-    // Get the labGuideId from URL search params
-    const searchParams = new URLSearchParams(window.location.search);
-    const labGuideId = searchParams.get('labGuideId');
-    
-    if (!labGuideId) {
-      throw new Error('Lab guide ID not found');
-    }
+  // Function to mark lab as completed
+  const markAsCompleted = async () => {
+    if (!lab || !labId) return;
 
-    // Use apiClient which includes auth headers
-    await apiClient.patch(`/lab-guides?id=${labGuideId}`, { completed: true });
+    try {
+      setIsSubmitting(true);
 
-    setLab(prev => prev ? { ...prev, completed: true } : null);
-    toast.success('Lab marked as completed!');
-  } catch (error) {
-    console.error('Error marking lab as completed:', error);
-    toast.error('Failed to mark lab as completed');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // Check if all steps are completed if there are steps
+      if (lab.steps && lab.steps.length > 0 && completedSteps.length !== lab.steps.length) {
+        toast.warning("Please complete all steps first");
+        return;
+      }
 
-  // Fetch lab guide
-  useEffect(() => {
-    async function fetchLab() {
       try {
+        // First ensure the lab guide status is fetched (this will create the record if it doesn't exist)
+        await getLabGuideStatus(labId);
+        
+        // Now mark it as completed
+        const completionResponse = await completeLabGuide(labId);
+        
+        // Update local state
+        setLab(prev => prev ? {
+          ...prev,
+          completed: true,
+          status: "completed"
+        } : null);
+        
+        setIsCompleted(true);
+        toast.success('Lab marked as completed!');
+      } catch (error: any) {
+        console.error('Error in lab completion process:', error);
+        throw error; // Re-throw to be caught by the outer catch
+      }
+    } catch (error: any) {
+      console.error('Error marking lab as completed:', error);
+      toast.error(error.message || 'Failed to mark lab as completed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Fetch lab guide status and data on component mount
+  useEffect(() => {
+    const fetchLabData = async () => {
+      try {
+        setLoading(true);
+
+        // 1. First, fetch the lab guide data
         const url = new URL(
           `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab_guide`,
           window.location.origin
         );
-        
+
         // Add labGuideId from URL search params if it exists
         const searchParams = new URLSearchParams(window.location.search);
         const labGuideId = searchParams.get('labGuideId');
@@ -130,42 +146,58 @@ export default function LabGuidePage() {
           url.searchParams.set('labGuideId', labGuideId);
         }
 
-        const res = await fetch(url.toString());
-        const json = await res.json();
-        if (!res.ok) throw new Error("Failed to fetch lab guide");
+        // First fetch the lab data
+        const labRes = await fetch(url.toString());
+        if (!labRes.ok) throw new Error("Failed to fetch lab guide");
 
-        if (!json.lab) {
-          throw new Error("Lab guide not found");
-        }
+        const json = await labRes.json();
+        if (!json.lab) throw new Error("Lab guide not found");
 
-        // Convert video/pdf to URL if Directus file object
+        // Now that we have the lab ID, fetch the status
+        const labId = json.lab?.id?.toString() || '';
+        const statusRes = await getLabGuideStatus(labId);
+
+        // Update state with the lab ID
+        setLabId(labId);
+
+        // Update state with lab data and completion status
         const labData = {
           ...json.lab,
           video: getFileUrl(json.lab.video),
           pdf: getFileUrl(json.lab.pdf),
           steps: json.lab.steps || [],
-          completed: json.lab.completed || false,
-          status: json.lab.completed ? "completed" : "not-started"
+          completed: statusRes?.data?.completed || false,
+          status: statusRes?.data?.completed ? "completed" : "not-started"
         };
 
-        setLab(labData);
+        setLab({
+          ...json.lab,
+          id: json.lab.id,
+          completed: statusRes?.data?.completed || false,
+          status: statusRes?.data?.completed ? "completed" : "not-started"
+        });
+        
+        setIsCompleted(statusRes?.data?.completed || false);
+
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching lab data:', err);
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    fetchLab();
-  }, [slug, moduleSlug, lessonId]);
+    if (lessonId) {
+      fetchLabData();
+    }
+  }, [lessonId, slug, moduleSlug]);
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Sidebar sidebarOpen={false} setSidebarOpen={() => {}} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header setSidebarOpen={setSidebarOpen} />
+        <Header setSidebarOpen={() => {}} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
@@ -223,7 +255,6 @@ export default function LabGuidePage() {
                 )}
               </div>
 
-
               {/* Lab Steps */}
               {lab.steps && lab.steps.length > 0 && (
                 <div className={`${cardBg} shadow rounded-lg p-6 mt-6`}>
@@ -274,8 +305,6 @@ export default function LabGuidePage() {
                 </div>
               )}
 
-              
-
               {/* Video */}
               <div className="mt-6">
                 <h2 className={`text-lg font-semibold mb-2 ${textDark}`}>
@@ -320,18 +349,26 @@ export default function LabGuidePage() {
                 </button>
               </div>
 
-
               {/* Action Buttons */}
               <div className="flex flex-col md:flex-row gap-4 mt-10">
                 <button
                   onClick={markAsCompleted}
-                  disabled={lab.completed || isSubmitting || lab.steps?.length === 0}
+                  disabled={isCompleted || isSubmitting || (lab.steps && lab.steps.length > 0 && completedSteps.length !== lab.steps.length)}
                   className={`flex-1 py-2.5 md:py-3 rounded-lg text-white text-base md:text-lg font-semibold shadow transition ${
-                    ((lab.steps && completedSteps.length !== lab.steps.length) || lab.completed) && !isSubmitting ? 'opacity-50' : ''
+                    (isCompleted || (lab.steps && lab.steps.length > 0 && completedSteps.length !== lab.steps.length)) && !isSubmitting ? 'opacity-50' : ''
                   }`}
-                  style={{ backgroundColor: lab.completed ? '#5a850d' : primary }}
+                  style={{ 
+                    backgroundColor: isCompleted ? '#5a850d' : primary,
+                    cursor: (isCompleted || isSubmitting || (lab.steps && lab.steps.length > 0 && completedSteps.length !== lab.steps.length)) ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  {isSubmitting ? 'Updating...' : lab.completed ? 'Lab Completed' : 'Mark as Completed'}
+                  {isSubmitting 
+                    ? 'Updating...' 
+                    : isCompleted 
+                      ? 'Lab Completed' 
+                      : lab.steps && lab.steps.length > 0 
+                        ? `Complete All Steps (${completedSteps.length}/${lab.steps.length})`
+                        : 'Mark as Completed'}
                 </button>
 
                 <button
