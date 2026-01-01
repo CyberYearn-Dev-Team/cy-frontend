@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Skeleton
-} from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   FlaskConical,
   CheckCircle2,
   Clock,
   PlayCircle,
   FileText,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +17,10 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
-import { startLabGuide } from "@/lib/services/labGuideService";
+import {
+  startLabGuide,
+  getLabGuideStatus,
+} from "@/lib/services/labGuideService";
 
 // --- Helper Function for Description Truncation ---
 const truncateDescription = (
@@ -79,28 +80,66 @@ export default function LabGuidesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startingLab, setStartingLab] = useState<string | null>(null);
+  const [labStatus, setLabStatus] = useState<{ [key: string]: boolean }>({});
+  const [loadingStatus, setLoadingStatus] = useState<{
+    [key: string]: boolean;
+  }>({});
   const router = useRouter();
 
   const handleStartLab = async (labId: string) => {
     try {
       setStartingLab(labId);
       // toast.loading('Preparing your lab environment...');
-      
+
       await startLabGuide(labId);
-      
-      toast.success('Lab guide started successfully!', {
+
+      toast.success("Lab guide started successfully!", {
         duration: 2000,
         onAutoClose: () => {
           router.push(`/learner-dashboard/labs/${labId}`);
-        }
+        },
       });
     } catch (error: any) {
-      console.error('Failed to start lab guide:', error);
-      toast.error(error.message || 'Failed to start lab guide. Please try again.');
+      console.error("Failed to start lab guide:", error);
+      toast.error(
+        error.message || "Failed to start lab guide. Please try again."
+      );
     } finally {
       setStartingLab(null);
     }
   };
+
+  // Fetch lab status when labs are loaded
+  useEffect(() => {
+    const fetchLabStatus = async (labId: string) => {
+      try {
+        setLoadingStatus((prev) => ({ ...prev, [labId]: true }));
+        const response = await getLabGuideStatus(labId);
+        if (response.data) {
+          setLabStatus((prev) => ({
+            ...prev,
+            [labId]: response.data.completed,
+          }));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch status for lab ${labId}:`, error);
+        // Default to false if there's an error
+        setLabStatus((prev) => ({
+          ...prev,
+          [labId]: false,
+        }));
+      } finally {
+        setLoadingStatus((prev) => ({ ...prev, [labId]: false }));
+      }
+    };
+
+    // Fetch status for each lab
+    if (labs.length > 0) {
+      labs.forEach((lab) => {
+        fetchLabStatus(lab.id);
+      });
+    }
+  }, [labs]);
 
   // --- API Fetching Logic (Intact) ---
   useEffect(() => {
@@ -156,7 +195,10 @@ export default function LabGuidesPage() {
                 {loading ? (
                   <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="p-6 border rounded-lg border-gray-200 dark:border-gray-700">
+                      <div
+                        key={i}
+                        className="p-6 border rounded-lg border-gray-200 dark:border-gray-700"
+                      >
                         <Skeleton className="h-6 w-3/4 mb-3" />
                         <div className="space-y-2 mb-4">
                           <Skeleton className="h-4 w-full" />
@@ -210,16 +252,35 @@ export default function LabGuidesPage() {
                         </div>
 
                         {/* Button Row */}
-                        <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
-
+                        <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                          {loadingStatus[lab.id] ? (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Loading status...
+                            </div>
+                          ) : labStatus[lab.id] ? (
+                            <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Lab Completed
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+                              <Clock className="h-4 w-4 mr-1" />
+                              Not Started
+                            </div>
+                          )}
                           {/* Start Button */}
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.preventDefault();
                               handleStartLab(lab.id);
                             }}
                             disabled={!!startingLab}
-                            className={`flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto ${startingLab ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                            className={`flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto ${
+                              startingLab
+                                ? "opacity-70 cursor-not-allowed"
+                                : "cursor-pointer"
+                            }`}
                           >
                             {startingLab === lab.id ? (
                               <>
