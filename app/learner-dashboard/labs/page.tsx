@@ -10,12 +10,16 @@ import {
   Clock,
   PlayCircle,
   FileText,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import LearnerFooter from "@/components/learner-footer";
+import { startLabGuide } from "@/lib/services/labGuideService";
 
 // --- Helper Function for Description Truncation ---
 const truncateDescription = (
@@ -74,6 +78,29 @@ export default function LabGuidesPage() {
   const [labs, setLabs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingLab, setStartingLab] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleStartLab = async (labId: string) => {
+    try {
+      setStartingLab(labId);
+      // toast.loading('Preparing your lab environment...');
+      
+      await startLabGuide(labId);
+      
+      toast.success('Lab guide started successfully!', {
+        duration: 2000,
+        onAutoClose: () => {
+          router.push(`/learner-dashboard/labs/${labId}`);
+        }
+      });
+    } catch (error: any) {
+      console.error('Failed to start lab guide:', error);
+      toast.error(error.message || 'Failed to start lab guide. Please try again.');
+    } finally {
+      setStartingLab(null);
+    }
+  };
 
   // --- API Fetching Logic (Intact) ---
   useEffect(() => {
@@ -186,15 +213,26 @@ export default function LabGuidesPage() {
                         <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
 
                           {/* Start Button */}
-                          <Link
-                            href={`/learner-dashboard/labs/${lab.id}`}
-                            className="w-full sm:w-auto"
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleStartLab(lab.id);
+                            }}
+                            disabled={!!startingLab}
+                            className={`flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto ${startingLab ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                           >
-                            <button className="flex items-center justify-center gap-2 px-8 py-2.5 bg-[#72a210] text-white text-base rounded-lg hover:bg-[#5a850d] transition w-full sm:w-auto cursor-pointer">
-                              <PlayCircle className="h-4 w-4" />
-                              Start Lab Guide
-                            </button>
-                          </Link>
+                            {startingLab === lab.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Starting...
+                              </>
+                            ) : (
+                              <>
+                                <PlayCircle className="h-4 w-4" />
+                                Start Lab Guide
+                              </>
+                            )}
+                          </button>
                         </div>
                       </div>
                     ))}

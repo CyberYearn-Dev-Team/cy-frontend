@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { startLesson, trackTime } from "@/lib/services/progressService";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { startLabGuide } from "@/lib/services/labGuideService";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
@@ -47,6 +49,8 @@ function truncateHTMLContent(html: string, wordLimit: number) {
 }
 
 export default function LessonDetailPage() {
+  const router = useRouter();
+  const [startingLab, setStartingLab] = useState<string | null>(null);
   const { slug, moduleSlug, lessonId } = useParams<{
     slug: string;
     moduleSlug: string;
@@ -227,20 +231,38 @@ export default function LessonDetailPage() {
                         </p>
                       </div>
 
-                      <Link
-                        href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab-guide?labGuideId=${guide.id}`}
-                        className="w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center"
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          try {
+                            setStartingLab(guide.id);
+                            await startLabGuide(guide.id);
+                            toast.success('Lab guide started successfully!');
+                            // Navigate after a short delay to show the success message
+                            setTimeout(() => {
+                              router.push(`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab-guide?labGuideId=${guide.id}`);
+                            }, 1000);
+                          } catch (error: any) {
+                            console.error('Failed to start lab guide:', error);
+                            toast.error(error.message || 'Failed to start lab guide. Please try again.');
+                          } finally {
+                            setStartingLab(null);
+                          }
+                        }}
+                        disabled={!!startingLab}
+                        className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center ${
+                          startingLab === guide.id ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+                        }`}
                         style={{ backgroundColor: primary }}
                         onMouseEnter={(e) =>
-                          (e.currentTarget.style.backgroundColor =
-                            primaryDarker)
+                          (e.currentTarget.style.backgroundColor = primaryDarker)
                         }
                         onMouseLeave={(e) =>
                           (e.currentTarget.style.backgroundColor = primary)
                         }
                       >
-                        Start Lab Guide
-                      </Link>
+                        {startingLab === guide.id ? 'Starting...' : 'Start Lab Guide'}
+                      </button>
                     </div>
                   ))}
                 </div>
