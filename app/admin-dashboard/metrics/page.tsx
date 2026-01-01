@@ -244,22 +244,26 @@ export default function MetricsPage() {
 
   // Show skeleton only during initial load
   if (isInitialLoad || (metrics.loading && Object.keys(visibility).length === 0)) {
-    return (
-      <div className={`flex h-screen ${colors.light}`}>
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
-        <div className="flex-1 flex flex-col">
-          <AdminHeader setSidebarOpen={setSidebarOpen} />
-          <main className="flex-1 p-6">
-            <MetricsSkeleton />
-          </main>
-          <Nav />
-        </div>
+  return (
+    <div className={`flex h-screen ${colors.light}`}>
+      <AdminSidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
+
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <AdminHeader setSidebarOpen={setSidebarOpen} />
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <MetricsSkeleton />
+        </main>
+
+        <Nav />
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div className={`flex h-screen ${colors.light}`}>
