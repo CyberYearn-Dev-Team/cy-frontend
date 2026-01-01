@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { FileText, Clapperboard } from "lucide-react";
+import { completeLabGuide, getLabGuideStatus } from "@/lib/services/labGuideService";
 import Sidebar from "@/components/learner-sidebar";
 import Nav from "@/components/learner-nav";
 import Header from "@/components/learner-header";
@@ -86,12 +87,21 @@ export default function LabDetailPage() {
         toast.warning("Please complete all steps first");
         return;
       }
-      await apiClient.patch(`/lab-guides?id=${lab.id}`, { completed: true });
-      setLab(prev => prev ? { ...prev, completed: true } : null);
-      toast.success('Lab marked as completed!');
+      
+      // Call the complete lab guide endpoint
+      const completionResponse = await completeLabGuide(lab.id.toString());
+      if (completionResponse.status === 200) {
+        // Fetch the updated status
+        const statusResponse = await getLabGuideStatus(lab.id.toString());
+        setLab(prev => prev ? { 
+          ...prev, 
+          completed: statusResponse.data.completed 
+        } : null);
+        toast.success('Lab marked as completed!');
+      }
     } catch (error) {
       console.error('Error marking lab as completed:', error);
-      toast.error('Failed to mark lab as completed');
+      toast.error(error instanceof Error ? error.message : 'Failed to mark lab as completed');
     } finally {
       setIsSubmitting(false);
     }
@@ -104,6 +114,10 @@ export default function LabDetailPage() {
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || "Failed to load lab");
 
+        // Get the latest status from the API
+        const statusResponse = await getLabGuideStatus(labId);
+        const isCompleted = statusResponse.data?.completed || false;
+        
         setLab({
           id: json.data.id,
           title: json.data.title,
@@ -117,9 +131,14 @@ export default function LabDetailPage() {
             title: s.lab_guide_steps_id?.title || "Untitled Step",
             text: s.lab_guide_steps_id?.text || "",
           })) || [],
-          status: "not-started",
-          completed: json.data.completed || false,
+          status: isCompleted ? "completed" : "not-started",
+          completed: isCompleted,
         });
+
+        // If lab is completed, mark all steps as completed
+        if (isCompleted && json.data.steps?.length) {
+          setCompletedSteps(Array.from({ length: json.data.steps.length }, (_, i) => i));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
