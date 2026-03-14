@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const url = process.env.NEXT_PUBLIC_DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const url = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
     const token = process.env.DIRECTUS_TOKEN;
 
     const headers: HeadersInit = {

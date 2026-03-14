@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const url = process.env.NEXT_PUBLIC_DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const url = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
     const token = process.env.DIRECTUS_TOKEN;
 
     const headers: HeadersInit = {

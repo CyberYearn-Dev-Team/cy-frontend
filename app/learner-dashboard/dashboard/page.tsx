@@ -652,7 +652,7 @@ export default function LearnerDashboard() {
                                 <img
                                   src={
                                     item.thumbnail
-                                      ? `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${item.thumbnail}`
+                                      ? item.thumbnail
                                       : "/placeholder.png"
                                   }
                                   alt={item.title}
@@ -809,7 +809,7 @@ export default function LearnerDashboard() {
                                 <img
                                   src={
                                     track.thumbnail
-                                      ? `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${track.thumbnail}`
+                                      ? track.thumbnail
                                       : "/placeholder.png"
                                   }
                                   alt={track.title}

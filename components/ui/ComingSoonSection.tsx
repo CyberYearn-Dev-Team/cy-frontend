@@ -107,7 +107,7 @@ export default function ComingSoonSection() {
           {item.thumbnail ? (
             <div className="relative h-30 w-full">
               <Image
-                src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${item.thumbnail}`}
+                src={item.thumbnail}
                 alt={item.title}
                 fill
                 className="object-cover group-hover:brightness-110 transition-all"

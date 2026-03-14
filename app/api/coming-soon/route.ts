@@ -10,6 +10,15 @@ export async function GET() {
     }
     
     const data = await response.json();
+    
+    // Transform the data to include full thumbnail URLs
+    if (data.data && Array.isArray(data.data)) {
+      data.data = data.data.map((item: any) => ({
+        ...item,
+        thumbnail: item.thumbnail ? `${directusUrl}/assets/${item.thumbnail}` : null
+      }));
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching coming soon content:', error);

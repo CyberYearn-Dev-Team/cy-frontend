@@ -126,8 +126,7 @@ const TrackCard: React.FC<{
       {/* Thumbnail Section */}
       <div className="h-40 w-full overflow-hidden bg-gray-200 dark:bg-gray-700">
         <img
-          // FIX: Use DIRECTUS_URL for the thumbnail
-          src={`${DIRECTUS_URL}/assets/${track.thumbnail}`}
+          src={track.thumbnail || "/placeholder.png"}
           alt={track.title}
           className="w-full h-full object-cover"
         />
