@@ -14,7 +14,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // First try with authentication if token is available
     let res = await fetch(
-      `${url}/items/lab_guides?fields=*,steps.*`,
+      `${url}/items/lab_guides?filter[status][_eq]=published&fields=*,steps.*`,
       {
         cache: "no-store",
         headers,
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
       delete headers.Authorization;
       res = await fetch(
-        `${url}/items/lab_guides?fields=*,steps.*`,
+        `${url}/items/lab_guides?filter[status][_eq]=published&fields=*,steps.*`,
         {
           cache: "no-store",
           headers,

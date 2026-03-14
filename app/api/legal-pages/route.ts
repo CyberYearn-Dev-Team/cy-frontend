@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
     const url = new URL(`${DIRECTUS_URL.replace(/\/$/, "")}/items/legal_pages`);
     const type = request.nextUrl.searchParams.get("type"); // ?type=terms
 
+    // ✅ Always fetch only published pages
+    url.searchParams.append("filter[status][_eq]", "published");
+
     // If a type is specified, filter by type
     if (type) {
       url.searchParams.append("filter[type][_eq]", type);

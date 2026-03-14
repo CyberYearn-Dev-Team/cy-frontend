@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const directusUrl = process.env.DIRECTUS_URL;
-    const response = await fetch(`${directusUrl}/items/coming_soon`);
+    const response = await fetch(`${directusUrl}/items/coming_soon?filter[status][_eq]=published`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch coming soon content');
