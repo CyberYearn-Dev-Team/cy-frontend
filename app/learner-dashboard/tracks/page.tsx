@@ -236,7 +236,7 @@ useEffect(() => {
         level: v.level || "beginner",
         topic: v.topic || "General",
         modules: Array.isArray(v.modules)
-          ? v.modules.length
+          ? v.modules.filter((m: any) => m.modules_id?.status === 'published').length
           : typeof v.modules === "number"
           ? v.modules
           : 0,

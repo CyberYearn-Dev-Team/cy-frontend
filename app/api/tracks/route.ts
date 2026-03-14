@@ -22,7 +22,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // --- Try fetching tracks (ONLY PUBLISHED) ---
-    let res = await fetch(`${url}/items/tracks?filter[status][_eq]=published`, {
+    let res = await fetch(`${url}/items/tracks?filter[status][_eq]=published&fields=*,modules.modules_id.id,modules.modules_id.status`, {
       cache: "no-store",
       next: { revalidate: 0 },
       headers,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // --- Retry without token if first attempt fails ---
     if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
-      res = await fetch(`${url}/items/tracks?filter[status][_eq]=published`, {
+      res = await fetch(`${url}/items/tracks?filter[status][_eq]=published&fields=*,modules.modules_id.id,modules.modules_id.status,modules`, {
         cache: "no-store",
         next: { revalidate: 0 },
         headers: baseHeaders,
