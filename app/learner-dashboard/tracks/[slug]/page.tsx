@@ -282,13 +282,6 @@ useEffect(() => {
                               <h3 className={`font-semibold ${textDark}`}>
                                 {module.title}
                               </h3>
-                              {/* {module.status && (
-                                <span
-                                  className={`text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 ${textLight}`}
-                                >
-                                  {module.status}
-                                </span>
-                              )} */}
                             </div>
                             <div
                               className={`text-sm ${textMedium} mb-2 line-clamp-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5 [&_ul>li]:mb-1 [&_ol>li]:mb-1 [&_a]:text-blue-500 [&_a]:hover:underline`}

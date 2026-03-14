@@ -35,10 +35,10 @@ export async function GET(
 
     const track = json.data[0];
 
-    // Flatten modules (from { modules_id: {...} } to just {...}) and filter out nulls
+    // Flatten modules (from { modules_id: {...} } to just {...}) and filter out nulls and unpublished
     const flatModules = (track.modules || [])
       .map((m: any) => m.modules_id)
-      .filter((m: any) => m !== null);
+      .filter((m: any) => m !== null && m.status === 'published');
 
     return NextResponse.json({
       track: {
