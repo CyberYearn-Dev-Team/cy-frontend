@@ -21,8 +21,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       console.log("No valid Directus token found — using public access");
     }
 
-    // --- Try fetching tracks ---
-    let res = await fetch(`${url}/items/tracks`, {
+    // --- Try fetching tracks (ONLY PUBLISHED) ---
+    let res = await fetch(`${url}/items/tracks?filter[status][_eq]=published`, {
       cache: "no-store",
       next: { revalidate: 0 },
       headers,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // --- Retry without token if first attempt fails ---
     if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
-      res = await fetch(`${url}/items/tracks`, {
+      res = await fetch(`${url}/items/tracks?filter[status][_eq]=published`, {
         cache: "no-store",
         next: { revalidate: 0 },
         headers: baseHeaders,
