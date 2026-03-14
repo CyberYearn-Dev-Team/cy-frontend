@@ -13,12 +13,14 @@ export async function GET(
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...(token && token.trim() !== "" && token !== "undefined" ? { "Authorization": `Bearer ${token}` } : {})
+      ...(token && token.trim() !== "" && token !== "undefined"
+        ? { Authorization: `Bearer ${token}` }
+        : {}),
     };
 
     // First try with authentication if token is available
     let res = await fetch(
-      `${url}/items/lab_guides/${id}?filter[status][_eq]=published&filter[steps][lab_guide_steps_id][status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+      `${url}/items/lab_guides/${id}?filter[status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,steps.lab_guide_steps_id.status,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
       {
         cache: "no-store",
         headers,
@@ -29,8 +31,9 @@ export async function GET(
     if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
       delete headers.Authorization;
+
       res = await fetch(
-        `${url}/items/lab_guides/${id}?filter[status][_eq]=published&filter[steps][lab_guide_steps_id][status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+        `${url}/items/lab_guides/${id}?filter[status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,steps.lab_guide_steps_id.status,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
         {
           cache: "no-store",
           headers,
@@ -48,9 +51,29 @@ export async function GET(
     }
 
     const data = await res.json();
-    console.log("✅ Successfully fetched lab guide:", data);
 
-    return NextResponse.json({ data: data.data || null });
+    if (!data?.data) {
+      return NextResponse.json({ data: null });
+    }
+
+    // Filter out draft steps
+    const labGuide = {
+      ...data.data,
+      steps: data.data.steps
+        ?.filter((step: any) => step.lab_guide_steps_id?.status === "published")
+        .map((step: any, index: number) => ({
+          ...step,
+          lab_guide_steps_id: {
+            id: step.lab_guide_steps_id?.id || index,
+            title: step.lab_guide_steps_id?.title || `Step ${index + 1}`,
+            text: step.lab_guide_steps_id?.text || "",
+          },
+        })) || [],
+    };
+
+    console.log("✅ Successfully fetched lab guide:", labGuide);
+
+    return NextResponse.json({ data: labGuide });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Error in /api/lab-guides/[id]:", message);
