@@ -43,9 +43,9 @@ export async function GET(
       labGuideIdToFetch = lessonData.data.lab_guides[0].lab_guides_id.id;
     }
 
-    // Fetch the lab guide with steps
+    // Fetch the lab guide with steps (ONLY PUBLISHED)
     let res = await fetch(
-      `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+      `${base}/items/lab_guides/${labGuideIdToFetch}?filter[status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
       {
         cache: "no-store",
         headers,
@@ -57,7 +57,7 @@ export async function GET(
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
       delete headers.Authorization;
       res = await fetch(
-        `${base}/items/lab_guides/${labGuideIdToFetch}?fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
+        `${base}/items/lab_guides/${labGuideIdToFetch}?filter[status][_eq]=published&fields=*,steps.lab_guide_steps_id.id,steps.lab_guide_steps_id.title,steps.lab_guide_steps_id.text,video.id,video.filename_disk,pdf.id,pdf.filename_disk`,
         {
           cache: "no-store",
           headers,
@@ -85,7 +85,6 @@ export async function GET(
       ...data.data,
       video: data.data.video || null,
       pdf: data.data.pdf || null,
-      // Map the steps to the expected format with null checks and defaults
       steps: data.data.steps?.map((step: any, index: number) => ({
         id: step.lab_guide_steps_id?.id || index,
         title: step.lab_guide_steps_id?.title || `Step ${index + 1}`,
