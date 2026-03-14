@@ -246,7 +246,7 @@ export default function LabGuidesPage() {
                             </span>{" "}
                             •
                             <span className="ml-1 font-semibold uppercase">
-                              {lab.steps?.length || 0} steps
+                              {lab.published_steps_count || 0} steps
                             </span>
                           </p>
                         </div>

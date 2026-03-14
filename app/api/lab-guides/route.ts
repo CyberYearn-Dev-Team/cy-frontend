@@ -9,12 +9,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...(token && token.trim() !== "" && token !== "undefined" ? { "Authorization": `Bearer ${token}` } : {})
+      ...(token && token.trim() !== "" && token !== "undefined"
+        ? { Authorization: `Bearer ${token}` }
+        : {}),
     };
 
     // First try with authentication if token is available
     let res = await fetch(
-      `${url}/items/lab_guides?filter[status][_eq]=published&fields=*,steps.*`,
+      `${url}/items/lab_guides?filter[status][_eq]=published&fields=id,title,description,levels,steps.lab_guide_steps_id.status`,
       {
         cache: "no-store",
         headers,
@@ -25,8 +27,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if ((!res.ok && [401, 403].includes(res.status)) && headers["Authorization"]) {
       console.warn(`Directus responded ${res.status}. Retrying without token...`);
       delete headers.Authorization;
+
       res = await fetch(
-        `${url}/items/lab_guides?filter[status][_eq]=published&fields=*,steps.*`,
+        `${url}/items/lab_guides?filter[status][_eq]=published&fields=id,title,description,levels,steps.lab_guide_steps_id.status`,
         {
           cache: "no-store",
           headers,
@@ -44,9 +47,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     const data = await res.json();
-    console.log("✅ Successfully fetched lab guides:", data);
 
-    return NextResponse.json({ data: data.data || [] });
+    // Count only published steps
+    const labs = data.data?.map((lab: any) => {
+      const publishedStepsCount = lab.steps?.filter(
+        (step: any) => step.lab_guide_steps_id?.status === 'published'
+      ).length || 0;
+      
+      return {
+        ...lab,
+        steps: [], // Empty for now, steps will be fetched individually
+        published_steps_count: publishedStepsCount
+      };
+    }) || [];
+
+    console.log("✅ Successfully fetched lab guides:", labs);
+
+    return NextResponse.json({ data: labs });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Error in /api/lab-guides:", message);
