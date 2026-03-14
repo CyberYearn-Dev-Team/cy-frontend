@@ -39,7 +39,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
         const response = await getCurrentUser();
         // The response structure is { message: string, data: { roles: string[] } }
         const roles = response?.data?.roles || [];
-        console.log('User roles:', roles); // Debug log
+        // console.log('User roles:', roles); // Debug log
         
         if (Array.isArray(roles) && roles.length > 0) {
           setUserRoles(roles.map((r: string) => r.toUpperCase()));

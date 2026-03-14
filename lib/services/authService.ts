@@ -10,13 +10,13 @@ export const getCurrentUser = async (): Promise<any> => {
   try {
     // Get token from localStorage
     const token = typeof window !== "undefined" ? localStorage.getItem("cy_token") : null;
-    console.log('Auth token from localStorage:', token ? 'Token exists' : 'No token found');
+    // console.log('Auth token from localStorage:', token ? 'Token exists' : 'No token found');
 
     if (!token) {
       throw new Error("Authentication required. Please log in again.");
     }
 
-    console.log('Fetching user profile...');
+    // console.log('Fetching user profile...');
     const response = await fetch(
       "https://cy-backend.onrender.com/api/v1/me",
       {
@@ -31,15 +31,15 @@ export const getCurrentUser = async (): Promise<any> => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Error response from server:', { status: response.status, errorData });
+      // console.error('Error response from server:', { status: response.status, errorData });
       throw new Error(errorData.message || `Failed to fetch user profile. Status: ${response.status}`);
     }
 
     const userData = await response.json();
-    console.log('User profile data:', userData);
+    // console.log('User profile data:', userData);
     return userData;
   } catch (err: any) {
-    console.error("Failed to fetch user profile:", err);
+    // console.error("Failed to fetch user profile:", err);
     throw new Error(err.message || "Failed to fetch user profile. Please try again.");
   }
 };
@@ -127,7 +127,7 @@ export const deleteUserAccount = async (userId: string): Promise<{ message: stri
   try {
     // Get token from localStorage
     const token = typeof window !== "undefined" ? localStorage.getItem("cy_token") : null;
-    console.log('Auth token from localStorage:', token ? 'Token exists' : 'No token found');
+    // console.log('Auth token from localStorage:', token ? 'Token exists' : 'No token found');
 
     if (!token) {
       throw new Error("Authentication required. Please log in again.");

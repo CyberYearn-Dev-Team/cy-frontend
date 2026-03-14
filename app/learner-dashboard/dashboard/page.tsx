@@ -292,7 +292,7 @@ export default function LearnerDashboard() {
   useEffect(() => {
     const loadCurrentUser = async () => {
       const currentUser = await getCurrentUser();
-      console.log("Current User:", currentUser);
+      // console.log("Current User:", currentUser);
     };
 
     loadCurrentUser();
