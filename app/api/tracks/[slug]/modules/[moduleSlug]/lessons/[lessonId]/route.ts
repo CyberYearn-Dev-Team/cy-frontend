@@ -36,10 +36,10 @@ export async function GET(
       .map((q: any) => q.quizzes_id)
       .filter(Boolean);
 
-    // flatten lab guides (correct field name)
+    // flatten lab guides (correct field name) and filter by status
     const flatLabGuides = (lesson.lab_guides || [])
       .map((lg: any) => lg.lab_guides_id)
-      .filter(Boolean);
+      .filter((lg: any) => lg !== null && lg.status === 'published');
 
     return NextResponse.json({
       lesson: {
