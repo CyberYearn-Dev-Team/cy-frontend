@@ -35,10 +35,10 @@ export async function GET(
 
     const module = json.data[0];
 
-    // Flatten lessons (from { lessons_id: {...} } to {...})
+    // Flatten lessons (from { lessons_id: {...} } to {...}) and filter out nulls and unpublished
     const flatLessons = (module.lessons || [])
       .map((l: any) => l.lessons_id)
-      .filter((l: any) => l !== null);
+      .filter((l: any) => l !== null && l.status === 'published');
 
     return NextResponse.json({
       module: {

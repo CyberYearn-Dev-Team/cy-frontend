@@ -164,7 +164,10 @@ export default function ModuleDetailPage() {
                 />
               </div>
 
-              {/* Lessons List */}
+
+
+
+              {/* Lessons section */}
               <div
                 className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
               >
