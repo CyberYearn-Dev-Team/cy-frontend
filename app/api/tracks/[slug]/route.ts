@@ -11,7 +11,7 @@ export async function GET(
     const encoded = encodeURIComponent(slug);
 
     const directusRes = await fetch(
-      `${base}/items/tracks?filter[slug][_eq]=${encoded}&fields=*,modules.modules_id.*`,
+      `${base}/items/tracks?filter[slug][_eq]=${encoded}&filter[status][_eq]=published&fields=*,modules.modules_id.*`,
       {
         headers: {
           "Content-Type": "application/json",

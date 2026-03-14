@@ -11,7 +11,7 @@ export async function GET(
     const encoded = encodeURIComponent(moduleSlug);
 
     const directusRes = await fetch(
-      `${base}/items/modules?filter[slug][_eq]=${encoded}&fields=*,lessons.lessons_id.*`,
+      `${base}/items/modules?filter[slug][_eq]=${encoded}&filter[status][_eq]=published&fields=*,lessons.lessons_id.*`,
       {
         headers: {
           "Content-Type": "application/json",

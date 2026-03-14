@@ -16,7 +16,7 @@ export async function GET(
     };
 
     const directusRes = await fetch(
-      `${base}/items/lessons?filter[id][_eq]=${lessonId}&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
+      `${base}/items/lessons?filter[id][_eq]=${lessonId}&filter[status][_eq]=published&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
       { headers, cache: "no-store" }
     );
 

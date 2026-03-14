@@ -10,7 +10,7 @@ export async function GET(
     const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
 
     const directusRes = await fetch(
-      `${base}/items/lessons?filter[id][_eq]=${lessonId}&fields=*,quizzes.quizzes_id.*,lab_guides.lab_guides_id.*`,
+      `${base}/items/lessons?filter[id][_eq]=${lessonId}&filter[status][_eq]=published&fields=*,quizzes.quizzes_id.*,lab_guides.lab_guides_id.*`,
       {
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
