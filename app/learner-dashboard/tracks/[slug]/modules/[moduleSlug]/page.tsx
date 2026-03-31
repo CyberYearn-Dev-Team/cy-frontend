@@ -8,6 +8,7 @@ import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
 import { ModuleDetailSkeleton } from "@/components/ui/ModuleDetailSkeleton";
+import { startLabGuide } from "@/lib/services/labGuideService";
 
 import {
   Breadcrumb,
@@ -43,6 +44,7 @@ interface Module {
   slug: string;
   description: string;
   lessons: Lesson[];
+  lab_guides?: any[];
 }
 
 // Function to truncate HTML content to a word limit
@@ -69,15 +71,23 @@ export default function ModuleDetailPage() {
   const [module, setModule] = useState<Module | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [startingLab, setStartingLab] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchModule() {
       try {
-        const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons`
-        );
-        const data = await res.json();
-        setModule(data.module);
+        const [moduleRes, labGuidesRes] = await Promise.all([
+          fetch(`/api/tracks/${slug}/modules/${moduleSlug}/lessons`),
+          fetch(`/api/tracks/${slug}/modules/${moduleSlug}/lab-guides`)
+        ]);
+        
+        const moduleData = await moduleRes.json();
+        const labGuidesData = await labGuidesRes.json();
+        
+        setModule({
+          ...moduleData.module,
+          lab_guides: labGuidesData.lab_guides || []
+        });
       } catch (err) {
         console.error("Error fetching module:", err);
       } finally {
@@ -242,6 +252,111 @@ export default function ModuleDetailPage() {
                           }}
                         >
                           Start Lesson
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
+
+              {/* LAB GUIDE SECTION*/}
+              <div
+                className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
+              >
+                <h2 className={`text-xl font-semibold ${textDark} mb-2`}>
+                  Lab Guide
+                </h2>
+
+                {/* Safety Notice */}
+                {/* Safety & Ethics Warning */}
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 mb-5 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    Labs must be performed on your{" "}
+                    <strong>own local virtual machine</strong>. Do not target
+                    external systems. Use these guides responsibly and
+                    ethically.
+                  </p>
+                </div>
+
+                {module.lab_guides && module.lab_guides.length > 0 && (
+                  <div className="space-y-4">
+                    {[...module.lab_guides].reverse().map((guide: any) => (
+                      <div
+                        key={guide.id}
+                        className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}
+                      >
+                        <div className="flex-1">
+                          <h3 className={`font-semibold ${textDark} mb-2`}>
+                            {guide.title}
+                          </h3>
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: truncateHTMLContent(
+                                  guide.description,
+                                  50,
+                                ),
+                              }}
+                            />
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            •
+                            <span className="ml-1 font-semibold uppercase">
+                              {guide.levels || "ALL LEVELS"}
+                            </span>{" "}
+                            •
+                            <span className="ml-1 font-semibold uppercase">
+                              {guide.steps?.length || 0} steps
+                            </span>
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                              setStartingLab(guide.id);
+                              await startLabGuide(guide.id);
+                              toast.success("Lab guide started successfully!");
+                              // Navigate after a short delay to show the success message
+                              setTimeout(() => {
+                                router.push(
+                                  `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lab-guide?labGuideId=${guide.id}`,
+                                );
+                              }, 1000);
+                            } catch (error: any) {
+                              console.error(
+                                "Failed to start lab guide:",
+                                error,
+                              );
+                              toast.error(
+                                error.message ||
+                                  "Failed to start lab guide. Please try again.",
+                              );
+                            } finally {
+                              setStartingLab(null);
+                            }
+                          }}
+                          disabled={!!startingLab}
+                          className={`w-full sm:w-auto text-base px-5 py-2 rounded-lg text-white text-center ${
+                            startingLab === guide.id
+                              ? "opacity-70 cursor-not-allowed"
+                              : "cursor-pointer"
+                          }`}
+                          style={{ backgroundColor: primary }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor =
+                              primaryDarker)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = primary)
+                          }
+                        >
+                          {startingLab === guide.id
+                            ? "Starting..."
+                            : "Start Lab Guide"}
                         </button>
                       </div>
                     ))}

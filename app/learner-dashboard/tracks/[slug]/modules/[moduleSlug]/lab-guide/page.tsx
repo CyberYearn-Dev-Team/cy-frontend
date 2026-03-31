@@ -57,10 +57,9 @@ interface LabGuide {
 }
 
 export default function LabGuidePage() {
-  const { slug, moduleSlug, lessonId } = useParams<{
+  const { slug, moduleSlug } = useParams<{
     slug: string;
     moduleSlug: string;
-    lessonId: string;
   }>();
 
   const [lab, setLab] = useState<LabGuide | null>(null);
@@ -72,8 +71,8 @@ export default function LabGuidePage() {
   const [error, setError] = useState<string | null>(null);
   const [labId, setLabId] = useState<string | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
-    if (typeof window !== 'undefined' && lessonId) {
-      const saved = localStorage.getItem(`lab-guide-${lessonId}-completed-steps`);
+    if (typeof window !== 'undefined' && moduleSlug) {
+      const saved = localStorage.getItem(`lab-guide-${moduleSlug}-completed-steps`);
       return saved ? JSON.parse(saved) : [];
     }
     return [];
@@ -81,10 +80,10 @@ export default function LabGuidePage() {
 
   // Save completed steps to local storage when they change
   useEffect(() => {
-    if (typeof window !== 'undefined' && lessonId) {
-      localStorage.setItem(`lab-guide-${lessonId}-completed-steps`, JSON.stringify(completedSteps));
+    if (typeof window !== 'undefined' && moduleSlug) {
+      localStorage.setItem(`lab-guide-${moduleSlug}-completed-steps`, JSON.stringify(completedSteps));
     }
-  }, [completedSteps, lessonId]);
+  }, [completedSteps, moduleSlug]);
 
   // Function to mark lab as completed
   const markAsCompleted = async () => {
@@ -135,7 +134,7 @@ export default function LabGuidePage() {
 
         // 1. First, fetch the lab guide data
         const url = new URL(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/lab_guide`,
+          `/api/tracks/${slug}/modules/${moduleSlug}/lab-guide`,
           window.location.origin
         );
 
@@ -173,6 +172,8 @@ export default function LabGuidePage() {
         setLab({
           ...json.lab,
           id: json.lab.id,
+          video: getFileUrl(json.lab.video),
+          pdf: getFileUrl(json.lab.pdf),
           completed: statusRes?.data?.completed || false,
           status: statusRes?.data?.completed ? "completed" : "not-started"
         });
@@ -187,10 +188,10 @@ export default function LabGuidePage() {
       }
     };
 
-    if (lessonId) {
+    if (moduleSlug) {
       fetchLabData();
     }
-  }, [lessonId, slug, moduleSlug]);
+  }, [moduleSlug, slug]);
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -201,21 +202,37 @@ export default function LabGuidePage() {
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-30">
           {/* Breadcrumb */}
-          <Breadcrumb className="mb-4">
+          <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink
-                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`}
-                >
-                  Lesson
+                <BreadcrumbLink href="/learner-dashboard/tracks">
+                  Learning Tracks
                 </BreadcrumbLink>
               </BreadcrumbItem>
+
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Lab Guide</BreadcrumbPage>
+                <BreadcrumbLink href={`/learner-dashboard/tracks/${slug}`}>
+                  Track
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink
+                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}
+                >
+                  Module
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Lesson</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <br />
 
           {/* Safety & Ethics Warning */}
           <div className="bg-yellow-50 mb-5 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
