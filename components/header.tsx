@@ -180,7 +180,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-lg font-medium transition-colors duration-200 ${
+                  className={`text-lg font-medium cursor-pointer transition-colors duration-200 ${
                     isActive(link.href)
                       ? `text-[${primary}] underline underline-offset-4`
                       : `${textDark} hover:text-[${primary}]`
@@ -190,10 +190,10 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ) : (
-                <div key={link.name} className="flex flex-col gap-5">
+                <div key={link.name} className="flex flex-col cursor-pointer gap-5">
                   <button
                     onClick={() => setIsLegalOpen(!isLegalOpen)}
-                    className={`flex items-center justify-between text-lg font-medium ${textDark} hover:text-[${primary}]`}
+                    className={`flex items-center justify-between cursor-pointer text-lg font-medium ${textDark} hover:text-[${primary}]`}
                   >
                     {link.name}
                     <ChevronDown
@@ -203,7 +203,7 @@ export default function Navbar() {
                     />
                   </button>
                   <div
-                    className={`flex flex-col gap-5 ml-4 overflow-hidden transition-all duration-300 ${
+                    className={`flex flex-col gap-5 ml-4 overflow-hidden cursor-pointer transition-all duration-300 ${
                       isLegalOpen ? "max-h-96" : "max-h-0"
                     }`}
                   >
@@ -211,7 +211,7 @@ export default function Navbar() {
                       <Link
                         key={sub.href}
                         href={sub.href}
-                        className={`text-base font-medium transition-colors duration-200 ${
+                        className={`text-base cursor-pointer font-medium transition-colors duration-200 ${
                           isActive(sub.href)
                             ? `text-[${primary}] underline underline-offset-4`
                             : `${textDark} hover:text-[${primary}]`

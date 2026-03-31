@@ -32,18 +32,20 @@ export default function Footer() {
 
   return (
     <footer className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-800 transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 lg:px-0 py-12">
-        <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
+      {/* MODIFIED LINE BELOW: 
+          Removed 'max-w-6xl' and 'lg:px-0'.
+          Added 'px-4 sm:px-8 md:px-20' to match your Header's padding exactly.
+      */}
+      <div className="px-4 sm:px-8 md:px-20 py-12">
+        <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-50 mb-10 md:mb-10">
           {/* Brand */}
-          <div className="md:max-w-sm">
+          <div className="md:max-w-lg">
             <Link href="/" className="flex items-center gap-2">
-              {/* Light mode logo */}
               <img
                 src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
                 alt="CyberYearn Logo"
                 className="h-11 w-auto block dark:hidden"
               />
-              {/* Dark mode logo */}
               <img
                 src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
                 alt="CyberYearn Logo"
@@ -74,11 +76,46 @@ export default function Footer() {
                 Courses
               </h3>
               <ul className="space-y-3">
-                <li><Link href="#" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Ethical Hacking</Link></li>
-                <li><Link href="#" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Digital Forensics</Link></li>
-                <li><Link href="#" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Security Analysis</Link></li>
-                <li><Link href="#" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Network Security</Link></li>
-                <li><Link href="#" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Penetration Testing</Link></li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Ethical Hacking
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Digital Forensics
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Security Analysis
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Network Security
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Penetration Testing
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -88,10 +125,38 @@ export default function Footer() {
                 Legal Pages
               </h3>
               <ul className="space-y-3">
-                <li><Link href="/landing/legalpages/privacy" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Privacy Policy</Link></li>
-                <li><Link href="/landing/legalpages/cookies" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Cookie Policy</Link></li>
-                <li><Link href="/landing/legalpages/terms" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Terms of Service</Link></li>
-                <li><Link href="/landing/legalpages/aup" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Acceptable Use Policy</Link></li>
+                <li>
+                  <Link
+                    href="/landing/legalpages/privacy"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/landing/legalpages/cookies"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Cookie Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/landing/legalpages/terms"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/landing/legalpages/aup"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Acceptable Use Policy
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -101,8 +166,14 @@ export default function Footer() {
                 Support
               </h3>
               <ul className="space-y-3">
-                {/* <li><Link href="/landing/contact" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Help Center</Link></li> */}
-                <li><Link href="/landing/contact" className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition">Contact Support</Link></li>
+                <li>
+                  <Link
+                    href="/landing/contact"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Contact Support
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -111,10 +182,26 @@ export default function Footer() {
         {/* Logo Row */}
         <div className="border-t border-gray-200 dark:border-gray-800 pt-8 pb-4">
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/-isc-logo-vectorized-.svg" alt="ISC2 Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
-            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/comptia-logo.svg" alt="CompTIA Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
-            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/cisco-2.svg" alt="Cisco Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
-            <img src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/splunk.svg" alt="Splunk Logo" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" />
+            <img
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/-isc-logo-vectorized-.svg"
+              alt="ISC2 Logo"
+              className="h-7 sm:h-8 w-auto object-contain cursor-pointer"
+            />
+            <img
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/comptia-logo.svg"
+              alt="CompTIA Logo"
+              className="h-7 sm:h-8 w-auto object-contain cursor-pointer"
+            />
+            <img
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/cisco-2.svg"
+              alt="Cisco Logo"
+              className="h-7 sm:h-8 w-auto object-contain cursor-pointer"
+            />
+            <img
+              src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/splunk.svg"
+              alt="Splunk Logo"
+              className="h-7 sm:h-8 w-auto object-contain cursor-pointer"
+            />
           </div>
         </div>
 
