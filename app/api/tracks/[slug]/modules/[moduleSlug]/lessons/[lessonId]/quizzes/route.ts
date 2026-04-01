@@ -15,6 +15,7 @@ export async function GET(
     const url = `${base}/items/lessons?filter[id][_eq]=${lessonId}
 &filter[status][_eq]=published
 &filter[quizzes][quizzes_id][status][_eq]=published
+&filter[quizzes][quizzes_id][questions][questions_id][status][_eq]=published
 &status=all
 &limit=-1
 &fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.questions_id.*`;
@@ -32,7 +33,7 @@ export async function GET(
 
     if (!directusRes.ok) {
       const errorText = await directusRes.text();
-      console.error("❌ Directus Error Response:", errorText);
+      console.error("Directus Error Response:", errorText);
 
       return NextResponse.json(
         { quizzes: null, error: "Failed to fetch from Directus" },
@@ -42,24 +43,24 @@ export async function GET(
 
     const json = await directusRes.json();
 
-    console.log("📦 RAW Directus Data:", JSON.stringify(json, null, 2));
+    console.log("RAW Directus Data:", JSON.stringify(json, null, 2));
 
     if (!json?.data || json.data.length === 0) {
-      console.warn("⚠️ No lesson data found");
+      console.warn("No lesson data found");
       return NextResponse.json({ quizzes: [] }, { status: 404 });
     }
 
     const lesson = json.data[0];
 
-    console.log("📘 Lesson:", lesson.id);
-    console.log("📊 Quizzes Count:", lesson.quizzes?.length || 0);
+    console.log("Lesson:", lesson.id);
+    console.log("Quizzes Count:", lesson.quizzes?.length || 0);
 
     const flatQuizzes = (lesson.quizzes || [])
       .map((q: any, quizIndex: number) => {
         const quiz = q.quizzes_id;
 
         if (!quiz) {
-          console.warn(`⚠️ Missing quiz at index ${quizIndex}`);
+          console.warn(`Missing quiz at index ${quizIndex}`);
           return null;
         }
 
@@ -75,13 +76,13 @@ export async function GET(
 
             if (!question) {
               console.warn(
-                `⚠️ Missing question at quiz ${quizIndex}, index ${qIndex}`
+                `Missing question at quiz ${quizIndex}, index ${qIndex}`
               );
               return null;
             }
 
             console.log(
-              `   ✅ Question ${qIndex}:`,
+              `   Question ${qIndex}:`,
               question.question_text
             );
 
@@ -94,7 +95,7 @@ export async function GET(
                   : question.options || [];
             } catch (err) {
               console.error(
-                `❌ Options parse failed for question ${qIndex}`,
+                `Options parse failed for question ${qIndex}`,
                 err
               );
               parsedOptions = [];
@@ -114,7 +115,7 @@ export async function GET(
           .filter(Boolean);
 
         console.log(
-          `   🎯 Final Questions Count:`,
+          `   Final Questions Count:`,
           questions.length
         );
 
@@ -128,11 +129,11 @@ export async function GET(
       })
       .filter(Boolean);
 
-    console.log("✅ FINAL OUTPUT:", JSON.stringify(flatQuizzes, null, 2));
+    console.log("FINAL OUTPUT:", JSON.stringify(flatQuizzes, null, 2));
 
     return NextResponse.json({ quizzes: flatQuizzes });
   } catch (err) {
-    console.error("🔥 API ERROR:", err);
+    console.error("API ERROR:", err);
 
     return NextResponse.json(
       { quizzes: null, error: "Server error" },
