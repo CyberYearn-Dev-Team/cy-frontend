@@ -241,14 +241,25 @@ export default function QuizzesPage() {
           {loading ? (
             <QuizSkeleton />
           ) : quizzes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center mt-20 space-y-4 px-4 sm:px-0">
-              <FileText className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto text-[${primary}]`} />
-              <p className={`text-xl sm:text-2xl font-semibold ${textDark}`}>
-                Oops! No content available.
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className={`text-lg font-semibold ${textDark} mb-2`}>
+                No Quizzes Available Yet
+              </h3>
+              <p className={`${textMedium} max-w-md mx-auto mb-4`}>
+                We're preparing engaging quizzes to test your knowledge and reinforce your learning. 
+                Check back soon to challenge yourself!
               </p>
-              <p className="max-w-sm sm:max-w-md text-gray-400">
-                It looks like the Quizze hasn’t been added yet. Please check back later.
-              </p>
+              <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg p-4 max-w-md mx-auto">
+                <p className="text-sm text-orange-800 dark:text-orange-200">
+                  <strong>What to expect:</strong> Interactive quizzes with immediate feedback, 
+                  hints to guide your learning, and the opportunity to earn XP by mastering the material.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="max-w-4xl mx-auto space-y-6">

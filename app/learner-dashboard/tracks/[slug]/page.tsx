@@ -246,7 +246,7 @@ useEffect(() => {
 
 
 
-                {/* Modules */}
+                {/* Modules section*/}
                 {/* Applied card background and padding for consistency */}
                 <div
                   className={`p-0 bg-transparent shadow-none lg:bg-white dark:lg:bg-gray-900 lg:shadow lg:rounded-lg lg:p-6`}
@@ -258,9 +258,26 @@ useEffect(() => {
                     Complete each module to master the essential skills.
                   </p>
                   {moduleCount === 0 ? (
-                    <p className={textLight}>
-                      No modules published yet for this track.
-                    </p>
+                    <div className="text-center py-12">
+                      <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      <h3 className={`text-lg font-semibold ${textDark} mb-2`}>
+                        No Modules Available Yet
+                      </h3>
+                      <p className={`${textMedium} max-w-md mx-auto mb-4`}>
+                        We're currently building comprehensive modules for this track. 
+                        Check back soon to start your learning journey!
+                      </p>
+                      <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-4 max-w-md mx-auto">
+                        <p className="text-sm text-green-800 dark:text-green-200">
+                          <strong>What's coming:</strong> Structured learning paths with hands-on exercises, 
+                          expert-led content, and practical projects to help you master new skills.
+                        </p>
+                      </div>
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       {validModules.map((module, index) => (
