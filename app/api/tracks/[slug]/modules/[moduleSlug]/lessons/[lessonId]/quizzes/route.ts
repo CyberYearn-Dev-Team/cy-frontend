@@ -9,18 +9,31 @@ export async function GET(
   const { lessonId } = await context.params;
 
   try {
-    const base = process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
+    const base =
+      process.env.DIRECTUS_URL || "https://cy-directus.onrender.com";
 
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
+    const url = `${base}/items/lessons?filter[id][_eq]=${lessonId}
+&filter[status][_eq]=published
+&filter[quizzes][quizzes_id][status][_eq]=published
+&status=all
+&limit=-1
+&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.questions_id.*`;
 
-    const directusRes = await fetch(
-      `${base}/items/lessons?filter[id][_eq]=${lessonId}&filter[status][_eq]=published&filter[quizzes][quizzes_id][status][_eq]=published&status=all&limit=-1&fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.*`,
-      { headers, cache: "no-store" }
-    );
+    console.log("🔗 Directus URL:", url);
+
+    const directusRes = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+
+    console.log("📡 Directus Status:", directusRes.status);
 
     if (!directusRes.ok) {
+      const errorText = await directusRes.text();
+      console.error("❌ Directus Error Response:", errorText);
+
       return NextResponse.json(
         { quizzes: null, error: "Failed to fetch from Directus" },
         { status: directusRes.status }
@@ -29,44 +42,98 @@ export async function GET(
 
     const json = await directusRes.json();
 
+    console.log("📦 RAW Directus Data:", JSON.stringify(json, null, 2));
+
     if (!json?.data || json.data.length === 0) {
+      console.warn("⚠️ No lesson data found");
       return NextResponse.json({ quizzes: [] }, { status: 404 });
     }
 
     const lesson = json.data[0];
 
-    const flatQuizzes = (lesson.quizzes || [])
-      .map((q: any) => {
-        const quiz = q.quizzes_id;
-        if (!quiz) return null;
+    console.log("📘 Lesson:", lesson.id);
+    console.log("📊 Quizzes Count:", lesson.quizzes?.length || 0);
 
-        let parsedOptions: string[] = [];
-        try {
-          parsedOptions = JSON.parse(quiz.options);
-        } catch {
-          parsedOptions = [];
+    const flatQuizzes = (lesson.quizzes || [])
+      .map((q: any, quizIndex: number) => {
+        const quiz = q.quizzes_id;
+
+        if (!quiz) {
+          console.warn(`⚠️ Missing quiz at index ${quizIndex}`);
+          return null;
         }
+
+        console.log(`🧩 Quiz ${quizIndex}:`, quiz.title);
+        console.log(
+          `   ↳ Questions raw:`,
+          JSON.stringify(quiz.questions, null, 2)
+        );
+
+        const questions = (quiz.questions || [])
+          .map((qRel: any, qIndex: number) => {
+            const question = qRel.questions_id;
+
+            if (!question) {
+              console.warn(
+                `⚠️ Missing question at quiz ${quizIndex}, index ${qIndex}`
+              );
+              return null;
+            }
+
+            console.log(
+              `   ✅ Question ${qIndex}:`,
+              question.question_text
+            );
+
+            let parsedOptions: string[] = [];
+
+            try {
+              parsedOptions =
+                typeof question.options === "string"
+                  ? JSON.parse(question.options)
+                  : question.options || [];
+            } catch (err) {
+              console.error(
+                `❌ Options parse failed for question ${qIndex}`,
+                err
+              );
+              parsedOptions = [];
+            }
+
+            return {
+              question_text: question.question_text,
+              options: parsedOptions,
+              answer: question.answer,
+              hint:
+                question.hint ||
+                question.explanation ||
+                question.tip ||
+                "",
+            };
+          })
+          .filter(Boolean);
+
+        console.log(
+          `   🎯 Final Questions Count:`,
+          questions.length
+        );
 
         return {
           id: quiz.id,
           title: quiz.title,
           description: quiz.description,
           passing_score: quiz.passing_score,
-          questions: [
-            {
-              question_text: quiz.question_text,
-              options: parsedOptions,
-              answer: quiz.answer,
-              hint: quiz.hint || quiz.explanation || quiz.tip || "",
-            },
-          ],
+          questions,
         };
       })
       .filter(Boolean);
 
+    console.log("✅ FINAL OUTPUT:", JSON.stringify(flatQuizzes, null, 2));
+
     return NextResponse.json({ quizzes: flatQuizzes });
   } catch (err) {
-    console.error("API error:", err);
+    console.error("🔥 API ERROR:", err);
+
     return NextResponse.json(
       { quizzes: null, error: "Server error" },
       { status: 500 }
