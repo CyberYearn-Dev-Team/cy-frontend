@@ -16,6 +16,7 @@ export async function GET(
 &filter[status][_eq]=published
 &filter[quizzes][quizzes_id][status][_eq]=published
 &filter[quizzes][quizzes_id][questions][questions_id][status][_eq]=published
+&filter[quizzes][quizzes_id][questions][questions_id][status][_nnull]=true
 &status=all
 &limit=-1
 &fields=*,quizzes.quizzes_id.*,quizzes.quizzes_id.questions.questions_id.*`;
@@ -77,6 +78,15 @@ export async function GET(
             if (!question) {
               console.warn(
                 `Missing question at quiz ${quizIndex}, index ${qIndex}`
+              );
+              return null;
+            }
+
+            // Additional client-side filter to ensure only published questions
+            if (question.status !== 'published') {
+              console.log(
+                `   Skipping question ${qIndex} (status: ${question.status}):`,
+                question.question_text
               );
               return null;
             }
