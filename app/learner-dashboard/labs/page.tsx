@@ -175,7 +175,7 @@ export default function LabGuidesPage() {
 
         {/* Page Content */}
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8 mb-20">
             {/* Safety & Ethics Warning */}
             <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">

@@ -11,12 +11,10 @@ interface ComingSoonItem {
   thumbnail: string;
 }
 
-// ⭐ Helper to trim description to first 9 words
-function trimWords(text: string, limit: number) {
-  const words = text.split(" ");
-  if (words.length <= limit) return text;
-  // Ensure we use '........' as requested in the initial query
-  return words.slice(0, limit).join(" ") + "........"; 
+// ⭐ Updated helper to slice by exactly 20 characters/letters
+function trimCharacters(text: string, limit: number) {
+  if (text.length <= limit) return text;
+  return text.substring(0, limit) + "........"; 
 }
 
 export default function ComingSoonSection() {
@@ -61,7 +59,7 @@ export default function ComingSoonSection() {
     return <div className="p-4 text-red-500">{error}</div>;
   }
 
-  //Empty state
+  // Empty state
   if (comingSoonItems.length === 0) {
     return (
       <div className="flex flex-col items-center text-center p-10 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
@@ -96,12 +94,11 @@ export default function ComingSoonSection() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 cursor-pointer">
       {comingSoonItems.map((item) => (
-        // The main card is the 'group' and is relative
         <motion.div
           key={item.id}
           whileHover={{ scale: 1.03 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all relative" // <- Added relative here
+          className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
         >
           {/* Thumbnail */}
           {item.thumbnail ? (
@@ -119,34 +116,15 @@ export default function ComingSoonSection() {
 
           {/* Content Wrapper */}
           <div className="p-5">
+            {/* Title - remains cleanly styled, color shift on hover stays active if desired */}
             <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">
               {item.title}
             </h3>
 
-            {/*Trimmed description (always visible unless the full text is shown) */}
-            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm group-hover:invisible">
-              {trimWords(item.description, 9)}
+            {/* Description - stays visible on hover now, limited to 20 letters */}
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">
+              {trimCharacters(item.description, 20)}
             </p>
-
-            {/*Full description pop-out (Tooltip) */}
-            <div
-              className="
-                absolute left-0 right-0 bottom-0 top-0 z-20 
-                hidden group-hover:block transition-opacity duration-300
-                p-5 bg-white dark:bg-gray-800 
-                backdrop-blur-sm
-                rounded-b-xl
-                border-t border-gray-200 dark:border-gray-600
-                overflow-y-auto
-              "
-            >
-              <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                {item.title}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                {item.description}
-              </p>
-            </div>
           </div>
         </motion.div>
       ))}

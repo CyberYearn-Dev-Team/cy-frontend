@@ -123,7 +123,7 @@ export default function AchievementsPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-8">
+          <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-8 mb-20">
             <Card>
               <CardHeader
                 title="Your Achievements"

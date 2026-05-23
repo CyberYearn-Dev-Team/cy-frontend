@@ -26,6 +26,7 @@ export default function Navbar() {
 
   const links = [
     { name: "Home", href: "/" },
+    { name: "Reviews", href: "/landing/reviews" },
     { name: "Contact Us", href: "/landing/contact" },
     {
       name: "Legal Pages",

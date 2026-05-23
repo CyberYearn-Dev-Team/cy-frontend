@@ -224,26 +224,33 @@ export default function LearnerDashboard() {
   const [level, setLevel] = useState(0);
   const [streak, setStreak] = useState(0);
   const [badgesCount, setBadgesCount] = useState(0);
-  const [badges, setBadges] = useState<Array<{code: string; name: string; description: string; awardedAt: string}>>([]);
-  
+  const [badges, setBadges] = useState<
+    Array<{
+      code: string;
+      name: string;
+      description: string;
+      awardedAt: string;
+    }>
+  >([]);
+
   // Refs for carousels
   const suggestedRef = useRef<HTMLDivElement>(null);
-  
+
   // Scroll handlers for suggested tracks carousel
   const scrollSuggestedLeft = () => {
     if (suggestedRef.current) {
       suggestedRef.current.scrollBy({
         left: -300,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   };
-  
+
   const scrollSuggestedRight = () => {
     if (suggestedRef.current) {
       suggestedRef.current.scrollBy({
         left: 300,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   };
@@ -259,30 +266,34 @@ export default function LearnerDashboard() {
     async function loadGamification() {
       try {
         const currentUser = await getCurrentUser();
-        
+
         if (!currentUser?.email) {
           console.warn("No user email found — skipping gamification fetch");
           return;
         }
 
         const response = await getGamificationData();
-        
+
         if (response?.data) {
-          const { totalXp = 0, badges = [], streak = { currentDays: 0 } } = response.data;
-          
+          const {
+            totalXp = 0,
+            badges = [],
+            streak = { currentDays: 0 },
+          } = response.data;
+
           setXp(totalXp);
           setLevel(Math.floor(totalXp / 100));
           setStreak(streak.currentDays || 0);
           setBadgesCount(badges.length);
           setBadges(badges);
-          
+
           // Update loading state
-          setIsLoading(prev => ({ ...prev, achievements: false }));
+          setIsLoading((prev) => ({ ...prev, achievements: false }));
         }
       } catch (err) {
         console.error("Error loading gamification data:", err);
         // Ensure loading state is updated even on error
-        setIsLoading(prev => ({ ...prev, achievements: false }));
+        setIsLoading((prev) => ({ ...prev, achievements: false }));
       }
     }
 
@@ -313,7 +324,8 @@ export default function LearnerDashboard() {
   });
 
   // NEW: Separate state to know if we have finished checking for data
-  const [hasCheckedContinueLearning, setHasCheckedContinueLearning] = useState(false);
+  const [hasCheckedContinueLearning, setHasCheckedContinueLearning] =
+    useState(false);
 
   useEffect(() => {
     const fetchAndProcessProgress = async () => {
@@ -325,8 +337,8 @@ export default function LearnerDashboard() {
 
           // Build Continue Learning from IN_PROGRESS tracks
           const continueLearningItems = trackProgress
-            .filter(t => t.status === "IN_PROGRESS")
-            .map(t => ({
+            .filter((t) => t.status === "IN_PROGRESS")
+            .map((t) => ({
               id: t.trackId,
               title: t.title,
               description: t.description || "",
@@ -338,36 +350,42 @@ export default function LearnerDashboard() {
             }));
 
           setContinueLearning(continueLearningItems);
-          setIsLoading(prev => ({ ...prev, continueLearning: false }));
+          setIsLoading((prev) => ({ ...prev, continueLearning: false }));
           setHasCheckedContinueLearning(true); // We have data now
 
           // ... rest of your existing logic for suggestions and recent activities (unchanged)
           const inProgressTracks = trackProgress.filter(
-            (t: TrackProgress) => t.status === "IN_PROGRESS"
+            (t: TrackProgress) => t.status === "IN_PROGRESS",
           );
 
           let mainTrack = inProgressTracks.sort(
-            (a: TrackProgress, b: TrackProgress) => b.progress - a.progress
+            (a: TrackProgress, b: TrackProgress) => b.progress - a.progress,
           )[0];
 
           const notStartedTracks = trackProgress.filter(
-            (t: TrackProgress) => t.status === "NOT_STARTED"
+            (t: TrackProgress) => t.status === "NOT_STARTED",
           );
 
           let suggestions: TrackProgress[] = [];
 
           if (mainTrack) {
             const sameLevelTracks = notStartedTracks.filter(
-              (t: TrackProgress) => t.level === mainTrack.level
+              (t: TrackProgress) => t.level === mainTrack.level,
             );
 
             if (sameLevelTracks.length > 0) {
-              suggestions = sameLevelTracks.sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+              suggestions = sameLevelTracks.sort(
+                (a: TrackProgress, b: TrackProgress) => b.progress - a.progress,
+              );
             } else {
-              suggestions = [...notStartedTracks].sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+              suggestions = [...notStartedTracks].sort(
+                (a: TrackProgress, b: TrackProgress) => b.progress - a.progress,
+              );
             }
           } else {
-            suggestions = notStartedTracks.sort((a: TrackProgress, b: TrackProgress) => b.progress - a.progress);
+            suggestions = notStartedTracks.sort(
+              (a: TrackProgress, b: TrackProgress) => b.progress - a.progress,
+            );
           }
 
           setSuggestedTracks(
@@ -377,15 +395,19 @@ export default function LearnerDashboard() {
               description: `Start learning ${t.title}`,
               thumbnail: t.thumbnail || "",
               slug: t.slug || t.trackId,
-            }))
+            })),
           );
-          setIsLoading(prev => ({ ...prev, suggestedTracks: false }));
+          setIsLoading((prev) => ({ ...prev, suggestedTracks: false }));
 
           // Recent activities
           const activities: ActivityItem[] = [];
           trackProgress.forEach((track: TrackProgress) => {
-            if (track.status === "IN_PROGRESS" || track.status === "COMPLETED") {
-              const statusText = track.status === "COMPLETED" ? "Completed" : "In Progress";
+            if (
+              track.status === "IN_PROGRESS" ||
+              track.status === "COMPLETED"
+            ) {
+              const statusText =
+                track.status === "COMPLETED" ? "Completed" : "In Progress";
               activities.push({
                 id: `track-${track.trackId}`,
                 title: `${statusText}: ${track.title}`,
@@ -401,20 +423,23 @@ export default function LearnerDashboard() {
 
           setRecentActivities(
             activities
-              .sort((a, b) => (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0))
-              .slice(0, 5)
+              .sort(
+                (a, b) =>
+                  (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0),
+              )
+              .slice(0, 5),
           );
-          setIsLoading(prev => ({ ...prev, recentActivities: false }));
+          setIsLoading((prev) => ({ ...prev, recentActivities: false }));
         } else {
           // No trackProgress data at all → no in-progress items
           setContinueLearning([]);
-          setIsLoading(prev => ({ ...prev, continueLearning: false }));
+          setIsLoading((prev) => ({ ...prev, continueLearning: false }));
           setHasCheckedContinueLearning(true);
         }
       } catch (error) {
         console.error("Error fetching progress:", error);
         setContinueLearning([]);
-        setIsLoading(prev => ({
+        setIsLoading((prev) => ({
           ...prev,
           continueLearning: false,
           recentActivities: false,
@@ -463,17 +488,23 @@ export default function LearnerDashboard() {
 
   const router = useRouter();
 
-  const handleContinueTrack = async (e: React.MouseEvent, trackId: string, trackSlug: string) => {
+  const handleContinueTrack = async (
+    e: React.MouseEvent,
+    trackId: string,
+    trackSlug: string,
+  ) => {
     e.stopPropagation();
-    const toastId = toast.loading('Loading track...');
+    const toastId = toast.loading("Loading track...");
 
     try {
       const { data } = await apiClient.post(`/tracks/${trackId}/start`);
-      toast.success(data.message || 'Track loaded successfully!', { id: toastId });
+      toast.success(data.message || "Track loaded successfully!", {
+        id: toastId,
+      });
     } catch (error) {
-      console.error('Error starting track:', error);
+      console.error("Error starting track:", error);
       toast.dismiss(toastId);
-      toast.error('Failed to start track. Please try again.');
+      toast.error("Failed to start track. Please try again.");
     } finally {
       if (trackSlug) {
         router.push(`/learner-dashboard/tracks/${trackSlug}`);
@@ -489,40 +520,42 @@ export default function LearnerDashboard() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8 mb-20">
             <div className="max-w-7xl mx-auto space-y-10">
               {/* Hero + Stats Container */}
               <div className="flex flex-col lg:flex-row gap-6">
                 {/* Hero Banner */}
                 <div className="w-full lg:flex-[0.8]">
                   <div
-                    className={`rounded-2xl p-8 text-white relative overflow-hidden h-full`}
+                    className={`rounded-2xl p-5 lg:p-6 text-white relative overflow-hidden h-full`}
                     style={{
                       background: `linear-gradient(90deg, ${primary}, ${hover}, ${secondary})`,
                     }}
                   >
                     <div className="relative z-10">
                       <div className="flex items-center gap-2 mb-4">
-                        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
                           ONLINE COURSE
                         </span>
                       </div>
-                      <h1 className="text-3xl font-bold mb-4 leading-snug">
+                      <h1 className="text-2xl md:text-3xl font-black mb-4 uppercase tracking-wide leading-tight drop-shadow-sm">
                         Sharpen Your Skills with <br />
                         Professional Online Courses
                       </h1>
                       <Link href="/learner-dashboard/tracks">
-                        <Button
-                          variant="secondary"
-                          className={`bg-white text-[${secondary}] hover:bg-gray-100 cursor-pointer 
-                            dark:bg-transparent dark:text-white dark:border dark:border-white dark:hover:bg-white dark:hover:text-black`}
+                        <button
+                          className={`w-full sm:w-auto inline-flex items-center justify-center gap-2
+      px-6 py-3 rounded-full font-bold text-sm mt-5
+      bg-white text-black hover:bg-gray-100 cursor-pointer shadow-md
+      dark:bg-transparent dark:text-white dark:border dark:border-white
+      dark:hover:bg-white dark:hover:text-black`}
                         >
-                          <Play className="h-4 w-4 mr-2" />
+                          <Play className="h-4 w-4" />
                           Start Learning Now
-                        </Button>
+                        </button>
                       </Link>
                     </div>
-                    <div className="absolute top-12 right-15 w-55 h-55 opacity-90 hidden sm:block">
+                    <div className="absolute top-12 right-15 w-50 h-50 opacity-90 hidden sm:block">
                       <img
                         src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/CyberYearn_favicon.png"
                         alt="Hero decoration"
@@ -536,68 +569,78 @@ export default function LearnerDashboard() {
                 {isLoading.achievements ? (
                   <DashboardStatsSkeleton />
                 ) : (
-                  <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-6">
-                    {/* ... stats cards unchanged ... */}
-                    <Card>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-4">
-                            <p className={`text-sm font-medium ${textMedium}`}>
-                              Total XP
-                            </p>
-                            <p className={`text-2xl font-bold ${textDark}`}>
-                              {xp || 0}
-                            </p>
-                          </div>
-                          <Zap className={`h-8 w-8`} style={{ color: primary }} />
+                  <div className="w-full lg:flex-[0.3] grid grid-cols-2 gap-4">
+                    <Link
+                      href="#"
+                      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-5 py-3 rounded-2xl group hover:border-[#72a210] dark:hover:border-[#a3e635] transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-3 lg:mb-1">
+                        <div className="p-2 bg-[#72a210]/10 dark:bg-[#a3e635]/10 rounded-lg group-hover:bg-[#72a210]/20 dark:group-hover:bg-[#a3e635]/20 transition-colors">
+                          <Zap className="w-5 h-5 text-[#72a210] dark:text-[#a3e635]" />
                         </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-4">
-                            <p className={`text-sm font-medium ${textMedium}`}>
-                              Level (XP)
-                            </p>
-                            <p className={`text-2xl font-bold ${textDark}`}>
-                              {level || 0}
-                            </p>
-                          </div>
-                          <Star className={`h-8 w-8`} style={{ color: primary }} />
+                        {/* <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" /> */}
+                      </div>
+                      <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
+                        {xp || 0}
+                      </p>
+                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                        Total XP
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="#"
+                      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-5 py-3 rounded-2xl group hover:border-[#72a210] dark:hover:border-[#a3e635] transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-3 lg:mb-1">
+                        <div className="p-2 bg-[#72a210]/10 dark:bg-[#a3e635]/10 rounded-lg group-hover:bg-[#72a210]/20 dark:group-hover:bg-[#a3e635]/20 transition-colors">
+                          <Star className="w-5 h-5 text-[#72a210] dark:text-[#a3e635]" />
                         </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-4">
-                            <p className={`text-sm font-medium ${textMedium}`}>
-                              Streak
-                            </p>
-                            <p className={`text-2xl font-bold ${textDark}`}>
-                              {streak || 0}
-                            </p>
-                          </div>
-                          <Flame className={`h-8 w-8`} style={{ color: secondary }} />
+                        <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
+                        {level || 0}
+                      </p>
+                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                        Level (XP)
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="#"
+                      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-5 py-3 rounded-2xl group hover:border-[#72a210] dark:hover:border-[#a3e635] transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-3 lg:mb-1">
+                        <div className="p-2 bg-[#507800]/10 dark:bg-[#72a210]/10 rounded-lg group-hover:bg-[#507800]/20 dark:group-hover:bg-[#72a210]/20 transition-colors">
+                          <Flame className="w-5 h-5 text-[#507800] dark:text-[#72a210]" />
                         </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-4">
-                            <p className={`text-sm font-medium ${textMedium}`}>
-                              Badges
-                            </p>
-                            <p className={`text-2xl font-bold ${textDark}`}>
-                              {badgesCount || 0}
-                            </p>
-                          </div>
-                          <Award className={`h-8 w-8`} style={{ color: primary }} />
+                        <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
+                        {streak || 0}
+                      </p>
+                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                        Streak
+                      </p>
+                    </Link>
+
+                    <Link
+                      href="#"
+                      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-5 py-3 rounded-2xl group hover:border-[#72a210] dark:hover:border-[#a3e635] transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-3 lg:mb-1">
+                        <div className="p-2 bg-[#72a210]/10 dark:bg-[#a3e635]/10 rounded-lg group-hover:bg-[#72a210]/20 dark:group-hover:bg-[#a3e635]/20 transition-colors">
+                          <Award className="w-5 h-5 text-[#72a210] dark:text-[#a3e635]" />
                         </div>
-                      </CardContent>
-                    </Card>
+                        <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
+                        {badgesCount || 0}
+                      </p>
+                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                        Badges
+                      </p>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -629,7 +672,8 @@ export default function LearnerDashboard() {
                       {/* FIXED CONDITION: Show empty state only AFTER we have checked the data */}
                       {isLoading.continueLearning ? (
                         <ContinueLearningSkeleton />
-                      ) : hasCheckedContinueLearning && continueLearning.length === 0 ? (
+                      ) : hasCheckedContinueLearning &&
+                        continueLearning.length === 0 ? (
                         <EmptyState
                           icon={BookOpen}
                           title="Start Your Learning Journey"
@@ -647,7 +691,11 @@ export default function LearnerDashboard() {
                             >
                               <div
                                 className="relative mb-3 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 h-[160px] cursor-pointer"
-                                onClick={() => router.push(`/learner-dashboard/tracks/${item.slug}`)}
+                                onClick={() =>
+                                  router.push(
+                                    `/learner-dashboard/tracks/${item.slug}`,
+                                  )
+                                }
                               >
                                 <img
                                   src={
@@ -679,20 +727,25 @@ export default function LearnerDashboard() {
                                   </p>
                                   <Progress value={item.progress} />
                                   <button
-                                    onClick={(e) => handleContinueTrack(e, item.id, item.slug)}
+                                    onClick={(e) =>
+                                      handleContinueTrack(e, item.id, item.slug)
+                                    }
                                     className={`w-full text-center text-xs font-medium py-1.5 px-3 rounded-md transition-colors cursor-pointer`}
                                     style={{
                                       backgroundColor: primary,
-                                      color: 'white',
+                                      color: "white",
                                       border: `1px solid ${primary}`,
                                     }}
                                     onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = hover;
+                                      e.currentTarget.style.backgroundColor =
+                                        hover;
                                       e.currentTarget.style.borderColor = hover;
                                     }}
                                     onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = primary;
-                                      e.currentTarget.style.borderColor = primary;
+                                      e.currentTarget.style.backgroundColor =
+                                        primary;
+                                      e.currentTarget.style.borderColor =
+                                        primary;
                                     }}
                                   >
                                     Continue Learning
@@ -731,7 +784,7 @@ export default function LearnerDashboard() {
                                   {activity.title}
                                 </p>
                                 <div className="flex items-center justify-between mt-1">
-                                  {typeof activity.progress === 'number' && (
+                                  {typeof activity.progress === "number" && (
                                     <span className="ml-0 text-xs text-gray-500 dark:text-gray-400">
                                       {Math.round(activity.progress)}%
                                     </span>
@@ -772,7 +825,7 @@ export default function LearnerDashboard() {
                 {/* Main Content - 60% */}
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
                   <Card className="h-full">
-                      <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
+                    <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                       <CardTitle className={`text-[${secondary}]`}>
                         Suggested for You
                       </CardTitle>
@@ -823,24 +876,30 @@ export default function LearnerDashboard() {
                                   >
                                     {track.title}
                                   </h3>
-                                  <p className={`text-xs ${textLight} line-clamp-2`}>
+                                  <p
+                                    className={`text-xs ${textLight} line-clamp-2`}
+                                  >
                                     {track.description}
                                   </p>
-                                </div> 
+                                </div>
                                 <button
-                                  onClick={(e) => handleContinueTrack(e, track.id, track.slug)}
+                                  onClick={(e) =>
+                                    handleContinueTrack(e, track.id, track.slug)
+                                  }
                                   className={`mt-2 w-full flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-3 rounded-md transition-colors cursor-pointer`}
                                   style={{
                                     backgroundColor: primary,
-                                    color: 'white',
+                                    color: "white",
                                     border: `1px solid ${primary}`,
                                   }}
                                   onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = hover;
+                                    e.currentTarget.style.backgroundColor =
+                                      hover;
                                     e.currentTarget.style.borderColor = hover;
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = primary;
+                                    e.currentTarget.style.backgroundColor =
+                                      primary;
                                     e.currentTarget.style.borderColor = primary;
                                   }}
                                 >
@@ -912,7 +971,7 @@ export default function LearnerDashboard() {
                                     >
                                       <Trophy className="h-7 w-7 text-white" />
                                     </div>
-                                  )
+                                  ),
                                 )}
 
                                 {badges.length > 3 && (
@@ -936,7 +995,7 @@ export default function LearnerDashboard() {
                           {badges.length > 0 && (
                             <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs">
                               {badges.map((badge, index) => (
-                                <div 
+                                <div
                                   key={badge.code || index}
                                   className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                                   title={badge.description}

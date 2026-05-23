@@ -32,11 +32,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-800 transition-colors">
-      {/* MODIFIED LINE BELOW: 
-          Removed 'max-w-6xl' and 'lg:px-0'.
-          Added 'px-4 sm:px-8 md:px-20' to match your Header's padding exactly.
-      */}
-      <div className="px-4 sm:px-8 md:px-20 py-12">
+      <div className="px-4 sm:px-8 md:px-10 py-10">
         <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-20 mb-10 md:mb-10">
           {/* Brand */}
           <div className="md:max-w-lg">
@@ -166,6 +162,22 @@ export default function Footer() {
                 Support
               </h3>
               <ul className="space-y-3">
+                 <li>
+                  <Link
+                    href="/landing/reviews"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Users Feedback
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/login"
+                    className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
+                  >
+                    Shear Feedback
+                  </Link>
+                </li>
                 <li>
                   <Link
                     href="/landing/contact"

@@ -145,10 +145,10 @@ if (!updateData.success) {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           >
             {darkMode ? (
-              <Sun className="h-5 w-5 text-yellow-400 cursor-pointer" />
+              <Sun className="h-5 w-5 text-white cursor-pointer" />
             ) : (
               <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
             )}
@@ -166,7 +166,7 @@ if (!updateData.success) {
           {/* User Avatar & Name */}
           <div className="flex items-center gap-2">
             <div className="relative group">
-              <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[18px] overflow-hidden">
+              <div className="w-10 h-10 bg-[#72a210] rounded-xl flex items-center justify-center text-white font-semibold text-[18px] overflow-hidden">
                 {loading ? (
                   "..."
                 ) : profileImage ? (
@@ -181,13 +181,13 @@ if (!updateData.success) {
               </div>
               <button
                 onClick={triggerFileInput}
-                className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#72a210] rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -bottom-1 cursor-pointer -right-1 w-3 h-3 bg-[#72a210] rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
                 title="Change profile picture"
               >
-                <Camera className="w-3 h-3" />
+                <Camera className="w-2 h-2" />
               </button>
             </div>
-            <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
+            <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
               {loading
                 ? "Loading..."
                 : user?.data?.username ||

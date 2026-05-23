@@ -250,7 +250,7 @@ export default function ProgressPage() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8 mb-20">
             {/* ----------- Stats ----------- */}
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">

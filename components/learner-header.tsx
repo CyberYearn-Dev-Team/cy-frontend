@@ -3,20 +3,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Menu,
-  ChevronDown,
   LogOut,
   User,
-  Settings,
   Moon,
   Sun,
   Bell,
+  Zap,
+  ChevronDown,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser, logoutUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getTechnicalIssues, TechnicalIssue } from "@/lib/services/technicalIssueService";
+import { getGamificationData } from "@/lib/services/gamificationService";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -28,6 +29,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [xp, setXp] = useState(0);
 
   // 🔔 Badge Number
   const [notificationCount, setNotificationCount] = useState(0);
@@ -50,24 +53,30 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
       try {
         const userData = await getCurrentUser();
         setUser(userData);
-        
+
         // Fetch technical issues and count pending ones for the current user
         const issues = await getTechnicalIssues();
         const pendingCount = issues.filter(
-          (issue: TechnicalIssue) => 
-            issue.userId === userData?.id && 
-            issue.status === 'PENDING' && 
+          (issue: TechnicalIssue) =>
+            issue.userId === userData?.id &&
+            issue.status === 'PENDING' &&
             !issue.adminReply
         ).length;
-        
+
         setNotificationCount(pendingCount);
+
+        // Fetch XP
+        const gamificationResponse = await getGamificationData();
+        if (gamificationResponse?.data) {
+          setXp(gamificationResponse.data.totalXp || 0);
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -82,6 +91,18 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     }
     setDarkMode(!darkMode);
   };
+
+  // Logout countdown effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showLogoutConfirm && countdown > 0) {
+      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    } else if (countdown === 0) {
+      setShowLogoutConfirm(false);
+      setCountdown(10);
+    }
+    return () => clearTimeout(timer);
+  }, [showLogoutConfirm, countdown]);
 
   // Logout handler
   const handleLogout = async () => {
@@ -100,14 +121,11 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
           .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
       });
 
-      toast.info("You have been logged out securely.", {
-        description: "Please log in again to continue.",
-      });
+      toast.success("Successfully signed out");
 
       setShowLogoutConfirm(false);
-      setTimeout(() => {
-        router.replace("/auth/login");
-      }, 1000);
+      setCountdown(10);
+      router.replace("/auth/login");
     } catch (err) {
       console.error("Logout failed:", err);
       toast.error("Logout failed. Please try again.");
@@ -128,161 +146,205 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const displayName = user?.data?.username || user?.username || "User";
+  const displayEmail = user?.data?.email || user?.email || "";
+
   return (
     <>
-      <header className="sticky top-0 z-20 flex items-center h-16 px-3 lg:px-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
-        <div className="flex w-full items-center justify-between">
-          {/* Mobile sidebar toggle */}
+      <header className="h-15 border-b border-border flex items-center justify-between gap-4 px-4 sm:px-6 bg-white dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
+        {/* Left — mobile menu toggle */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <button
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+            className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+            <Menu className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Right controls */}
+        <div className="flex items-center gap-4 ml-auto">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Toggle theme"
+          >
+            {darkMode ? (
+              <Sun className="w-5 h-5 text-white" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            )}
           </button>
 
-
-
-          {/* Right side controls */}
-          <div className="flex items-center gap-4 ml-auto">
-            {/* 🔔 Bell icon wrapped with Link */}
-            <Link href="/learner-dashboard/technical-issues-answers">
-              <div className="relative cursor-pointer">
-                <div className="relative">
-                  <Bell className="h-6 w-6 text-gray-700 dark:text-gray-300 cursor-pointer transition-colors" />
-                  {notificationCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {notificationCount}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
-
-
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-            >
-              {darkMode ? (
-                <Sun className="h-5 w-5 text-yellow-400 cursor-pointer" />
-              ) : (
-                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
-              )}
-            </button>
-
-
-
-            {/* User Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center space-x-2 focus:outline-none cursor-pointer"
-              >
-                <div className="w-9 h-9 bg-[#72a210] rounded-full flex items-center justify-center text-white font-semibold text-[20px] overflow-hidden">
-                  {loading ? (
-                    "..."
-                  ) : user?.data?.profileImage || user?.profileImage ? (
-                    <img
-                      src={user?.data?.profileImage || user?.profileImage}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    (user?.data?.email || user?.email)
-                      ?.charAt(0)
-                      .toUpperCase() || "U"
-                  )}
-                </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {loading
-                    ? "Loading..."
-                    : user?.data?.username ||
-                      user?.username ||
-                      user?.data?.email ||
-                      user?.email ||
-                      "User"}
+          {/* Notification Bell */}
+          <Link href="/learner-dashboard/technical-issues-answers">
+            <div className="relative cursor-pointer">
+              <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300 transition-colors" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border-2 border-white dark:border-gray-900">
+                  {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
-                <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
-                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {loading
-                        ? "Loading..."
-                        : user?.data?.username || user?.username || "User"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {loading
-                        ? "Loading..."
-                        : user?.data?.email || user?.email || "user@email.com"}
-                    </p>
-                  </div>
-
-
-
-                  <Link href="/learner-dashboard/profile">
-                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                      <User className="h-4 w-4 mr-2" /> My Profile
-                    </button>
-                  </Link>
-
-
-
-                  <Link href="/learner-dashboard/account-setting">
-                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                      <Settings className="h-4 w-4 mr-2" /> Account Settings
-                    </button>
-                  </Link>
-
-
-
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setShowLogoutConfirm(true);
-                    }}
-                    className="flex items-center mb-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" /> Logout
-                  </button>
-                </div>
               )}
             </div>
+          </Link>
+
+          {/* User info + avatar — desktop only */}
+          <div className="hidden lg:flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <div className="text-right mr-1">
+                <p className="text-[8px] text-[#72a210] dark:text-[#a3e635] font-bold uppercase tracking-widest mt-0.5">
+                  Total XP
+                </p>
+                <p className="text-xs font-black text-gray-900 dark:text-gray-100 leading-none">
+                  {loading ? "..." : `${xp || 0} XP`}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
+                  {loading ? "Loading..." : displayName}
+                </p>
+                <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter mt-1 truncate max-w-[140px]">
+                  {loading ? "" : displayEmail}
+                </p>
+              </div>
+
+              {/* User Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-2 focus:outline-none cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#72a210] dark:hover:border-[#a3e635] transition-colors overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    {user?.data?.profileImage || user?.profileImage ? (
+                      <img
+                        src={user?.data?.profileImage || user?.profileImage}
+                        alt={displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src="https://github.com/shadcn.png"
+                        alt="Default Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-70 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-800 dark:text-gray-100">
+                        {loading ? "Loading..." : displayName}
+                      </p>
+                      <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
+                        {loading ? "Loading..." : displayEmail}
+                      </p>
+                    </div>
+
+                    <Link href="/learner-dashboard/profile">
+                      <button className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <User className="h-5 w-5 mr-2" /> My Profile
+                      </button>
+                    </Link>
+
+                    <Link href="/learner-dashboard/account-setting">
+                      <button className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <Settings className="h-5 w-5 mr-2" /> Account Settings
+                      </button>
+                    </Link>
+
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
+                      className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                      <LogOut className="h-5 w-5 mr-2" /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* User avatar — mobile only */}
+          <div className="flex lg:hidden items-center pl-3 border-l border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => router.push("/learner-dashboard/profile")}
+              className="w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#72a210] dark:hover:border-[#a3e635] transition-colors overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800"
+              title="Go to Profile"
+            >
+              {user?.data?.profileImage || user?.profileImage ? (
+                <img
+                  src={user?.data?.profileImage || user?.profileImage}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src="https://github.com/shadcn.png"
+                  alt="Default Profile"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </button>
           </div>
         </div>
       </header>
 
-
-
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Confirm Logout
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[1.5rem] shadow-2xl w-full max-w-sm p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-black uppercase tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
+              Logout
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Are you sure you want to log out of your account?
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Are you sure you want to sign out? You'll need to log in again to
+              access your account.
             </p>
-            <div className="flex justify-between space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowLogoutConfirm(false)}
-                className="w-28 cursor-pointer"
+
+            {/* Countdown Progress Bar */}
+            <div className="mb-6">
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <span>Auto-closing in...</span>
+                <span>{countdown}s</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-[#72a210] dark:bg-[#a3e635] h-2 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(countdown / 10) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex sm:flex-row gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  setCountdown(10);
+                }}
+                className="flex-1 px-6 py-3 rounded-lg bg-gray-200 dark:bg-gray-800 cursor-pointer text-gray-900 dark:text-gray-100 font-bold text-xs uppercase tracking-widest"
               >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
+                Stay
+              </button>
+              <button
                 onClick={handleLogout}
-                className="w-28 bg-destructive hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90 text-white cursor-pointer"
+                className="flex-1 px-6 py-3 rounded-lg bg-[#72a210] dark:bg-[#a3e635] cursor-pointer text-white font-bold text-xs uppercase tracking-widest hover:bg-[#5a8c0d] dark:hover:bg-[#72a210] transition-colors"
               >
-                Logout
-              </Button>
+                Exit
+              </button>
             </div>
           </div>
         </div>

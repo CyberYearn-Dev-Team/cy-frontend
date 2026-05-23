@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
           {isLoading ? (
             <LeaderboardSkeleton />
           ) : (
-            <main className="p-4 sm:p-6 lg:p-8">
+            <main className="p-4 sm:p-6 lg:p-8 mb-20">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
                 Leaderboard
               </h1>

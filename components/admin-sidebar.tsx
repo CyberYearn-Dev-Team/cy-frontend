@@ -15,6 +15,7 @@ import {
   Bug,
   User,
   Siren,
+  ListChecks,
   ShieldAlert,
   LogOut,
   X,
@@ -32,6 +33,7 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [countdown, setCountdown] = useState(10);
   const [pendingIssuesCount, setPendingIssuesCount] = useState(0);
 
   const basePath = "/admin-dashboard";
@@ -50,9 +52,21 @@ export default function AdminSidebar({
     fetchPendingIssues();
     // Refresh every 30 seconds
     const interval = setInterval(fetchPendingIssues, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
+
+  // Logout countdown effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showLogoutConfirm && countdown > 0) {
+      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    } else if (countdown === 0) {
+      setShowLogoutConfirm(false);
+      setCountdown(10);
+    }
+    return () => clearTimeout(timer);
+  }, [showLogoutConfirm, countdown]);
 
   const sidebarItems = [
     { name: "Overview", icon: LayoutDashboard, href: `${basePath}/overview` },
@@ -61,6 +75,7 @@ export default function AdminSidebar({
     { name: "Metrics & Reports", icon: BarChart3, href: `${basePath}/metrics` },
     { name: "User Management", icon: Users, href: `${basePath}/users` },
     { name: "Platform Security", icon: ShieldAlert, href: `${basePath}/security` },
+    { name: "Review Management", icon: ListChecks, href: `${basePath}/reviews` },
 
     // Technical Issues with Badge
     {
@@ -96,14 +111,11 @@ export default function AdminSidebar({
           .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
       });
 
-      toast.info("You have been logged out securely.", {
-        description: "Please log in again to continue.",
-      });
+      toast.success("Successfully signed out");
 
       setShowLogoutConfirm(false);
-      setTimeout(() => {
-        router.replace("/auth/login");
-      }, 1000);
+      setCountdown(10);
+      router.replace("/auth/login");
     } catch (err) {
       console.error("Logout failed:", err);
       toast.error("Logout failed. Please try again.");
@@ -112,28 +124,10 @@ export default function AdminSidebar({
 
   return (
     <>
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/30 backdrop-blur-sm lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-
-
-      {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-30 
-        w-[85%] sm:w-[70%] md:w-[60%] lg:w-64
-        transform bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
-        transition-transform duration-200 ease-in-out
-        lg:translate-x-0 lg:static lg:inset-0 shadow-xl`}
-      >
-        {/* Logo + Close Button */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-67 border-r h-screen sticky top-0 bg-white dark:bg-gray-900 flex-col shadow-xl">
+        {/* Logo */}
+        <div className="flex-shrink-0 flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <img
               src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
@@ -146,18 +140,10 @@ export default function AdminSidebar({
               className="h-10 w-auto hidden dark:block"
             />
           </div>
-          <button
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-          </button>
         </div>
 
-
-
         {/* Nav Links */}
-        <nav className="px-3 py-6 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
+        <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-6 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {sidebarItems.map(({ name, icon: Icon, href, count }) => (
             <Link
               key={name}
@@ -167,58 +153,162 @@ export default function AdminSidebar({
                   ? "text-[#72a210] dark:text-[#a3e635] font-medium bg-gray-100 dark:bg-gray-800"
                   : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
               }`}
-              onClick={() => setSidebarOpen(false)}
             >
               {/* Icon + Name */}
               <div className="flex items-center">
-                <Icon className="w-5 h-5 mr-2" />
-                {name}
+                <Icon className="w-5 h-5 mr-5" />
+                <span className="text-xs font-black uppercase tracking-widest">{name}</span>
               </div>
 
               {/* Badge */}
               {count !== undefined && (
-                <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full">
                   {count}
                 </span>
               )}
             </Link>
           ))}
+        </nav>
 
-          {/* Logout Button */}
+        {/* Logout */}
+        <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="flex items-center w-full px-3 py-3 text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white transition-colors duration-200 rounded-md cusor-pointer"
+            className="flex items-center cursor-pointer w-full px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all rounded-md group"
           >
-            <LogOut className="w-5 h-5 mr-2" /> Logout
+            <LogOut className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-black uppercase tracking-widest">
+              Logout My Account
+            </span>
           </button>
-        </nav>
+        </div>
       </aside>
 
+      {/* Mobile Sidebar */}
+      {sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <aside className="fixed top-0 left-0 w-full h-full bg-white dark:bg-gray-900 z-100 flex flex-col shadow-xl lg:hidden">
+            {/* Mobile Logo + Close Button */}
+            <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <img
+                  src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/dark%20logo.png"
+                  alt="Logo"
+                  className="h-10 w-auto block dark:hidden"
+                />
+                <img
+                  src="https://pub-8297b2aff6f242709e9a4e96eeb6a803.r2.dev/light%20logo.png"
+                  alt="Logo"
+                  className="h-10 w-auto hidden dark:block"
+                />
+              </div>
+              <button
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              </button>
+            </div>
 
+            {/* Mobile Nav Links */}
+            <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-6 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+              {sidebarItems.map(({ name, icon: Icon, href, count }) => (
+                <Link
+                  key={name}
+                  href={href}
+                  className={`flex items-center justify-between px-3 py-3 rounded-md transition-colors duration-200 ${
+                    isActive(href)
+                      ? "text-[#72a210] dark:text-[#a3e635] font-medium bg-gray-100 dark:bg-gray-800"
+                      : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {/* Icon + Name */}
+                  <div className="flex items-center">
+                    <Icon className="w-5 h-5 mr-5" />
+                    <span className="text-xs font-black uppercase tracking-widest">{name}</span>
+                  </div>
 
+                  {/* Badge */}
+                  {count !== undefined && (
+                    <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                      {count}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Mobile Logout */}
+            <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+              <button
+                onClick={() => {
+                  setSidebarOpen(false);
+                  setShowLogoutConfirm(true);
+                }}
+                className="flex items-center cursor-pointer w-full px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all rounded-md group"
+              >
+                <LogOut className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
+                <span className="text-xs font-black uppercase tracking-widest">
+                  Logout My Account
+                </span>
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-80 p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Confirm Logout
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[1.5rem] shadow-2xl w-full max-w-sm p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-black uppercase tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
+              Logout
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Are you sure you want to log out of your account?
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Are you sure you want to sign out? You'll need to log in again to
+              access your account.
             </p>
-            <div className="flex justify-between space-x-4">
+
+            {/* Countdown Progress Bar */}
+            <div className="mb-6">
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <span>Auto-closing in...</span>
+                <span>{countdown}s</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-[#72a210] dark:bg-[#a3e635] h-2 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${(countdown / 10) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex sm:flex-row gap-3 mt-6">
               <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  setCountdown(10);
+                }}
+                className="flex-1 px-6 py-3 rounded-lg bg-gray-200 dark:bg-gray-800 cursor-pointer text-gray-900 dark:text-gray-100 font-bold text-xs uppercase tracking-widest"
               >
-                Cancel
+                Stay
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-900 text-white transition cursor-pointer"
+                className="flex-1 px-6 py-3 rounded-lg bg-[#72a210] dark:bg-[#a3e635] cursor-pointer text-white font-bold text-xs uppercase tracking-widest hover:bg-[#5a8c0d] dark:hover:bg-[#72a210] transition-colors"
               >
-                Logout
+                Exit
               </button>
             </div>
           </div>

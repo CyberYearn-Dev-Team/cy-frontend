@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, BookOpen, BarChart3, Award, Settings } from "lucide-react";
+import { LayoutGrid, BookOpen, BarChart3, Award, Settings, FlaskConical, Gem } from "lucide-react";
 
 export default function UserNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", href: "/learner-dashboard/dashboard", icon: LayoutGrid },
+    { name: "Home", href: "/learner-dashboard/dashboard", icon: LayoutGrid },
     { name: "Tracks", href: "/learner-dashboard/tracks", icon: BookOpen },
-    { name: "Badges", href: "/learner-dashboard/achievements", icon: Award },
+    { name: "Lab Guide", href: "/learner-dashboard/labs", icon: FlaskConical },
+    { name: "Badges", href: "/learner-dashboard/achievements", icon: Gem },
     { name: "Progress", href: "/learner-dashboard/progress", icon: BarChart3 },
     { name: "Settings", href: "/learner-dashboard/account-setting", icon: Settings },
   ];
@@ -19,29 +20,83 @@ export default function UserNav() {
     pathname === href || pathname?.startsWith(`${href}/`);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center bg-white dark:bg-gray-900 py-3 rounded-t-3xl border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.3)] lg:hidden">
-      {navItems.map(({ name, href, icon: Icon }) => (
-        <Link
-          key={name}
-          href={href}
-          className={`flex flex-col items-center text-xs font-semibold transition-colors duration-200 ${
-            isActive(href)
-              ? "text-[#72a210] dark:text-[#a3e635]"
-              : "text-gray-600 dark:text-gray-300 hover:text-[#72a210] dark:hover:text-[#a3e635]"
-          }`}
-        >
-          <div
-            className={`flex items-center justify-center w-12 h-12 rounded-2xl mb-1 transition-all duration-300 ${
-              isActive(href)
-                ? "bg-[#72a210] text-white"
-                : "bg-gray-100 dark:bg-gray-800"
-            }`}
+    <nav
+      className="
+        fixed bottom-0 left-0 right-0 z-50
+        lg:hidden
+        flex items-center justify-around
+        border-t border-gray-200/60 dark:border-gray-700/60
+        bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl
+        px-2 py-2 rounded-t-2xl
+        shadow-[0_-10px_35px_-15px_rgba(0,0,0,0.35)]
+      "
+    >
+      {navItems.map(({ name, href, icon: Icon }) => {
+        const active = isActive(href);
+
+        return (
+          <Link
+            key={name}
+            href={href}
+            className={`
+              flex flex-col items-center justify-center
+              transition-all duration-300
+              ${
+                active
+                  ? "scale-105"
+                  : "opacity-80 hover:opacity-100 hover:scale-[1.02]"
+              }
+            `}
           >
-            <Icon className="w-6 h-6" />
-          </div>
-          {name}
-        </Link>
-      ))}
+            {/* Icon wrapper */}
+            <div
+              className={`
+                flex items-center justify-center
+                w-12 h-12 rounded-lg mb-1.5
+                transition-all duration-300
+                ${
+                  active
+                    ? `
+                      bg-gradient-to-r from-[#72a210] to-[#a3e635] text-white
+                    `
+                    : `
+                      bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300
+                    `
+                }
+              `}
+            >
+              <Icon
+                className={`
+                  w-5 h-5 transition-all duration-300
+                  ${
+                    active
+                      ? "text-white scale-110"
+                      : "text-gray-600 dark:text-gray-300 opacity-80"
+                  }
+                `}
+              />
+            </div>
+
+            {/* Label */}
+            <span
+              className={`
+                text-[10px]
+                uppercase
+                font-black
+                tracking-wide
+                transition-all duration-300
+                ${
+                  active
+                    ? "text-gray-900 dark:text-gray-100 opacity-100"
+                    : "text-gray-600 dark:text-gray-300 opacity-80"
+                }
+              `}
+            >
+              {name}
+            </span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -39,6 +39,42 @@ const borderLight = "border-gray-200 dark:border-gray-800";
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
 
+  const fullText = "Master Cybersecurity Through Hands-On Learning";
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+    let typingInterval: ReturnType<typeof setInterval>;
+    let restartTimeout: ReturnType<typeof setTimeout>;
+
+    const startTyping = () => {
+      index = 0;
+      setText("");
+
+      typingInterval = setInterval(() => {
+        setText(fullText.slice(0, index + 1));
+        index++;
+
+        // stop when done typing
+        if (index === fullText.length) {
+          clearInterval(typingInterval);
+
+          // wait 5 seconds then restart
+          restartTimeout = setTimeout(() => {
+            startTyping();
+          }, 5000);
+        }
+      }, 80);
+    };
+
+    startTyping();
+
+    return () => {
+      clearInterval(typingInterval);
+      clearTimeout(restartTimeout);
+    };
+  }, []);
+
   return (
     <TooltipProvider>
       <div className={`min-h-screen ${bgLight}`}>
@@ -48,12 +84,17 @@ export default function Home() {
         {/*My Hero Section */}
         <div className="container mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-8 sm:py-12 md:py-16 lg:py-20">
           <div className="text-center mb-20">
-            <h1
-              className={`text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 ${textDark} leading-tight`}
-            >
-              Master <span className={`text-[${primary}]`}>Cybersecurity</span>
-              <br />
-              Through Hands-On Learning
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              {text.includes("Cybersecurity") ? (
+                <>
+                  {text.split("Cybersecurity")[0]}
+                  <span className={`text-[${primary}]`}>Cybersecurity</span>
+                  {text.split("Cybersecurity")[1]}
+                </>
+              ) : (
+                text
+              )}
+              <span className="animate-pulse">|</span>
             </h1>
 
             <p
@@ -104,12 +145,12 @@ export default function Home() {
             <Card
               className={`${cardBg} ${borderLight} hover:shadow-xl transition-shadow duration-200 cursor-pointer text-center`}
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-0">
                 <div className="flex justify-start sm:justify-center mb-4">
                   <div
-                    className={`w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center`}
+                    className={`w-13 h-13 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center`}
                   >
-                    <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    <BookOpen className="h-7 w-7 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
                 <CardTitle className={`text-xl font-semibold ${textDark}`}>
@@ -129,12 +170,12 @@ export default function Home() {
             <Card
               className={`${cardBg} ${borderLight} hover:shadow-xl transition-shadow duration-200 cursor-pointer text-center`}
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-0">
                 <div className="flex justify-start sm:justify-center mb-4">
                   <div
-                    className={`w-16 h-16 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center`}
+                    className={`w-13 h-13 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center`}
                   >
-                    <FlaskConical className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <FlaskConical className="h-7 w-7 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
 
@@ -155,12 +196,12 @@ export default function Home() {
             <Card
               className={`${cardBg} ${borderLight} hover:shadow-xl transition-shadow duration-200 col-span-1 lg:col-span-1 cursor-pointer text-center`}
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-0">
                 <div className="flex justify-start sm:justify-center mb-4">
                   <div
-                    className={`w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center`}
+                    className={`w-13 h-13 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center`}
                   >
-                    <Trophy className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                    <Trophy className="h-7 w-7 text-yellow-600 dark:text-yellow-400" />
                   </div>
                 </div>
                 <CardTitle className={`text-xl font-semibold ${textDark}`}>
@@ -180,12 +221,12 @@ export default function Home() {
             <Card
               className={`${cardBg} ${borderLight} hover:shadow-xl transition-shadow duration-200 cursor-pointer text-center`}
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-0">
                 <div className="flex justify-start sm:justify-center mb-4">
                   <div
-                    className={`w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center`}
+                    className={`w-13 h-13 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center`}
                   >
-                    <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    <Users className="h-7 w-7 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
                 <CardTitle className={`text-xl font-semibold ${textDark}`}>
