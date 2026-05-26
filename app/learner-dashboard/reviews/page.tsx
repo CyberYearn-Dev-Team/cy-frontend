@@ -435,32 +435,34 @@ export default function CommunityReviewsPage() {
                   <span>Featured Highlights</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {featuredReviews.map((item) => (
-                    <div
-                      key={`featured-${item.id}`}
-                      className="p-5 rounded-xl border border-amber-200/60 dark:border-amber-950/40 bg-amber-50/20 dark:bg-amber-950/10 relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-2 rotate-45 bg-amber-500 text-[10px] uppercase tracking-widest text-white px-8 py-1.5 font-bold">
-                        PINNED
-                      </div>
-                      <div className="flex items-center gap-1 text-amber-500 mb-2">
-                        {Array.from({ length: item.rating }).map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                        ))}
-                      </div>
-                      <h4 className={`font-bold text-sm ${textDark} mb-1 line-clamp-1`}>
-                        {item.subject}
-                      </h4>
-                      <p className={`text-xs ${textMedium} line-clamp-3 leading-relaxed`}>
-                        &ldquo;{item.text}&rdquo;
-                      </p>
-                      <div className="mt-3 flex items-center justify-between text-[11px] font-medium text-gray-400">
-                        <span>— {item.isAnonymous ? "Anonymous" : item.name}</span>
-                        <span>{item.date}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+  {featuredReviews.map((item) => (
+    <div
+      key={`featured-${item.id}`}
+      className="p-5 rounded-xl border border-amber-200/60 dark:border-amber-950/40 bg-amber-50/20 dark:bg-amber-950/10 relative overflow-hidden"
+    >
+      {/* Updated Ribbon Classes: Increased px-10, adjusted translate-x-10 & translate-y-3 */}
+      <div className="absolute top-0 right-0 transform translate-x-10 translate-y-3 rotate-45 bg-amber-500 text-[10px] uppercase tracking-widest text-white px-10 py-1 font-bold text-center w-[140px]">
+        FEATURED
+      </div>
+      
+      <div className="flex items-center gap-1 text-amber-500 mb-2">
+        {Array.from({ length: item.rating }).map((_, i) => (
+          <Star key={i} className="w-3.5 h-3.5 fill-current" />
+        ))}
+      </div>
+      <h4 className={`font-bold text-sm ${textDark} mb-1 line-clamp-1 pr-12`}>
+        {item.subject}
+      </h4>
+      <p className={`text-xs ${textMedium} line-clamp-3 leading-relaxed`}>
+        &ldquo;{item.text}&rdquo;
+      </p>
+      <div className="mt-3 flex items-center justify-between text-[11px] font-medium text-gray-400">
+        <span>— {item.isAnonymous ? "Anonymous" : item.name}</span>
+        <span>{item.date}</span>
+      </div>
+    </div>
+  ))}
+</div>
               </div>
 
               <hr className="border-gray-200 dark:border-gray-800" />
@@ -551,7 +553,7 @@ export default function CommunityReviewsPage() {
                               </span>
                               {review.isVerified && (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200/40">
-                                  <CheckCircle2 className="w-3 h-3" /> Verified Student
+                                  <CheckCircle2 className="w-3 h-3" /> Verified Learner
                                 </span>
                               )}
                             </div>
@@ -620,11 +622,12 @@ export default function CommunityReviewsPage() {
                   <button
                     onClick={handleLoadMore}
                     type="button"
-                    className="px-6 py-2.5 rounded-lg text-xs font-bold text-white transition-colors cursor-pointer shadow-sm tracking-wide"
+                    className="flex justify-center gap-2 px-4 py-4 rounded-lg text-xs font-bold text-white transition-colors cursor-pointer shadow-sm tracking-wide"
                     style={{ backgroundColor: primary }}
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = hover)}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primary)}
                   >
+                    <ChevronDown className="w-4 h-4" />
                     Load More Reviews
                   </button>
                 </div>

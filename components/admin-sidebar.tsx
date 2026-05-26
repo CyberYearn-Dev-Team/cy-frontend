@@ -157,7 +157,7 @@ export default function AdminSidebar({
               {/* Icon + Name */}
               <div className="flex items-center">
                 <Icon className="w-5 h-5 mr-5" />
-                <span className="text-xs font-black uppercase tracking-widest">{name}</span>
+                <span className="text-sm font-normal font-semibold tracking-widest">{name}</span>
               </div>
 
               {/* Badge */}
@@ -230,7 +230,7 @@ export default function AdminSidebar({
                   {/* Icon + Name */}
                   <div className="flex items-center">
                     <Icon className="w-5 h-5 mr-5" />
-                    <span className="text-xs font-black uppercase tracking-widest">{name}</span>
+                    <span className="text-sm font-normal font-semibold tracking-widest">{name}</span>
                   </div>
 
                   {/* Badge */}

@@ -189,29 +189,30 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             </div>
           </Link>
 
-          {/* User info + avatar — desktop only */}
-          <div className="hidden lg:flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2">
-              <div className="text-right mr-1">
-                <p className="text-[8px] text-[#72a210] dark:text-[#a3e635] font-bold uppercase tracking-widest mt-0.5">
-                  Total XP
-                </p>
-                <p className="text-xs font-black text-gray-900 dark:text-gray-100 leading-none">
-                  {loading ? "..." : `${xp || 0} XP`}
-                </p>
-              </div>
+          {/* Combined User dropdown wrapper for tracking clicks on both desktop and mobile layouts */}
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex items-center gap-3 pl-0 lg:pl-4 lg:border-l border-gray-200 dark:border-gray-700">
+              
+              {/* User info + avatar — desktop only */}
+              <div className="hidden lg:flex items-center gap-2">
+                <div className="text-right mr-1">
+                  <p className="text-[8px] text-[#72a210] dark:text-[#a3e635] font-bold uppercase tracking-widest mt-0.5">
+                    Total XP
+                  </p>
+                  <p className="text-xs font-black text-gray-900 dark:text-gray-100 leading-none">
+                    {loading ? "..." : `${xp || 0} XP`}
+                  </p>
+                </div>
 
-              <div className="text-right">
-                <p className="text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
-                  {loading ? "Loading..." : displayName}
-                </p>
-                <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter mt-1 truncate max-w-[140px]">
-                  {loading ? "" : displayEmail}
-                </p>
-              </div>
+                <div className="text-right">
+                  <p className="text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
+                    {loading ? "Loading..." : displayName}
+                  </p>
+                  <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter mt-1 truncate max-w-[140px]">
+                    {loading ? "" : displayEmail}
+                  </p>
+                </div>
 
-              {/* User Dropdown */}
-              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
                   className="flex items-center gap-2 focus:outline-none cursor-pointer"
@@ -233,67 +234,70 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                   </div>
                   <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </button>
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-70 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-800 dark:text-gray-100">
-                        {loading ? "Loading..." : displayName}
-                      </p>
-                      <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter">
-                        {loading ? "Loading..." : displayEmail}
-                      </p>
-                    </div>
-
-                    <Link href="/learner-dashboard/profile">
-                      <button className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <User className="h-5 w-5 mr-2" /> My Profile
-                      </button>
-                    </Link>
-
-                    <Link href="/learner-dashboard/account-setting">
-                      <button className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <Settings className="h-5 w-5 mr-2" /> Account Settings
-                      </button>
-                    </Link>
-
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        setShowLogoutConfirm(true);
-                      }}
-                      className="flex items-center w-full px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    >
-                      <LogOut className="h-5 w-5 mr-2" /> Logout
-                    </button>
-                  </div>
-                )}
               </div>
+
+              {/* User avatar — mobile only */}
+              <div className="flex lg:hidden items-center">
+                <button
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#72a210] dark:hover:border-[#a3e635] transition-colors overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800"
+                  title="Toggle Dropdown Menu"
+                >
+                  {user?.data?.profileImage || user?.profileImage ? (
+                    <img
+                      src={user?.data?.profileImage || user?.profileImage}
+                      alt={displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src="https://github.com/shadcn.png"
+                      alt="Default Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </button>
+              </div>
+              
             </div>
+
+            {/* Shares the same dropdown element across desktop and mobile screens */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-70 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-xs font-black tracking-widest text-gray-800 dark:text-gray-100">
+                    {loading ? "Loading..." : displayName}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-tighter">
+                    {loading ? "Loading..." : displayEmail}
+                  </p>
+                </div>
+
+                <Link href="/learner-dashboard/profile">
+                  <button className="flex items-center w-full px-4 py-3 text-xs font-black   tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                    <User className="h-5 w-5 mr-2" /> My Profile
+                  </button>
+                </Link>
+
+                <Link href="/learner-dashboard/account-setting">
+                  <button className="flex items-center w-full px-4 py-3 text-xs font-black   tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                    <Settings className="h-5 w-5 mr-2" /> Account Settings
+                  </button>
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    setShowLogoutConfirm(true);
+                  }}
+                  className="flex items-center w-full px-4 py-3 text-xs font-black tracking-widest text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <LogOut className="h-5 w-5 mr-2" /> Logout My Account
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* User avatar — mobile only */}
-          <div className="flex lg:hidden items-center pl-3 border-l border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => router.push("/learner-dashboard/profile")}
-              className="w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#72a210] dark:hover:border-[#a3e635] transition-colors overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800"
-              title="Go to Profile"
-            >
-              {user?.data?.profileImage || user?.profileImage ? (
-                <img
-                  src={user?.data?.profileImage || user?.profileImage}
-                  alt={displayName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src="https://github.com/shadcn.png"
-                  alt="Default Profile"
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </button>
-          </div>
         </div>
       </header>
 

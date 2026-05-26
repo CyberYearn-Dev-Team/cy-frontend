@@ -99,10 +99,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     { name: "Achievements", icon: Gem, href: `${basePath}/achievements` },
     ...(leaderboardEnabled ? [{ name: "Leaderboard", icon: Trophy, href: `${basePath}/leaderboard` }] : []),
     { name: "Overall Progress", icon: BarChart3, href: `${basePath}/progress` },
-    { name: "Account Profile", icon: User, href: `${basePath}/profile` },
+    // { name: "Account Profile", icon: User, href: `${basePath}/profile` },
     { name: "Share Feedback", icon: ThumbsUp, href: `${basePath}/feedback` },
     { name: "Community Reviews", icon: BadgeCheck, href: `${basePath}/reviews` },
-    { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
+    // { name: "Account Settings", icon: Settings, href: `${basePath}/account-setting` },
   ];
 
   // Only show "Switch to Admin" if user has ADMIN role
@@ -149,7 +149,8 @@ if (userRoles.includes("ADMIN")) {
                   : "text-gray-700 dark:text-gray-200 hover:bg-[#72a210] hover:text-white"
               }`}
             >
-              <Icon className="w-5 h-5 mr-5" /> <span className="text-xs font-black uppercase tracking-widest"> {name} </span>
+              <Icon className="w-5 h-5 mr-5" />
+              <span className="text-sm font-normal font-semibold tracking-widest">{name}</span>
             </Link>
           ))}
         </nav>
@@ -216,7 +217,8 @@ if (userRoles.includes("ADMIN")) {
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <Icon className="w-5 h-5 mr-5" /> <span className="text-xs font-black uppercase tracking-widest"> {name} </span>
+                  <Icon className="w-5 h-5 mr-5" />
+                  <span className="text-sm font-normal font-semibold tracking-widest">{name}</span>
                 </Link>
               ))}
             </nav>
@@ -231,7 +233,7 @@ if (userRoles.includes("ADMIN")) {
                 className="flex items-center cursor-pointer w-full px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all rounded-md group"
               >
                 <LogOut className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
-                <span className="text-xs font-black uppercase tracking-widest">
+                <span className="text-xs font-black tracking-widest">
                   Logout My Account
                 </span>
               </button>
