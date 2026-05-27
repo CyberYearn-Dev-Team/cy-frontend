@@ -234,7 +234,7 @@ export default function Footer() {
           className="fixed bottom-8 right-6 p-3 rounded-[10px] bg-gray-100 dark:bg-gray-700 shadow-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center justify-center z-50 cursor-pointer"
         >
           {darkMode ? (
-            <Sun className="h-5 w-5 text-yellow-400" />
+            <Sun className="h-5 w-5 text-gray-900 dark:text-gray-300" />
           ) : (
             <Moon className="h-5 w-5 text-gray-900 dark:text-gray-300" />
           )}

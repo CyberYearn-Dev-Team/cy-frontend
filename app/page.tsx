@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +27,7 @@ import {
   Users,
   ArrowRight,
 } from "lucide-react";
+
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#5c880d";
@@ -37,64 +38,17 @@ const textMedium = "text-gray-600 dark:text-gray-300";
 const borderLight = "border-gray-200 dark:border-gray-800";
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const fullText = "Master Cybersecurity Through Hands-On Learning";
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    let index = 0;
-    let typingInterval: ReturnType<typeof setInterval>;
-    let restartTimeout: ReturnType<typeof setTimeout>;
-
-    const startTyping = () => {
-      index = 0;
-      setText("");
-
-      typingInterval = setInterval(() => {
-        setText(fullText.slice(0, index + 1));
-        index++;
-
-        // stop when done typing
-        if (index === fullText.length) {
-          clearInterval(typingInterval);
-
-          // wait 5 seconds then restart
-          restartTimeout = setTimeout(() => {
-            startTyping();
-          }, 5000);
-        }
-      }, 80);
-    };
-
-    startTyping();
-
-    return () => {
-      clearInterval(typingInterval);
-      clearTimeout(restartTimeout);
-    };
-  }, []);
-
   return (
     <TooltipProvider>
       <div className={`min-h-screen ${bgLight}`}>
-        {/* inporting header component */}
+        {/* importing header component */}
         <Header />
 
-        {/*My Hero Section */}
+        {/* My Hero Section */}
         <div className="container mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-8 sm:py-12 md:py-16 lg:py-20">
-          <div className="text-center mb-20">
-            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              {text.includes("Cybersecurity") ? (
-                <>
-                  {text.split("Cybersecurity")[0]}
-                  <span className={`text-[${primary}]`}>Cybersecurity</span>
-                  {text.split("Cybersecurity")[1]}
-                </>
-              ) : (
-                text
-              )}
-              <span className="animate-pulse">|</span>
+          <div className="text-center mb-20 max-w-5xl mx-auto">
+            <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-gray-100">
+              Master <span className={`text-[${primary}]`}>Cybersecurity</span> Through Hands-On Learning
             </h1>
 
             <p
@@ -140,7 +94,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/*My Features Grid */}
+          {/* My Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <Card
               className={`${cardBg} ${borderLight} hover:shadow-xl transition-shadow duration-200 cursor-pointer text-center`}
@@ -244,7 +198,7 @@ export default function Home() {
             </Card>
           </div>
 
-          {/*My Educational Disclaimer */}
+          {/* My Educational Disclaimer */}
           <div
             className={`w-full bg-yellow-50 dark:bg-yellow-950 border-[#e2de5a] dark:border-yellow-800 mt-16 rounded-2xl`}
           >
@@ -271,7 +225,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* inporting footer drom component */}
+        {/* importing footer from component */}
         <Footer />
       </div>
     </TooltipProvider>
