@@ -189,31 +189,37 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+
+
+
               {/* Metrics Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                  icon={Users}
-                  title="Total Registrations"
-                  value={metrics.totalRgistrations.toLocaleString()}
-                />
-                <StatCard
-                  icon={TrendingUp}
-                  title="Weekly Active Users"
-                  value={metrics.weeklyActiveUsers.toLocaleString()}
-                />
-                <StatCard
-                  icon={UserCheck}
-                  title="First Lesson Completed"
-                  value={metrics.usersThatHaveCompletedFirstLesson.toLocaleString()}
-                  subtitle={`${metrics.firstLessonCompletionRate}% completion rate`}
-                />
-                <StatCard
-                  icon={CheckSquare}
-                  title="Module Progress"
-                  value={`${metrics.completedModules}/${metrics.totalModules}`}
-                  subtitle={`${metrics.moduleConpletionRate}% completed`}
-                />
-              </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <StatCard
+    icon={Users}
+    title="Total Registrations"
+    value={metrics.totalRgistrations.toLocaleString()}
+  />
+  <StatCard
+    icon={TrendingUp}
+    title="Weekly Active Users"
+    value={metrics.weeklyActiveUsers.toLocaleString()}
+  />
+  <StatCard
+    icon={UserCheck}
+    title="First Lesson Completed"
+    value={metrics.usersThatHaveCompletedFirstLesson.toLocaleString()}
+    subtitle={`${Math.round(metrics.firstLessonCompletionRate)}% completion rate`}
+  />
+  <StatCard
+    icon={CheckSquare}
+    title="Module Progress"
+    value={`${metrics.completedModules} / ${metrics.totalModules}`}
+    subtitle={`${Math.round(metrics.moduleConpletionRate)}% completed`}
+  />
+</div>
+
+
+
 
               {/* Module Completion + System Health */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -291,7 +297,7 @@ export default function AdminDashboardPage() {
                           First Lesson Completion
                         </span>
                         <span className="text-sm font-medium">
-                          {metrics.firstLessonCompletionRate}%
+                          {Math.round(metrics.firstLessonCompletionRate)}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">

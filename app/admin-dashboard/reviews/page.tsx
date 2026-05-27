@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
+import { getAllFeedbacks } from "@/lib/services/feedbackService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +96,20 @@ const initialReviews = [
     isVerified: true,
   },
 ];
+
+// Transform API response to match local data structure
+const transformFeedbackToReview = (feedback: any) => ({
+  id: feedback.id,
+  userName: feedback.user?.username || "Anonymous Learner",
+  email: feedback.user?.email || "hidden@anonymous.org",
+  rating: feedback.starRating,
+  subject: feedback.subject,
+  text: feedback.message,
+  category: "General Feedback",
+  date: new Date(feedback.createdAt).toISOString().split('T')[0],
+  status: "Approved", // Default status since API doesn't provide status
+  isVerified: !!feedback.user,
+});
 
 type Review = (typeof initialReviews)[0];
 
@@ -335,11 +350,32 @@ function ViewReviewModal({
 export default function ReviewManagementPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [reviews, setReviews] = useState(initialReviews);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [ratingFilter, setRatingFilter] = useState("All");
+
+  // Fetch feedbacks on mount
+  useEffect(() => {
+    async function fetchFeedbacks() {
+      try {
+        setIsLoading(true);
+        const response = await getAllFeedbacks({ page: 1, limit: 100 });
+        if (response.data && Array.isArray(response.data)) {
+          const transformedReviews = response.data.map(transformFeedbackToReview);
+          setReviews(transformedReviews);
+        }
+      } catch (error) {
+        console.error("Error fetching feedbacks:", error);
+        toast.error("Failed to load reviews. Using mock data.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchFeedbacks();
+  }, []);
 
   // Modal state
   const [viewTarget, setViewTarget] = useState<Review | null>(null);
@@ -517,7 +553,13 @@ export default function ReviewManagementPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-                    {filteredReviews.length === 0 ? (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-gray-400">
+                          Loading reviews...
+                        </td>
+                      </tr>
+                    ) : filteredReviews.length === 0 ? (
                       <tr>
                         <td
                           colSpan={6}

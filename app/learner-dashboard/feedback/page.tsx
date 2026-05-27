@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/api/auth";
+import { submitFeedback } from "@/lib/services/feedbackService";
 import Sidebar from "@/components/learner-sidebar";
 import Header from "@/components/learner-header";
 import Nav from "@/components/learner-nav";
@@ -90,7 +90,7 @@ export default function FeedbackPage() {
       try {
         const currentUser = await getCurrentUser();
         if (currentUser) {
-          setName(currentUser.name || currentUser.displayName || "");
+          setName(currentUser.username || currentUser.name || currentUser.displayName || "");
           setEmail(currentUser.email || "");
         }
       } catch (err) {
@@ -146,15 +146,13 @@ export default function FeedbackPage() {
 
     try {
       const payload = {
-        rating,
+        starRating: rating,
         subject,
         message,
-        isAnonymous,
-        name: isAnonymous ? "Anonymous" : name,
-        email,
+        anonymous: isAnonymous,
       };
 
-      await apiClient.post("/feedback/submit", payload);
+      await submitFeedback(payload);
 
       toast.success("Feedback submitted!", { id: toastId });
       setShowSuccessPopup(true);
@@ -210,10 +208,10 @@ export default function FeedbackPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <MessageSquare
+                        {/* <MessageSquare
                           className="w-5 h-5"
                           style={{ color: primary }}
-                        />
+                        /> */}
                         <span>Review Details</span>
                       </CardTitle>
                     </CardHeader>
@@ -348,7 +346,7 @@ export default function FeedbackPage() {
                               type="text"
                               disabled
                               value={name || "Not Logged In"}
-                              className={`w-full px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 ${textMedium} cursor-not-allowed`}
+                              className={`w-full px-3 py-3 text-sm rounded-lg bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 ${textMedium} cursor-not-allowed`}
                             />
                           </div>
                           <div className="space-y-1.5 opacity-80">
@@ -395,18 +393,18 @@ export default function FeedbackPage() {
                         <span>Submissions undergo spam review processing</span>
                       </div>
 
-                      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-between">
                         <button
                           type="button"
                           onClick={resetForm}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 ${textMedium} transition-colors cursor-pointer`}
+                          className={`px-5 py-3 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 ${textMedium} transition-colors cursor-pointer`}
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="px-5 py-2 rounded-lg text-sm font-bold text-white transition-colors cursor-pointer disabled:opacity-50"
+                          className="px-5 py-3 rounded-lg text-sm font-bold text-white transition-colors cursor-pointer disabled:opacity-50"
                           style={{
                             backgroundColor: isSubmitting ? hover : primary,
                           }}
@@ -450,7 +448,7 @@ export default function FeedbackPage() {
                             {!isAnonymous && (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200/40">
                                 <CheckCircle2 className="w-3 h-3" /> Verified
-                                Student
+                                Learner
                               </span>
                             )}
                           </div>
