@@ -177,12 +177,16 @@ export default function AdminSidebar({
             className="flex items-center cursor-pointer w-full px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all rounded-md group"
           >
             <LogOut className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-xs font-black uppercase tracking-widest">
+            <span className="text-sm font-semibold">
               Logout My Account
             </span>
           </button>
         </div>
       </aside>
+
+
+
+
 
       {/* Mobile Sidebar */}
       {sidebarOpen && (
@@ -253,7 +257,7 @@ export default function AdminSidebar({
                 className="flex items-center cursor-pointer w-full px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all rounded-md group"
               >
                 <LogOut className="w-5 h-5 mr-3 group-hover:-translate-x-1 transition-transform" />
-                <span className="text-xs font-black uppercase tracking-widest">
+                <span className="text-sm font-semibold">
                   Logout My Account
                 </span>
               </button>
@@ -272,7 +276,7 @@ export default function AdminSidebar({
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[1.5rem] shadow-2xl w-full max-w-sm p-8 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-black uppercase tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="text-xl font-black tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
               Logout
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">

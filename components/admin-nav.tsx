@@ -89,7 +89,7 @@ export default function AdminNav() {
               className={`
                 text-[10px]
                 uppercase
-                font-black
+                font-normal
                 tracking-wide
                 transition-all duration-300
                 ${

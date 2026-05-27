@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import AdminSidebar from "@/components/admin-sidebar";
 import AdminHeader from "@/components/admin-header";
 import Nav from "@/components/admin-nav";
-import { getAllFeedbacks } from "@/lib/services/feedbackService";
+import { getAllFeedbacks, approveReview, hideReview, deleteReview } from "@/lib/services/feedbackService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +44,7 @@ const initialReviews = [
     text: "The state container orchestration guides clarified multiple production performance bottlenecks for our team. Absolutely phenomenal documentation infrastructure.",
     category: "Content Quality",
     date: "2026-05-22",
-    status: "Approved",
+    status: "APPROVED",
     isVerified: true,
   },
   {
@@ -56,7 +56,7 @@ const initialReviews = [
     text: "Earn fast profits guaranteed by visiting our malicious redirect hyperlink now. Zero risk automated trading matrices ready inside.",
     category: "General Feedback",
     date: "2026-05-21",
-    status: "Pending",
+    status: "PENDING",
     isVerified: false,
   },
   {
@@ -68,7 +68,7 @@ const initialReviews = [
     text: "The site performance dropped significantly during yesterday's system update window. Fix your background processes immediately, this is terrible software engineering.",
     category: "Performance",
     date: "2026-05-19",
-    status: "Approved",
+    status: "APPROVED",
     isVerified: true,
   },
   {
@@ -80,7 +80,7 @@ const initialReviews = [
     text: "Tailwind configurations are nicely unified. Dark mode switching doesn't flash unstyled markup on page hydration changes.",
     category: "UI/Design",
     date: "2026-05-15",
-    status: "Hidden",
+    status: "HIDDEN",
     isVerified: false,
   },
   {
@@ -92,7 +92,7 @@ const initialReviews = [
     text: "Compared to other platforms, this offers the best bang for buck. The quality of content justifies the price. Would recommend to anyone serious about learning.",
     category: "General Feedback",
     date: "2026-05-10",
-    status: "Approved",
+    status: "APPROVED",
     isVerified: true,
   },
 ];
@@ -107,7 +107,7 @@ const transformFeedbackToReview = (feedback: any) => ({
   text: feedback.message,
   category: "General Feedback",
   date: new Date(feedback.createdAt).toISOString().split('T')[0],
-  status: "Approved", // Default status since API doesn't provide status
+  status: feedback.status || "APPROVED",
   isVerified: !!feedback.user,
 });
 
@@ -115,7 +115,9 @@ type Review = (typeof initialReviews)[0];
 
 const statusLabels: Record<string, string> = {
   All: "All Statuses",
-  Hidden: "Hidden",
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  HIDDEN: "Hidden",
 };
 
 const ratingLabels: Record<string, string> = {
@@ -129,11 +131,11 @@ const ratingLabels: Record<string, string> = {
 
 const getStatusBadgeStyle = (status: string) => {
   switch (status) {
-    case "Approved":
+    case "APPROVED":
       return "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 border-emerald-200";
-    case "visible":
+    case "PENDING":
       return "bg-amber-50 dark:bg-amber-950/30 text-amber-700 border-amber-200";
-    case "Hidden":
+    case "HIDDEN":
       return "bg-gray-100 dark:bg-gray-800 text-gray-600 border-gray-300";
     default:
       return "bg-gray-50 dark:bg-gray-900 text-gray-500 border-gray-200";
@@ -157,13 +159,15 @@ function ConfirmModal({
   title: string;
   description: string;
   confirmLabel: string;
-  confirmColor?: "rose" | "amber";
+  confirmColor?: "rose" | "amber" | "emerald";
   icon: React.ElementType;
 }) {
   if (!open) return null;
   const btnClass =
     confirmColor === "rose"
       ? "bg-rose-600 hover:bg-rose-700"
+      : confirmColor === "emerald"
+      ? "bg-emerald-600 hover:bg-emerald-700"
       : "bg-amber-500 hover:bg-amber-600";
 
   return (
@@ -177,6 +181,8 @@ function ConfirmModal({
               className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                 confirmColor === "rose"
                   ? "bg-rose-100 dark:bg-rose-900/30 text-rose-600"
+                  : confirmColor === "emerald"
+                  ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600"
                   : "bg-amber-100 dark:bg-amber-900/30 text-amber-600"
               }`}
             >
@@ -357,12 +363,19 @@ export default function ReviewManagementPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [ratingFilter, setRatingFilter] = useState("All");
 
-  // Fetch feedbacks on mount
+  // Fetch feedbacks on mount and when filters change
   useEffect(() => {
     async function fetchFeedbacks() {
       try {
         setIsLoading(true);
-        const response = await getAllFeedbacks({ page: 1, limit: 100 });
+        const params: any = { page: 1, limit: 100 };
+        if (statusFilter !== "All") {
+          params.status = statusFilter;
+        }
+        if (ratingFilter !== "All") {
+          params.star = parseInt(ratingFilter, 10);
+        }
+        const response = await getAllFeedbacks(params);
         if (response.data && Array.isArray(response.data)) {
           const transformedReviews = response.data.map(transformFeedbackToReview);
           setReviews(transformedReviews);
@@ -375,18 +388,21 @@ export default function ReviewManagementPage() {
       }
     }
     fetchFeedbacks();
-  }, []);
+  }, [statusFilter, ratingFilter]);
 
   // Modal state
   const [viewTarget, setViewTarget] = useState<Review | null>(null);
+  const [approveTarget, setApproveTarget] = useState<Review | null>(null);
   const [hideTarget, setHideTarget] = useState<Review | null>(null);
+  const [unhideTarget, setUnhideTarget] = useState<Review | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
 
   // Stats
   const stats = useMemo(() => ({
     total: reviews.length,
-    hidden: reviews.filter((r) => r.status === "Hidden").length,
-    visible: reviews.filter((r) => r.status === "Pending").length,
+    pending: reviews.filter((r) => r.status === "PENDING").length,
+    approved: reviews.filter((r) => r.status === "APPROVED").length,
+    hidden: reviews.filter((r) => r.status === "HIDDEN").length,
   }), [reviews]);
 
   // Filtered list
@@ -406,20 +422,68 @@ export default function ReviewManagementPage() {
   }, [reviews, searchTerm, statusFilter, ratingFilter]);
 
   // Actions
-  const confirmHide = () => {
-    if (!hideTarget) return;
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === hideTarget.id ? { ...r, status: "Hidden" } : r
-      )
-    );
-    toast.success("Review hidden from public view.");
+  const confirmApprove = async () => {
+    if (!approveTarget) return;
+    try {
+      await approveReview(approveTarget.id);
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === approveTarget.id ? { ...r, status: "APPROVED" } : r
+        )
+      );
+      toast.success("Review approved and now visible to public.");
+      setApproveTarget(null);
+    } catch (error) {
+      console.error("Error approving review:", error);
+      toast.error("Failed to approve review. Please try again.");
+    }
   };
 
-  const confirmDelete = () => {
+  const confirmUnhide = async () => {
+    if (!unhideTarget) return;
+    try {
+      await approveReview(unhideTarget.id);
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === unhideTarget.id ? { ...r, status: "APPROVED" } : r
+        )
+      );
+      toast.success("Review unhidden and now visible to public.");
+      setUnhideTarget(null);
+    } catch (error) {
+      console.error("Error unhiding review:", error);
+      toast.error("Failed to unhide review. Please try again.");
+    }
+  };
+
+  const confirmHide = async () => {
+    if (!hideTarget) return;
+    try {
+      await hideReview(hideTarget.id);
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === hideTarget.id ? { ...r, status: "HIDDEN" } : r
+        )
+      );
+      toast.success("Review hidden from public view.");
+      setHideTarget(null);
+    } catch (error) {
+      console.error("Error hiding review:", error);
+      toast.error("Failed to hide review. Please try again.");
+    }
+  };
+
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
-    setReviews((prev) => prev.filter((r) => r.id !== deleteTarget.id));
-    toast.error("Review permanently deleted.");
+    try {
+      await deleteReview(deleteTarget.id);
+      setReviews((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      toast.error("Review permanently deleted.");
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      toast.error("Failed to delete review. Please try again.");
+    }
   };
 
   return (
@@ -443,12 +507,13 @@ export default function ReviewManagementPage() {
               </p>
             </div>
 
-           {/* Stats — Total / Hidden / Visible */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+           {/* Stats — Total / Pending / Approved / Hidden */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
   {[
     { title: "Total Reviews", count: stats.total, color: textDark },
+    { title: "Pending Reviews", count: stats.pending, color: "text-amber-500" },
+    { title: "Approved Reviews", count: stats.approved, color: "text-emerald-500" },
     { title: "Hidden Reviews", count: stats.hidden, color: "text-gray-400" },
-    { title: "Visible Reviews", count: stats.visible, color: "text-emerald-500" },
   ].map((card, idx) => (
     <div
       key={idx}
@@ -591,7 +656,7 @@ export default function ReviewManagementPage() {
 
                           
                           {/* ID */}
-                          <td className="p-4.5 font-mono font-bold text-gray-400">
+                          <td className="p-4.5 font-mono text-[10px] font-bold text-gray-400">
                             {review.id}
                             <div className="text-xs font-sans font-normal text-gray-400 mt-1">
                               {review.date}
@@ -635,7 +700,7 @@ export default function ReviewManagementPage() {
                             </span>
                           </td>
 
-                          {/* Actions: View, Hide, Delete */}
+                          {/* Actions: View, Approve, Hide, Unhide, Delete */}
                           <td className="p-4.5 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {/* View */}
@@ -647,8 +712,30 @@ export default function ReviewManagementPage() {
                                 <Eye className="w-5 h-5" />
                               </button>
 
+                              {/* Approve — only show if pending */}
+                              {review.status === "PENDING" && (
+                                <button
+                                  onClick={() => setApproveTarget(review)}
+                                  title="Approve review"
+                                  className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                                >
+                                  <CheckCircle2 className="w-5 h-5" />
+                                </button>
+                              )}
+
+                              {/* Unhide — only show if hidden */}
+                              {review.status === "HIDDEN" && (
+                                <button
+                                  onClick={() => setUnhideTarget(review)}
+                                  title="Unhide review"
+                                  className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </button>
+                              )}
+
                               {/* Hide — only show if not already hidden */}
-                              {review.status !== "Hidden" && (
+                              {review.status !== "HIDDEN" && (
                                 <button
                                   onClick={() => setHideTarget(review)}
                                   title="Hide review"
@@ -697,6 +784,30 @@ export default function ReviewManagementPage() {
         confirmLabel="Hide Review"
         confirmColor="amber"
         icon={EyeOff}
+      />
+
+      {/* Unhide Confirm Modal */}
+      <ConfirmModal
+        open={!!unhideTarget}
+        onClose={() => setUnhideTarget(null)}
+        onConfirm={confirmUnhide}
+        title="Unhide Review?"
+        description={`This will make "${unhideTarget?.subject}" visible to the public again.`}
+        confirmLabel="Unhide Review"
+        confirmColor="emerald"
+        icon={Eye}
+      />
+
+      {/* Approve Confirm Modal */}
+      <ConfirmModal
+        open={!!approveTarget}
+        onClose={() => setApproveTarget(null)}
+        onConfirm={confirmApprove}
+        title="Approve Review?"
+        description={`This will approve "${approveTarget?.subject}" and make it visible to the public.`}
+        confirmLabel="Approve Review"
+        confirmColor="emerald"
+        icon={CheckCircle2}
       />
 
       {/* Delete Confirm Modal */}

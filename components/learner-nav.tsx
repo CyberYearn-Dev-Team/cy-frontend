@@ -82,7 +82,7 @@ export default function UserNav() {
               className={`
                 text-[10px]
                 uppercase
-                font-black
+                font-normal
                 tracking-wide
                 transition-all duration-300
                 ${

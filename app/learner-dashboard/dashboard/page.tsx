@@ -538,7 +538,7 @@ export default function LearnerDashboard() {
                           ONLINE COURSE
                         </span>
                       </div>
-                      <h1 className="text-2xl md:text-3xl font-black mb-4 uppercase tracking-wide leading-tight drop-shadow-sm">
+                      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-4 drop-shadow-sm">
                         Sharpen Your Skills with <br />
                         Professional Online Courses
                       </h1>
@@ -547,8 +547,7 @@ export default function LearnerDashboard() {
                           className={`w-full sm:w-auto inline-flex items-center justify-center gap-2
       px-6 py-3 rounded-full font-bold text-sm mt-5
       bg-white text-black hover:bg-gray-100 cursor-pointer shadow-md
-      dark:bg-transparent dark:text-white dark:border dark:border-white
-      dark:hover:bg-white dark:hover:text-black`}
+      dark:bg-white dark:text-black `}
                         >
                           <Play className="h-4 w-4" />
                           Start Learning Now
@@ -583,7 +582,7 @@ export default function LearnerDashboard() {
                       <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
                         {xp || 0}
                       </p>
-                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-widest">
                         Total XP
                       </p>
                     </Link>
@@ -601,7 +600,7 @@ export default function LearnerDashboard() {
                       <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
                         {level || 0}
                       </p>
-                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-widest">
                         Level (XP)
                       </p>
                     </Link>
@@ -619,7 +618,7 @@ export default function LearnerDashboard() {
                       <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
                         {streak || 0}
                       </p>
-                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-widest">
                         Streak
                       </p>
                     </Link>
@@ -637,7 +636,7 @@ export default function LearnerDashboard() {
                       <p className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter mb-1 text-gray-900 dark:text-gray-100">
                         {badgesCount || 0}
                       </p>
-                      <p className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">
+                      <p className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-widest">
                         Badges
                       </p>
                     </Link>

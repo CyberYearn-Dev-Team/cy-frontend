@@ -182,7 +182,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             <div className="relative cursor-pointer">
               <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300 transition-colors" />
               {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border-2 border-white dark:border-gray-900">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-normal flex items-center justify-center border-2 border-white dark:border-gray-900">
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
               )}
@@ -199,16 +199,16 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                   <p className="text-[8px] text-[#72a210] dark:text-[#a3e635] font-bold uppercase tracking-widest mt-0.5">
                     Total XP
                   </p>
-                  <p className="text-xs font-black text-gray-900 dark:text-gray-100 leading-none">
+                  <p className="text-xs font-normal text-gray-900 dark:text-gray-100 leading-none">
                     {loading ? "..." : `${xp || 0} XP`}
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
+                  <p className="text-xs font-semibold tracking-tight leading-none text-gray-900 dark:text-gray-100">
                     {loading ? "Loading..." : displayName}
                   </p>
-                  <p className="text-[9px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-tighter mt-1 truncate max-w-[140px]">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-normal tracking-tighter mt-1 truncate max-w-[140px]">
                     {loading ? "" : displayEmail}
                   </p>
                 </div>
@@ -265,22 +265,22 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-70 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-30">
                 <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <p className="text-xs font-black tracking-widest text-gray-800 dark:text-gray-100">
+                  <p className="text-xs font-normal tracking-widest text-gray-800 dark:text-gray-100">
                     {loading ? "Loading..." : displayName}
                   </p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-tighter">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-normal tracking-tighter">
                     {loading ? "Loading..." : displayEmail}
                   </p>
                 </div>
 
                 <Link href="/learner-dashboard/profile">
-                  <button className="flex items-center w-full px-4 py-3 text-xs font-black   tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                  <button className="flex items-center w-full px-4 py-3 text-xs font-normal tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                     <User className="h-5 w-5 mr-2" /> My Profile
                   </button>
                 </Link>
 
                 <Link href="/learner-dashboard/account-setting">
-                  <button className="flex items-center w-full px-4 py-3 text-xs font-black   tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                  <button className="flex items-center w-full px-4 py-3 text-xs font-normal tracking-widest text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                     <Settings className="h-5 w-5 mr-2" /> Account Settings
                   </button>
                 </Link>
@@ -290,7 +290,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
                     setDropdownOpen(false);
                     setShowLogoutConfirm(true);
                   }}
-                  className="flex items-center w-full px-4 py-3 text-xs font-black tracking-widest text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  className="flex items-center w-full px-4 py-3 text-xs font-normal tracking-widest text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <LogOut className="h-5 w-5 mr-2" /> Logout My Account
                 </button>
@@ -311,7 +311,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[1.5rem] shadow-2xl w-full max-w-sm p-8 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-black uppercase tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="text-xl font-normal tracking-tighter text-gray-900 dark:text-gray-100 mb-2">
               Logout
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">

@@ -192,7 +192,7 @@ export default function FeedbackPage() {
                 <h1
                   className={`text-2xl md:text-3xl font-black ${textDark} tracking-tight`}
                 >
-                  SHARE YOUR FEEDBACK
+                  Share Your Feedback
                 </h1>
                 <p className={`${textMedium} text-sm`}>
                   Your raw thoughts help us map out future upgrades. Tell us

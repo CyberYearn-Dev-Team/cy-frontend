@@ -165,13 +165,25 @@ if (!updateData.success) {
           
           {/* User Avatar & Name */}
           <div className="flex items-center gap-2">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs font-semibold tracking-tight leading-none text-gray-900 dark:text-gray-100">
+                {loading
+                  ? "Loading..."
+                  : user?.data?.username ||
+                    user?.username ||
+                    "Admin"}
+              </p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-normal tracking-tighter mt-1 truncate max-w-[140px]">
+                {loading ? "" : user?.data?.email || user?.email || ""}
+              </p>
+            </div>
             <div className="relative group">
               <div className="w-10 h-10 bg-[#72a210] rounded-xl flex items-center justify-center text-white font-semibold text-[18px] overflow-hidden">
                 {loading ? (
                   "..."
                 ) : profileImage ? (
-                  <img 
-                    src={profileImage} 
+                  <img
+                    src={profileImage}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -187,15 +199,6 @@ if (!updateData.success) {
                 <Camera className="w-2 h-2" />
               </button>
             </div>
-            <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-tight leading-none text-gray-900 dark:text-gray-100">
-              {loading
-                ? "Loading..."
-                : user?.data?.username ||
-                  user?.username ||
-                  user?.data?.email ||
-                  user?.email ||
-                  "Admin"}
-            </span>
           </div>
         </div>
       </div>

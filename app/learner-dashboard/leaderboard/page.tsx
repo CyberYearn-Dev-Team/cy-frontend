@@ -257,10 +257,9 @@ export default function LeaderboardPage() {
             <LeaderboardSkeleton />
           ) : (
             <main className="p-4 sm:p-6 lg:p-8 mb-20">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center mb-10">
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight dark:text-gray-100 text-center mb-10">
                 Leaderboard
               </h1>
-
               {/* Top 3 Learners */}
               <div className="w-full overflow-x-auto overflow-y-visible py-6">
                 <div className="flex justify-between items-end gap-6 mb-10 max-w-6xl mx-auto sm:justify-between sm:flex-nowrap min-w-max px-4">

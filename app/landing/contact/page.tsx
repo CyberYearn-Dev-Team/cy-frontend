@@ -99,7 +99,7 @@ export default function ContactUsPage() {
           {/* Page Title */}
           <div className="text-center mb-8 sm:mb-12">
             {/* Applied dark mode text color */}
-            <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${textDark} mb-4`}>
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-gray-100 mb-4">
               Contact Us
             </h1>
           </div>
