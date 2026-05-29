@@ -35,6 +35,13 @@ interface Lesson {
   estimated_time: string;
 }
 
+interface Module {
+  id: number;
+  title: string;
+  slug: string;
+  lessons: Lesson[];
+}
+
 // Function to truncate HTML content to a word limit
 function truncateHTMLContent(html: string, wordLimit: number) {
   if (!html) return "";
@@ -55,6 +62,7 @@ export default function LessonDetailPage() {
   }>();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [module, setModule] = useState<Module | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const totalTimeRef = useRef(0);
@@ -62,21 +70,28 @@ export default function LessonDetailPage() {
   useEffect(() => {
     startLesson(lessonId).catch(console.error);
 
-    async function fetchLesson() {
+    async function fetchData() {
       try {
-        const res = await fetch(
-          `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`,
-        );
-        const data = await res.json();
-        setLesson(data.lesson);
+        const [lessonRes, moduleRes] = await Promise.all([
+          fetch(
+            `/api/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}`,
+          ),
+          fetch(
+            `/api/tracks/${slug}/modules/${moduleSlug}/lessons`,
+          ),
+        ]);
+        const lessonData = await lessonRes.json();
+        const moduleData = await moduleRes.json();
+        setLesson(lessonData.lesson);
+        setModule(moduleData.module);
       } catch (err) {
-        console.error("Error fetching lesson:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchLesson();
+    fetchData();
   }, [slug, moduleSlug, lessonId]);
 
   useEffect(() => {
@@ -94,6 +109,15 @@ export default function LessonDetailPage() {
   }, [lessonId]);
 
   const contentHtml = lesson?.description || "";
+
+  // Calculate current lesson index and position
+  const currentLessonIndex = module?.lessons?.findIndex(
+    (l) => l.id === lesson?.id
+  );
+  const isFirstLesson = currentLessonIndex === 0;
+  const isLastLesson = currentLessonIndex === (module?.lessons?.length ?? 0) - 1;
+  const previousLesson = currentLessonIndex !== undefined && currentLessonIndex > 0 ? module?.lessons[currentLessonIndex - 1] : undefined;
+  const nextLesson = currentLessonIndex !== undefined && module?.lessons ? module?.lessons[currentLessonIndex + 1] : undefined;
 
   return (
     <div className={`flex h-screen overflow-hidden ${bgLight}`}>
@@ -156,20 +180,51 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
+
+
               {/* QUIZ SECTION */}
               <div
-                className={`${cardBg} shadow rounded-lg p-3 sm:p-6 flex flex-col sm:flex-row justify-between items-center`}
+                className={`${cardBg} shadow rounded-lg p-3 sm:p-6`}
               >
-                <p className={`${textMedium} mb-3 sm:mb-0 sm:p-[10px]`}>
+                <p className={`${textMedium} mb-4`}>
                   Test your knowledge before proceeding to labs.
                 </p>
 
-                <Link
-                  href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
-                  className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
-                >
-                  Take Quiz for this Lesson
-                </Link>
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+                  {/* Previous Lesson Button */}
+                  {isFirstLesson ? (
+                    <Link
+                      href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}`}
+                      className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg border ${borderLight} ${textMedium} hover:bg-gray-50 dark:hover:bg-gray-800 text-center`}
+                    >
+                      Previous Module
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${previousLesson?.id}`}
+                      className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg border ${borderLight} ${textMedium} hover:bg-gray-50 dark:hover:bg-gray-800 text-center`}
+                    >
+                      Previous Lesson
+                    </Link>
+                  )}
+
+                  {/* Next Lesson or Take Quiz Button */}
+                  {isLastLesson ? (
+                    <Link
+                      href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes`}
+                      className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
+                    >
+                      Take Quiz for this Module
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${nextLesson?.id}`}
+                      className={`w-full sm:w-auto text-base px-4 py-2 sm:px-5 sm:py-2 rounded-lg bg-[${primary}] text-white hover:bg-[${primaryDarker}] text-center`}
+                    >
+                      Next Lesson
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           )}
