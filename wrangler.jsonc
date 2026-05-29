@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cy-frontend",
   "compatibility_date": "2026-05-29",
+  "main": ".open-next/worker.js",
   "observability": {
     "enabled": true
   },
