@@ -187,7 +187,11 @@ export default function LessonDetailPage() {
                 className={`${cardBg} shadow rounded-lg p-3 sm:p-6`}
               >
                 <p className={`${textMedium} mb-4`}>
-                  Test your knowledge before proceeding to labs.
+                  {isLastLesson
+                    ? "Test your knowledge before proceeding to labs."
+                    : isFirstLesson
+                    ? "Proceed to the next lesson or return to Module."
+                    : "Proceed to the next lesson or return to the previous lesson for a refresher."}
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
