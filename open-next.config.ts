@@ -3,5 +3,4 @@ import kvIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cac
 
 export default defineCloudflareConfig({
   incrementalCache: kvIncrementalCache,
-  forceDisableTracing: true,
 });
