@@ -8,7 +8,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "kv_namespaces": [
     {
-      "binding": "cy_frontend_cache",
+      "binding": "NEXT_INC_CACHE_KV",
       "id": "6c6b3857bda34516a869d9106f5a21ab"
     }
   ]
