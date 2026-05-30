@@ -570,7 +570,7 @@ if (isLoading) {
                           !passwords.newPassword || 
                           !passwords.confirmPassword
                         }
-                        className={`flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
+                        className={`w-full lg:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[${primary}] hover:bg-[${primaryDarker}] text-white rounded-lg font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
                       >
                         <Save className="w-5 h-5" />
                         {saving ? "Saving..." : "Update Password"}

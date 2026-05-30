@@ -219,7 +219,7 @@ export default function LabDetailPage() {
                             }
                           }}
                           disabled={lab.completed}
-                          className="mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
+                          className="w-full lg:w-auto  mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
                           style={{ 
                             backgroundColor: completedSteps.includes(index) || lab.completed ? '#5a850d' : primary 
                           }}

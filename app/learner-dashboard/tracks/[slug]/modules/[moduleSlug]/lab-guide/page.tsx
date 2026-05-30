@@ -308,7 +308,7 @@ export default function LabGuidePage() {
                               }
                             }}
                             disabled={lab.status === 'completed'}
-                            className="mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
+                            className="w-full lg:w-auto mt-3 px-4 py-2 rounded-lg text-white cursor-pointer transition"
                             style={{ 
                               backgroundColor: completed || lab.status === 'completed' ? '#5a850d' : primary 
                             }}

@@ -235,6 +235,7 @@ export default function LearnerDashboard() {
 
   // Refs for carousels
   const suggestedRef = useRef<HTMLDivElement>(null);
+  const comingSoonRef = useRef<HTMLDivElement>(null);
 
   // Scroll handlers for suggested tracks carousel
   const scrollSuggestedLeft = () => {
@@ -249,6 +250,25 @@ export default function LearnerDashboard() {
   const scrollSuggestedRight = () => {
     if (suggestedRef.current) {
       suggestedRef.current.scrollBy({
+        left: 300,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Scroll handlers for coming soon carousel
+  const scrollComingSoonLeft = () => {
+    if (comingSoonRef.current) {
+      comingSoonRef.current.scrollBy({
+        left: -300,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollComingSoonRight = () => {
+    if (comingSoonRef.current) {
+      comingSoonRef.current.scrollBy({
         left: 300,
         behavior: "smooth",
       });
@@ -644,6 +664,8 @@ export default function LearnerDashboard() {
                 )}
               </div>
 
+
+
               {/* Continue Learning + Recent Activity */}
               <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
                 <div className="w-full lg:w-[60%] xl:w-[110%] min-w-0 space-y-8">
@@ -818,6 +840,8 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
+
+
               {/* Suggested + Achievements (rest of component unchanged) */}
               {/* Suggested + Achievements Container */}
               <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 w-full">
@@ -920,6 +944,8 @@ export default function LearnerDashboard() {
                   </Card>
                 </div>
 
+
+
                 {/* Achievements Section */}
                 <div className="w-full lg:w-[40%] xl:w-[40%] min-w-0">
                   <Card className="h-full flex flex-col overflow-hidden">
@@ -1011,16 +1037,31 @@ export default function LearnerDashboard() {
                 </div>
               </div>
 
+
+
+
               {/* Coming Soon Section */}
               <div className="w-full lg:w-[60%] xl:w-[72%]">
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex sm:flex-row items-start sm:items-center justify-between">
                     <CardTitle className={`text-[${secondary}]`}>
                       Coming Soon
                     </CardTitle>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <button onClick={scrollComingSoonLeft}>
+                        <ChevronLeft
+                          className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                        />
+                      </button>
+                      <button onClick={scrollComingSoonRight}>
+                        <ChevronRight
+                          className={`${textLight} hover:text-[${secondary}] cursor-pointer`}
+                        />
+                      </button>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <ComingSoonSection />
+                    <ComingSoonSection ref={comingSoonRef} />
                   </CardContent>
                 </Card>
               </div>

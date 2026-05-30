@@ -175,9 +175,9 @@ export default function LessonDetailPage() {
                   Estimated time: {lesson.estimated_time}
                 </p>
 
-                <div className="prose dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
-                </div>
+                <div className="prose dark:prose-invert max-w-none break-words overflow-hidden">
+  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+</div>
               </div>
 
 

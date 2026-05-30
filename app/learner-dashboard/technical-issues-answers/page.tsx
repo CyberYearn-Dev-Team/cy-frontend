@@ -10,7 +10,7 @@ import {
   MessageCircle,
   AlertCircle,
 } from "lucide-react";
-import { getAnsweredMessages } from "@/lib/services/technicalIssuesRespnse";
+import { getAnsweredMessages, getUserMessages } from "@/lib/services/technicalIssuesRespnse";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api/client";
 
@@ -160,47 +160,65 @@ const LearnerPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Fetch answered messages on component mount
+    // Fetch all user messages on component mount (not just answered ones)
     const fetchMessages = async () => {
       try {
         setIsLoading(true);
-        console.log("Fetching answered messages...");
-        const answeredIssues = await getAnsweredMessages();
-        console.log("API Response:", answeredIssues);
+        console.log("Fetching user messages...");
+        const userIssues = await getUserMessages();
+        console.log("API Response:", userIssues);
         
-        // Transform API response to match our Conversation type
-        const formattedConversations: Conversation[] = answeredIssues.map((issue, index) => {
-          console.log(`Processing issue ${index}:`, issue);
-          
-          const conversation: Conversation = {
-            id: `C-${1000 + index}`,
+        // Group issues by userId and create one conversation per user
+        const issuesByUser = userIssues.reduce((acc, issue) => {
+          if (!acc[issue.userId]) {
+            acc[issue.userId] = [];
+          }
+          acc[issue.userId].push(issue);
+          return acc;
+        }, {} as Record<string, typeof userIssues>);
+
+        // Transform grouped issues to match our Conversation type
+        const formattedConversations: Conversation[] = Object.entries(issuesByUser).map(([userId, issues], index) => {
+          // Sort issues by createdAt to maintain chronological order
+          const sortedIssues = issues.sort((a, b) => 
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+
+          // Build messages array from all issues
+          const messages: Message[] = [];
+          sortedIssues.forEach(issue => {
+            messages.push({
+              id: `m-${issue.id}`,
+              sender: "learner" as const,
+              content: issue.message,
+              createdAt: issue.createdAt,
+            });
+
+            // Add admin reply if it exists
+            if (issue.adminReply) {
+              messages.push({
+                id: `a-${issue.id}`,
+                sender: "admin" as const,
+                content: issue.adminReply,
+                createdAt: issue.updatedAt || issue.createdAt,
+              });
+            }
+          });
+
+          // Determine overall status based on latest issue
+          const latestIssue = sortedIssues[sortedIssues.length - 1];
+          const status = latestIssue.adminReply ? "ANSWERED" : "OPEN";
+
+          return {
+            id: `C-${userId}`,
             username: "ADMIN",
-            status: issue.adminReply ? "ANSWERED" : "OPEN",
+            status,
             learner: {
               username: "You",
-              email: issue.userId || "user@example.com"
+              email: userId || "user@example.com"
             },
-            messages: [
-              {
-                id: `m-${issue.id}`,
-                sender: "learner" as const,
-                content: issue.message,
-                createdAt: issue.createdAt,
-              }
-            ]
+            messages
           };
-
-          // Add admin reply if it exists
-          if (issue.adminReply) {
-            conversation.messages.push({
-              id: `a-${issue.id}`,
-              sender: "admin" as const,
-              content: issue.adminReply,
-              createdAt: issue.updatedAt || issue.createdAt,  // Fallback to createdAt if updatedAt is not available
-            });
-          }
-
-          return conversation;
         });
 
         console.log("Formatted conversations:", formattedConversations);
@@ -517,30 +535,61 @@ const LearnerPage: React.FC = () => {
             const fetchMessages = async () => {
             try {
               setIsLoading(true);
-              const answeredIssues = await getAnsweredMessages();
-              const formattedConversations: Conversation[] = answeredIssues.map((issue, index) => ({
-                id: `C-${1000 + index}`,
-                username: "ADMIN",
-                status: issue.adminReply ? "ANSWERED" : "OPEN",
-                learner: {
-                  username: "You",
-                  email: issue.userId || "user@example.com"
-                },
-                messages: [
-                  {
+              const userIssues = await getUserMessages();
+              
+              // Group issues by userId and create one conversation per user
+              const issuesByUser = userIssues.reduce((acc, issue) => {
+                if (!acc[issue.userId]) {
+                  acc[issue.userId] = [];
+                }
+                acc[issue.userId].push(issue);
+                return acc;
+              }, {} as Record<string, typeof userIssues>);
+
+              // Transform grouped issues to match our Conversation type
+              const formattedConversations: Conversation[] = Object.entries(issuesByUser).map(([userId, issues]) => {
+                // Sort issues by createdAt to maintain chronological order
+                const sortedIssues = issues.sort((a, b) => 
+                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+
+                // Build messages array from all issues
+                const messages: Message[] = [];
+                sortedIssues.forEach(issue => {
+                  messages.push({
                     id: `m-${issue.id}`,
                     sender: "learner" as const,
                     content: issue.message,
                     createdAt: issue.createdAt,
+                  });
+
+                  // Add admin reply if it exists
+                  if (issue.adminReply) {
+                    messages.push({
+                      id: `a-${issue.id}`,
+                      sender: "admin" as const,
+                      content: issue.adminReply,
+                      createdAt: issue.updatedAt || issue.createdAt,
+                    });
+                  }
+                });
+
+                // Determine overall status based on latest issue
+                const latestIssue = sortedIssues[sortedIssues.length - 1];
+                const status = latestIssue.adminReply ? "ANSWERED" : "OPEN";
+
+                return {
+                  id: `C-${userId}`,
+                  username: "ADMIN",
+                  status,
+                  learner: {
+                    username: "You",
+                    email: userId || "user@example.com"
                   },
-                  ...(issue.adminReply ? [{
-                    id: `a-${issue.id}`,
-                    sender: "admin" as const,
-                    content: issue.adminReply,
-                    createdAt: issue.updatedAt || issue.createdAt,
-                  }] : [])
-                ]
-              }));
+                  messages
+                };
+              });
+              
               setConversations(formattedConversations);
               if (formattedConversations.length > 0) {
                 setActiveConvId(formattedConversations[0].id);

@@ -35,3 +35,13 @@ export const getAnsweredMessages = async (): Promise<TechnicalIssue[]> => {
     throw error;
   }
 };
+
+export const getUserMessages = async (): Promise<TechnicalIssue[]> => {
+  try {
+    const response = await apiClient.get<ApiResponse<TechnicalIssue[]>>('/technical-issues');
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error fetching user messages:', error);
+    throw error;
+  }
+};

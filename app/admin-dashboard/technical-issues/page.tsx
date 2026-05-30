@@ -88,32 +88,99 @@ const ExpandableMessage: React.FC<{ message: string }> = ({ message }) => {
   );
 };
 
+type Message = {
+  id: string;
+  sender: "user" | "admin";
+  content: string;
+  createdAt: string;
+};
+
+type Conversation = {
+  userId: string;
+  user: TechnicalIssue["user"];
+  status: "PENDING" | "ANSWERED";
+  messages: Message[];
+  lastMessageTime: string;
+};
+
 const TechnicalIssuesPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
-  const [issues, setIssues] = useState<TechnicalIssue[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Determine if the chat is open on mobile (small screen)
-  const isChatOpenOnMobile = activeIssueId !== null;
+  const isChatOpenOnMobile = activeConversationId !== null;
 
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         setIsLoading(true);
         const data = await getTechnicalIssues();
-        // Sort issues by createdAt in descending order (newest first)
-        const sortedIssues = [...data].sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        
+        // Group issues by userId and create one conversation per user
+        const issuesByUser = data.reduce((acc, issue) => {
+          if (!acc[issue.userId]) {
+            acc[issue.userId] = [];
+          }
+          acc[issue.userId].push(issue);
+          return acc;
+        }, {} as Record<string, typeof data>);
+
+        // Transform grouped issues to match our Conversation type
+        const formattedConversations: Conversation[] = Object.entries(issuesByUser).map(([userId, issues]) => {
+          // Sort issues by createdAt to maintain chronological order
+          const sortedIssues = issues.sort((a, b) => 
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+
+          // Build messages array from all issues
+          const messages: Message[] = [];
+          sortedIssues.forEach(issue => {
+            messages.push({
+              id: `m-${issue.id}`,
+              sender: "user" as const,
+              content: issue.message,
+              createdAt: issue.createdAt,
+            });
+
+            // Add admin reply if it exists
+            if (issue.adminReply) {
+              messages.push({
+                id: `a-${issue.id}`,
+                sender: "admin" as const,
+                content: issue.adminReply,
+                createdAt: issue.createdAt,
+              });
+            }
+          });
+
+          // Determine overall status based on latest issue
+          const latestIssue = sortedIssues[sortedIssues.length - 1];
+          const status = latestIssue.adminReply ? "ANSWERED" : "PENDING";
+
+          return {
+            userId,
+            user: latestIssue.user,
+            status,
+            messages,
+            lastMessageTime: latestIssue.createdAt
+          };
+        });
+
+        // Sort conversations by last message time (newest first)
+        const sortedConversations = formattedConversations.sort((a, b) =>
+          new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
         );
-        setIssues(sortedIssues);
-        // Automatically select the first (newest) issue if none is active and there are issues
-        if (!activeIssueId && sortedIssues.length > 0) {
-          setActiveIssueId(sortedIssues[0].id);
+
+        setConversations(sortedConversations);
+        // Automatically select the first (newest) conversation if none is active
+        if (!activeConversationId && sortedConversations.length > 0) {
+          setActiveConversationId(sortedConversations[0].userId);
         }
       } catch (err) {
         console.error("Error fetching technical issues:", err);
@@ -126,22 +193,74 @@ const TechnicalIssuesPage: React.FC = () => {
     fetchIssues();
   }, []);
 
-  const handleReply = async (issueId: string) => {
+  const handleReply = async (userId: string) => {
     if (!replyText.trim()) return;
 
     try {
       setIsSubmitting(true);
-      // Ensure 'ANSWERED' is one of the valid literal types from TechnicalIssue.status
+      // Find the latest issue for this user to reply to
+      const activeConversation = conversations.find(c => c.userId === userId);
+      if (!activeConversation) return;
+
+      const latestMessage = activeConversation.messages[activeConversation.messages.length - 1];
+      const issueId = latestMessage.id.replace('m-', '').replace('a-', '');
+
       await updateTechnicalIssue(issueId, "ANSWERED", replyText);
 
-      setIssues((prevIssues) =>
-        prevIssues.map((issue) =>
-          issue.id === issueId
-            ? { ...issue, status: "ANSWERED", adminReply: replyText }
-            : issue
-        )
+      // Refresh conversations to get updated data
+      const data = await getTechnicalIssues();
+      
+      // Group issues by userId and create one conversation per user
+      const issuesByUser = data.reduce((acc, issue) => {
+        if (!acc[issue.userId]) {
+          acc[issue.userId] = [];
+        }
+        acc[issue.userId].push(issue);
+        return acc;
+      }, {} as Record<string, typeof data>);
+
+      // Transform grouped issues to match our Conversation type
+      const formattedConversations: Conversation[] = Object.entries(issuesByUser).map(([userId, issues]) => {
+        const sortedIssues = issues.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+
+        const messages: Message[] = [];
+        sortedIssues.forEach(issue => {
+          messages.push({
+            id: `m-${issue.id}`,
+            sender: "user" as const,
+            content: issue.message,
+            createdAt: issue.createdAt,
+          });
+
+          if (issue.adminReply) {
+            messages.push({
+              id: `a-${issue.id}`,
+              sender: "admin" as const,
+              content: issue.adminReply,
+              createdAt: issue.createdAt,
+            });
+          }
+        });
+
+        const latestIssue = sortedIssues[sortedIssues.length - 1];
+        const status = latestIssue.adminReply ? "ANSWERED" : "PENDING";
+
+        return {
+          userId,
+          user: latestIssue.user,
+          status,
+          messages,
+          lastMessageTime: latestIssue.createdAt
+        };
+      });
+
+      const sortedConversations = formattedConversations.sort((a, b) =>
+        new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
       );
 
+      setConversations(sortedConversations);
       setReplyText("");
     } catch (err) {
       console.error("Error sending reply:", err);
@@ -151,14 +270,14 @@ const TechnicalIssuesPage: React.FC = () => {
     }
   };
 
-  const filteredIssues = issues.filter(
-    (issue) =>
-      issue.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(
+    (conv) =>
+      conv.messages.some((msg) => msg.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      conv.user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeIssue = issues.find((issue) => issue.id === activeIssueId);
+  const activeConversation = conversations.find((conv) => conv.userId === activeConversationId);
 
   if (isLoading) {
     return (
@@ -215,7 +334,7 @@ const TechnicalIssuesPage: React.FC = () => {
             {/* LEFT PANE – ISSUE LIST */}
             <div
               className={`w-full flex-shrink-0 flex flex-col lg:w-1/3 border-r border-gray-200 dark:border-gray-800 ${
-                activeIssueId ? "hidden lg:flex" : "flex"
+                activeConversationId ? "hidden lg:flex" : "flex"
               }`}>
 
                 
@@ -226,17 +345,17 @@ const TechnicalIssuesPage: React.FC = () => {
                     <h2 className={`font-semibold ${textDark}`}>
                       Technical Issues
                     </h2>
-                    {filteredIssues.some(issue => issue.status === 'PENDING') && (
+                    {filteredConversations.some(conv => conv.status === 'PENDING') && (
                       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
-                        {filteredIssues.filter(issue => issue.status === 'PENDING').length}
+                        {filteredConversations.filter(conv => conv.status === 'PENDING').length}
                       </span>
                     )}
                   </div>
                   <p className={`text-xs ${textLight}`}>
-                    {filteredIssues.length} {filteredIssues.length === 1 ? 'conversation' : 'conversations'}
-                    {filteredIssues.some(issue => issue.status === 'PENDING') && (
+                    {filteredConversations.length} {filteredConversations.length === 1 ? 'conversation' : 'conversations'}
+                    {filteredConversations.some(conv => conv.status === 'PENDING') && (
                       <span className="ml-2 text-red-500">
-                        • {filteredIssues.filter(issue => issue.status === 'PENDING').length} pending
+                        • {filteredConversations.filter(conv => conv.status === 'PENDING').length} pending
                       </span>
                     )}
                   </p>
@@ -265,19 +384,20 @@ const TechnicalIssuesPage: React.FC = () => {
 
               {/* List of messages */}
                <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 pb-25 sm:pb-0">
-                {filteredIssues.length === 0 ? (
+                {filteredConversations.length === 0 ? (
                   <div className="h-full flex items-center justify-center px-4 text-center">
                     <p className={textMedium}>
                       No issues found matching your search.
                     </p>
                   </div>
                 ) : (
-                  filteredIssues.map((issue) => {
-                    const isActive = activeIssueId === issue.id;
+                  filteredConversations.map((conv) => {
+                    const isActive = activeConversationId === conv.userId;
+                    const lastMessage = conv.messages[conv.messages.length - 1];
                     return (
                       <button
-                        key={issue.id}
-                        onClick={() => setActiveIssueId(issue.id)}
+                        key={conv.userId}
+                        onClick={() => setActiveConversationId(conv.userId)}
                         className={`w-full flex gap-3 px-4 py-3 text-left text-sm border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer ${
                           isActive
                             ? "bg-[#f4fae7] dark:bg-gray-800/70"
@@ -288,14 +408,14 @@ const TechnicalIssuesPage: React.FC = () => {
                           className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white"
                           style={primaryBg}
                         >
-                          {issue.user.profileImage ? (
+                          {conv.user.profileImage ? (
                             <img
-                              src={issue.user.profileImage}
-                              alt={issue.user.username}
+                              src={conv.user.profileImage}
+                              alt={conv.user.username}
                               className="h-full w-full object-cover rounded-full"
                             />
                           ) : (
-                            getInitials(issue.user.username)
+                            getInitials(conv.user.username)
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -303,24 +423,24 @@ const TechnicalIssuesPage: React.FC = () => {
                             <p
                               className={`font-medium text-[15px] md:text-sm truncate ${textDark}`}
                             >
-                              {issue.user.username}
+                              {conv.user.username}
                             </p>
                             <span className="text-[10px] text-gray-400">
-                              {new Date(issue.createdAt).toLocaleDateString()}
+                              {new Date(conv.lastMessageTime).toLocaleDateString()}
                             </span>
                           </div>
                           <div className="flex justify-between items-center w-full">
                             <p className="text-[13px] text-gray-500 truncate">
-                              {issue.message}
+                              {lastMessage?.content}
                             </p>
-                            {issue.status === 'PENDING' && (
+                            {conv.status === 'PENDING' && (
                               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#72a210] text-white text-[10px] font-bold ml-2 flex-shrink-0">
                                 <SendHorizontal  className="w-3 h-3" />
                               </span>
                             )}
                           </div>
                           <p className="text-[10px] font-bold mt-1 text-gray-500">
-                            {issue.id} • {issue.status}
+                            {conv.userId} • {conv.status}
                           </p>
                         </div>
                       </button>
@@ -333,16 +453,16 @@ const TechnicalIssuesPage: React.FC = () => {
             {/* RIGHT PANE – CHAT AREA */}
             <div
               className={`w-full flex-1 flex flex-col  bg-cover dark:bg-gray-950 ${
-                activeIssueId ? "flex" : "hidden lg:flex"
+                activeConversationId ? "flex" : "hidden lg:flex"
               } lg:w-2/3`}
             >
-              {activeIssue ? (
+              {activeConversation ? (
                 <>
                   {/* Chat header */}
                   <div className="px-5 py-3 flex items-center justify-between bg-white/95 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => setActiveIssueId(null)}
+                        onClick={() => setActiveConversationId(null)}
                         className="lg:hidden p-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition cursor-pointer"
                       >
                         <ArrowLeft className="w-5 h-5" />
@@ -352,22 +472,22 @@ const TechnicalIssuesPage: React.FC = () => {
                         className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs text-white flex-shrink-0 overflow-hidden"
                         style={primaryBg}
                       >
-                         {activeIssue.user.profileImage ? (
+                         {activeConversation.user.profileImage ? (
                             <img
-                              src={activeIssue.user.profileImage}
-                              alt={activeIssue.user.username}
+                              src={activeConversation.user.profileImage}
+                              alt={activeConversation.user.username}
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            getInitials(activeIssue.user.username)
+                            getInitials(activeConversation.user.username)
                           )}
                       </div>
                       <div>
                         <p className={`font-semibold ${textDark}`}>
-                          {activeIssue.user.username}
+                          {activeConversation.user.username}
                         </p>
                         <p className={`text-xs ${textLight}`}>
-                          {activeIssue.user.email}
+                          {activeConversation.user.email}
                         </p>
                       </div>
                     </div>
@@ -375,80 +495,68 @@ const TechnicalIssuesPage: React.FC = () => {
 
                   {/* Messages body (Scrollable area) */}
                   <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4 bg-gradient-to-b from-gray-100/80 to-gray-200/60 dark:from-gray-900 dark:to-gray-950">
-                    {/* User message bubble */}
-                    <div className="flex items-start gap-2 max-w-xl">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden"
-                        style={primaryBg}
-                      >
-                         {activeIssue.user.profileImage ? (
-                            <img
-                              src={activeIssue.user.profileImage}
-                              alt={activeIssue.user.username}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            activeIssue.user.username[0]
-                          )}
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                          <p className="text-xs text-gray-500 mb-1">
-                            Issue ID: {activeIssue.id}
-                          </p>
-                          <p className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
-                            {activeIssue.message}
-                          </p>
-                        </div>
-                        <span className="mt-1 text-[10px] text-gray-400">
-                          {new Date(activeIssue.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Admin reply (If sent) */}
-                    {activeIssue.adminReply && (
-                      <div className="flex justify-end">
-                        <div className="max-w-xl flex flex-col items-end">
-                          <div
-                            className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm"
-                            style={primaryBg}
-                          >
-                            <p>
-                              {activeIssue.adminReply}
-                            </p>
-                          </div>
-                          <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-300">
-                            Replied: {new Date(activeIssue.createdAt).toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Admin reply placeholder (If not sent yet) - Keeping the old code style for consistency */}
-                    {!activeIssue.adminReply && (
-                        <div className="flex justify-end">
-                            <div className="max-w-xl flex flex-col items-end">
-                                <div
-                                    className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm bg-gray-400 dark:bg-gray-700 opacity-80"
-                                >
-                                    <p>
-                                        Type and send a response to this technical issue.
-                                    </p>
-                                </div>
-                                <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-300">
-                                    Not sent yet
-                                </span>
+                    {/* Render all messages in the conversation */}
+                    {activeConversation.messages.map((msg) => {
+                      if (msg.sender === "user") {
+                        return (
+                          <div key={msg.id} className="flex items-start gap-2 max-w-xl">
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden"
+                              style={primaryBg}
+                            >
+                               {activeConversation.user.profileImage ? (
+                                  <img
+                                    src={activeConversation.user.profileImage}
+                                    alt={activeConversation.user.username}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  activeConversation.user.username[0]
+                                )}
                             </div>
+                            <div className="flex flex-col">
+                              <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                                <p className="text-xs text-gray-500 mb-1">
+                                  User
+                                </p>
+                                <p className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
+                                  {msg.content}
+                                </p>
+                              </div>
+                              <span className="mt-1 text-[10px] text-gray-400">
+                                {new Date(msg.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Admin reply
+                      return (
+                        <div key={msg.id} className="flex justify-end">
+                          <div className="max-w-xl flex flex-col items-end">
+                            <div
+                              className="rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white shadow-sm"
+                              style={primaryBg}
+                            >
+                              <p>
+                                {msg.content}
+                              </p>
+                            </div>
+                            <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-300">
+                              {new Date(msg.createdAt).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                    )}
+                      );
+                    })}
                   </div>
 
-                  {/* 3. Input area - Fixed design to match stored code style */}
+                  {/* Input area */}
                   <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <textarea
-                        rows={1} // Use rows={1} for a single-line look, resize-none
+                        rows={1}
                         className="flex-1 resize-none rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#72a210] focus:border-transparent outline-none"
                         placeholder="Type your reply to this issue..."
                         value={replyText}
@@ -458,7 +566,7 @@ const TechnicalIssuesPage: React.FC = () => {
                       <button
                         className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         style={primaryBg}
-                        onClick={() => handleReply(activeIssue.id)}
+                        onClick={() => handleReply(activeConversation.userId)}
                         disabled={!replyText.trim() || isSubmitting}
                       >
                          {isSubmitting ? (

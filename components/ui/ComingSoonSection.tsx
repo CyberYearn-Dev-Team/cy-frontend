@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, forwardRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
 
 interface ComingSoonItem {
   id: number;
@@ -17,7 +18,7 @@ function trimCharacters(text: string, limit: number) {
   return text.substring(0, limit) + "........"; 
 }
 
-export default function ComingSoonSection() {
+const ComingSoonSection = forwardRef<HTMLDivElement>((props, ref) => {
   const [comingSoonItems, setComingSoonItems] = useState<ComingSoonItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +57,13 @@ export default function ComingSoonSection() {
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-10 text-gray-500 dark:text-gray-400">
+        <BookOpen className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
+        <h4 className="font-semibold text-gray-900 dark:text-white">Failed to Load</h4>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Unable to load coming soon content. Please try again later.</p>
+      </div>
+    );
   }
 
   // Empty state
@@ -90,15 +97,18 @@ export default function ComingSoonSection() {
     );
   }
 
-  // ⭐ Coming Soon Cards
+  // Coming Soon Cards
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 cursor-pointer">
+    <div
+      ref={ref}
+      className="flex gap-4 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden no-scrollbar py-2 px-1 sm:px-2 scroll-smooth snap-x snap-mandatory"
+    >
       {comingSoonItems.map((item) => (
         <motion.div
           key={item.id}
           whileHover={{ scale: 1.03 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
+          className="group min-w-[280px] max-w-[280px] flex-shrink-0 snap-start bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer"
         >
           {/* Thumbnail */}
           {item.thumbnail ? (
@@ -123,11 +133,15 @@ export default function ComingSoonSection() {
 
             {/* Description - stays visible on hover now, limited to 20 letters */}
             <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">
-              {trimCharacters(item.description, 20)}
+              {trimCharacters(item.description, 30)}
             </p>
           </div>
         </motion.div>
       ))}
     </div>
   );
-}
+});
+
+ComingSoonSection.displayName = 'ComingSoonSection';
+
+export default ComingSoonSection;
