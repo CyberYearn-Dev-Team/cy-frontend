@@ -66,6 +66,7 @@ export default function QuizResultsPage() {
   }[] = resultsParam ? JSON.parse(resultsParam) : [];
 
   const passed = score >= threshold;
+  const allCorrect = results.length > 0 && results.every(r => r.selected === r.answer);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -150,12 +151,14 @@ export default function QuizResultsPage() {
       </div>
 
       <CardTitle className={`text-2xl font-bold ${textDark}`}>
-        {passed ? "Congratulations!" : "Quiz Complete"}
+        {allCorrect ? "Excellent!" : passed ? "Congratulations!" : "Quiz Complete"}
       </CardTitle>
 
       <CardDescription className={textMedium}>
         You scored <span className="font-semibold">{score}%</span>{" "}
-        {passed
+        {allCorrect
+          ? "and got all answers correct!"
+          : passed
           ? "and passed this quiz!"
           : "and did not reach the passing score."}
       </CardDescription>
@@ -179,12 +182,14 @@ export default function QuizResultsPage() {
 
         <Badge
           className={
-            passed
+            allCorrect
               ? "bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800 text-white text-sm py-1 px-3"
+              : passed
+              ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm py-1 px-3"
               : "bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800 text-white text-sm py-1 px-3"
           }
         >
-          {passed ? `Passed • +${xp} XP Earned` : "Not Passed"}
+          {allCorrect ? `Excellent • +${xp} XP Earned` : passed ? `Passed • +${xp} XP Earned` : "Not Passed"}
         </Badge>
       </div>
 

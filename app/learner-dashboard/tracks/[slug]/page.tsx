@@ -350,7 +350,8 @@ useEffect(() => {
               </div>
 
               {/* Right: Progress & extras */}
-              <div className="space-y-6">
+              {/* <div className="space-y-6"></div> */}
+              <div className="space-y-6 lg:sticky lg:top-8 h-fit">
                 <div className={`${cardBg} shadow rounded-lg p-6`}>
                   <h2 className={`text-lg font-semibold ${textDark}`}>
                     Your Progress

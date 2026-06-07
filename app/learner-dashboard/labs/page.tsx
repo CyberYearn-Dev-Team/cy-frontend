@@ -40,6 +40,38 @@ const truncateDescription = (
   return truncated.substring(0, lastSpace) + "...";
 };
 
+// --- Helper Function to Parse Lab Title for Sorting ---
+const parseLabTitle = (title: string) => {
+  const tMatch = title.match(/T(\d+)/);
+  const mMatch = title.match(/M(\d+)/);
+  const labMatch = title.match(/Lab\s+(\d+)/);
+
+  return {
+    t: tMatch ? parseInt(tMatch[1], 10) : 0,
+    m: mMatch ? parseInt(mMatch[1], 10) : 0,
+    lab: labMatch ? parseInt(labMatch[1], 10) : 0,
+  };
+};
+
+// --- Sorting Function for Labs ---
+const sortLabs = (labs: any[]) => {
+  return [...labs].sort((a, b) => {
+    const aParsed = parseLabTitle(a.title);
+    const bParsed = parseLabTitle(b.title);
+
+    // Sort by T number first
+    if (aParsed.t !== bParsed.t) {
+      return aParsed.t - bParsed.t;
+    }
+    // Then by M number
+    if (aParsed.m !== bParsed.m) {
+      return aParsed.m - bParsed.m;
+    }
+    // Finally by Lab number
+    return aParsed.lab - bParsed.lab;
+  });
+};
+
 // Reusable Card Components
 const Card = ({
   children,
@@ -62,7 +94,7 @@ const CardHeader = ({
   title: string;
   icon: React.ReactNode;
 }) => (
-  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+  <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
     {icon}
     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
       {title}
@@ -71,7 +103,7 @@ const CardHeader = ({
 );
 
 const CardContent = ({ children }: { children: React.ReactNode }) => (
-  <div className="px-6 py-4">{children}</div>
+  <div className="px-4 py-4">{children}</div>
 );
 
 export default function LabGuidesPage() {
@@ -224,9 +256,9 @@ export default function LabGuidesPage() {
                     </p>
                   </div>
                 ) : (
-                  /* SINGLE COLUMN + REVERSED ORDER (Lab Guide 1 first) */
+                  /* SINGLE COLUMN + SORTED ORDER (T0 before T1, M1 before M2, Lab 1 before Lab 2) */
                   <div className="space-y-6">
-                    {[...labs].reverse().map((lab) => (
+                    {sortLabs(labs).map((lab) => (
                       <div
                         key={lab.id}
                         className="flex flex-col p-6 border rounded-lg border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer"

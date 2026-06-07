@@ -322,7 +322,7 @@ export default function ModuleDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {[...module.lab_guides].reverse().map((guide: any) => (
+                    {module.lab_guides.map((guide: any) => (
                       <div
                         key={guide.id}
                         className={`flex flex-col sm:flex-row items-center gap-4 p-4 ${borderLight} rounded-lg ${cardBg}`}

@@ -187,7 +187,7 @@ export default function QuizzesPage() {
     
     // Always redirect to results page
     router.push(
-      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&results=${encodeURIComponent(
+      `/learner-dashboard/tracks/${slug}/modules/${moduleSlug}/lessons/${lessonId}/quizzes/result?score=${score}&passed=${passed}&xp=${xp}&threshold=${passingScore}&results=${encodeURIComponent(
         JSON.stringify(allQuestions)
       )}`
     );
