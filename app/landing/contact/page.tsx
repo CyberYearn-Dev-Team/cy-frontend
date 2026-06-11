@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { Phone, Mail, Send } from "lucide-react";
+import { Phone, Mail, Send, Loader2 } from "lucide-react";
 // NOTE: Assuming Card, Input, Label, Button, Select components are themable via Tailwind dark mode setup
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner"; // ✅ import Sonner toast
+import { toast } from "sonner"; //import Sonner toast
 
 // Theme Constants
 const primary = "#72a210";
@@ -36,6 +36,7 @@ export default function ContactUsPage() {
     contactReason: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -57,7 +58,7 @@ export default function ContactUsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ Basic validation
+    // Basic validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
       toast.error("Please fill out all required fields");
       return;
@@ -68,22 +69,48 @@ export default function ContactUsPage() {
       return;
     }
 
+    if (formData.message.length < 10) {
+      toast.error("Message must be at least 10 characters");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast.success("Your message has been sent successfully!");
-
-      // Reset form after submission
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        contactReason: "",
-        message: "",
+      const response = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          contactReason: formData.contactReason,
+          message: formData.message,
+        }),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message || "Your message has been sent successfully!");
+
+        // Reset form after submission
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          contactReason: "",
+          message: "",
+        });
+      } else {
+        toast.error(data.message || "Failed to send message. Please try again.");
+      }
     } catch (err) {
       toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -187,14 +214,11 @@ export default function ContactUsPage() {
                           </SelectTrigger>
                           {/* NOTE: SelectContent/SelectItem typically need global dark styles, adding dark: classes here for SelectContent and SelectItem for thoroughness */}
                           <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
-                            <SelectItem value="general" className="dark:text-gray-100 dark:hover:bg-gray-700">General Inquiry</SelectItem>
-                            <SelectItem value="course-info" className="dark:text-gray-100 dark:hover:bg-gray-700">Course Information</SelectItem>
-                            <SelectItem value="tech-support" className="dark:text-gray-100 dark:hover:bg-gray-700">Technical Support</SelectItem>
-                            <SelectItem value="certification" className="dark:text-gray-100 dark:hover:bg-gray-700">Certification & Exams</SelectItem>
-                            <SelectItem value="billing" className="dark:text-gray-100 dark:hover:bg-gray-700">Billing & Payments</SelectItem>
-                            <SelectItem value="security-report" className="dark:text-gray-100 dark:hover:bg-gray-700">Report a Security Issue</SelectItem>
-                            <SelectItem value="career" className="dark:text-gray-100 dark:hover:bg-gray-700">Career / Internship</SelectItem>
-                            <SelectItem value="other" className="dark:text-gray-100 dark:hover:bg-gray-700">Other</SelectItem>
+                            <SelectItem value="General Inquiry" className="dark:text-gray-100 dark:hover:bg-gray-700">General Inquiry</SelectItem>
+                            <SelectItem value="Technical Support" className="dark:text-gray-100 dark:hover:bg-gray-700">Technical Support</SelectItem>
+                            <SelectItem value="Billing" className="dark:text-gray-100 dark:hover:bg-gray-700">Billing</SelectItem>
+                            <SelectItem value="Partnership" className="dark:text-gray-100 dark:hover:bg-gray-700">Partnership</SelectItem>
+                            <SelectItem value="Other" className="dark:text-gray-100 dark:hover:bg-gray-700">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -222,10 +246,20 @@ export default function ContactUsPage() {
                     {/* Submit Button */}
                     <Button
                       type="submit"
+                      disabled={isSubmitting}
                       // Applied theme colors
-                      className={`inline-flex items-center gap-2 bg-[${primary}] hover:bg-[${primaryDarker}] text-white font-medium py-6 cursor-pointer`}>
-                      <Send className="h-4 w-4" />
-                      Send Message
+                      className={`inline-flex items-center gap-2 bg-[${primary}] hover:bg-[${primaryDarker}] text-white font-medium py-6 cursor-pointer ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Send Message
+                        </>
+                      )}
                     </Button>
                   </form>
                 </CardContent>
@@ -235,7 +269,7 @@ export default function ContactUsPage() {
             {/* Sidebar */}
            <div className="lg:col-span-1">
   <div
-    className="rounded-3xl p-6 sm:p-8 text-white"
+    className="rounded-3xl p-6 sm:p-8 text-white sticky top-8"
     style={{ backgroundColor: primaryDarker }}
   >
     <h3 className="text-lg sm:text-xl font-semibold mb-2">
@@ -247,7 +281,7 @@ export default function ContactUsPage() {
 
     <div className="space-y-6">
       {/* Hotline */}
-      <div className="flex items-start gap-3">
+      {/* <div className="flex items-start gap-3">
         <div
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
           style={{ backgroundColor: primary }}
@@ -258,10 +292,10 @@ export default function ContactUsPage() {
           <p className="font-medium text-sm sm:text-base">Hotline</p>
           <p className="text-green-50 text-sm">+000 000 000 000</p>
         </div>
-      </div>
+      </div> */}
 
       {/* WhatsApp */}
-      <div className="flex items-start gap-3">
+      {/* <div className="flex items-start gap-3">
         <div
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
           style={{ backgroundColor: primary }}
@@ -272,7 +306,7 @@ export default function ContactUsPage() {
           <p className="font-medium text-sm sm:text-base">WhatsApp</p>
           <p className="text-green-50 text-sm">+000 000 000 000</p>
         </div>
-      </div>
+      </div> */}
 
       {/* Email */}
       <div className="flex items-start gap-3">
@@ -284,7 +318,7 @@ export default function ContactUsPage() {
         </div>
         <div>
           <p className="font-medium text-sm sm:text-base">Email</p>
-          <p className="text-green-50 text-sm">info@cyberlearn.com</p>
+          <p className="text-green-50 text-sm">support@octatechuk.co.uk</p>
         </div>
       </div>
     </div>

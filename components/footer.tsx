@@ -182,14 +182,14 @@ export default function Footer() {
                     Submite Reviews
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     href="/landing/contact"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
                     Contact Support
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>
