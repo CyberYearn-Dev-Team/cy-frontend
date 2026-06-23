@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -539,6 +540,8 @@ export default function FeedbackPage() {
               Your response has been securely tracked. We monitor evaluations
               constantly to plan platform patches.
             </p>
+
+            <Link href="/learner-dashboard/dashboard">
             <button
               onClick={() => setShowSuccessPopup(false)}
               className="w-full py-2.5 rounded-lg text-sm font-bold text-white transition-colors cursor-pointer"
@@ -552,6 +555,7 @@ export default function FeedbackPage() {
             >
               Back to Dashboard
             </button>
+            </Link>
           </div>
         </div>
       )}
