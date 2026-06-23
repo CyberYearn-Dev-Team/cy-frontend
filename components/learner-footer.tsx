@@ -164,7 +164,7 @@ export default function Footer() {
               <ul className="space-y-3">
                  <li>
                   <Link
-                    href="/landing/reviews"
+                    href="/learner-dashboard/reviews"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
                     User Feedback
