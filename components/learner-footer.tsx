@@ -167,7 +167,7 @@ export default function Footer() {
                     href="/landing/reviews"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
-                    Users Feedback
+                    User Feedback
                   </Link>
                 </li>
                 <li>
