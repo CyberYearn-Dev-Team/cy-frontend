@@ -19,9 +19,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner"; //import Sonner toast
 
-// Force dynamic rendering to ensure useSearchParams works in production
-export const dynamic = 'force-dynamic';
-
 // Theme Constants
 const primary = "#72a210";
 const primaryDarker = "#507800";
@@ -121,9 +118,7 @@ export default function ContactUsPage() {
         // Redirect to learner dashboard if user came from dashboard
         if (shouldRedirect) {
           setTimeout(() => {
-            if (typeof window !== "undefined") {
-              window.location.href = "/learner-dashboard/dashboard";
-            }
+            router.push("/learner-dashboard/dashboard");
           }, 1500);
         }
       } else {
