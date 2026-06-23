@@ -179,7 +179,7 @@ export default function Footer() {
                     href="/auth/login"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
-                    Submite Reviews
+                    Submit Reviews
                   </Link>
                 </li>
                 {/* <li>
