@@ -172,10 +172,10 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/auth/login"
+                    href="/learner-dashboard/feedback"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
-                    Shear Feedback
+                    Share Feedback
                   </Link>
                 </li>
                 <li>
