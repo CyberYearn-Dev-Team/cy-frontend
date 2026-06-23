@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Phone, Mail, Send, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 // NOTE: Assuming Card, Input, Label, Button, Select components are themable via Tailwind dark mode setup
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,8 @@ const textLabel = "text-gray-700 dark:text-gray-200"; // Label text
 const borderLight = "border-gray-300 dark:border-gray-600"; // Light border
 
 export default function ContactUsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -37,6 +40,13 @@ export default function ContactUsPage() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  // Check if user came from dashboard on component mount
+  useEffect(() => {
+    const fromDashboard = searchParams.get("from") === "dashboard";
+    setShouldRedirect(fromDashboard);
+  }, [searchParams]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -104,6 +114,13 @@ export default function ContactUsPage() {
           contactReason: "",
           message: "",
         });
+
+        // Redirect to learner dashboard if user came from dashboard
+        if (shouldRedirect) {
+          setTimeout(() => {
+            router.push("/learner-dashboard/dashboard");
+          }, 1500);
+        }
       } else {
         toast.error(data.message || "Failed to send message. Please try again.");
       }

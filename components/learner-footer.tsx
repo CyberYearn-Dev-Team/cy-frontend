@@ -180,7 +180,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/landing/contact"
+                    href="/landing/contact?from=dashboard"
                     className="hover:text-[#72a210] dark:hover:text-[#a3e635] transition"
                   >
                     Contact Support
