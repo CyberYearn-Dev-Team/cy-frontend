@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Phone, Mail, Send, Loader2 } from "lucide-react";
@@ -29,7 +29,7 @@ const textMedium = "text-gray-600 dark:text-gray-300"; // Body text
 const textLabel = "text-gray-700 dark:text-gray-200"; // Label text
 const borderLight = "border-gray-300 dark:border-gray-600"; // Light border
 
-export default function ContactUsPage() {
+function ContactForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -349,5 +349,13 @@ export default function ContactUsPage() {
       {/* Footer (Assuming it handles its own theme) */}
       <Footer />
     </div>
+  );
+}
+
+export default function ContactUsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ContactForm />
+    </Suspense>
   );
 }
